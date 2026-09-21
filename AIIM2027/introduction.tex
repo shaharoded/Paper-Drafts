@@ -16,7 +16,7 @@ events, contexts---that support downstream mining (e.g., KarmaLego
 \citep{moskovitch2015karmalego}) or scoring, at the cost of a curated
 knowledge base and typically at some loss of predictive power against
 deep-learning alternatives. The interval-based Transformer INTERVenE-Enc
-\citep{oded2027intervene} sits between the two, taking a KBTA interval
+\citep{oded2026intervene} sits between the two, taking a KBTA interval
 stream as its token sequence and outperforming both symbolic pipelines
 and raw-stream neural baselines on a MIMIC-IV diabetic cohort while
 supporting concept-level explanations through gradient-decoupled
@@ -26,7 +26,7 @@ Two questions remain unresolved after that MIMIC-IV study. First, whether
 its central architectural claim---that a Transformer over KBTA intervals
 outperforms Transformers over the raw stream---transfers to a second cohort
 with a different underlying data model and a different clinical knowledge
-base. Ablations on MIMIC-IV \citep{oded2027intervene} suggested that
+base. Ablations on MIMIC-IV \citep{oded2026intervene} suggested that
 replacing KBTA intervals with knowledge-free $\sigma$-bin discretizations
 left the AUPRC essentially unchanged: on that data the knowledge base
 contributed interpretability but not accuracy. Whether this generalizes to
@@ -86,7 +86,7 @@ The remainder of the paper is organized as follows.
 Section~\ref{sec:background} covers the necessary background on KBTA,
 interval-based Transformers, and inpatient-diabetes guidelines; a full
 treatment of INTERVenE-Enc's architecture is in the companion methodological
-paper \citep{oded2027intervene} and a full treatment of the guideline
+paper \citep{oded2026intervene} and a full treatment of the guideline
 adherence study is in \citep{oded2027kineret-jbi}. Section~\ref{sec:methods}
 describes the cohort, the seven arms and the evaluation protocol.
 Section~\ref{sec:results} reports the target support, the ladder, the QA

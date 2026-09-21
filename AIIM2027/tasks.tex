@@ -12,7 +12,7 @@
 
 \textbf{A. Cross-references to companion papers}\\
 Three placeholder bib keys are used throughout:
-\texttt{oded2027intervene} (the AAAI methodological paper),
+\texttt{oded2026intervene} (the AAAI methodological paper),
 \texttt{oded2027kineret-jbi} (the JBI adherence paper), and
 \texttt{mediator-github}. Update these to the accepted / preprint form
 once the two companion drafts are placed. The \emph{Background} section
@@ -20,29 +20,43 @@ also references the JBI paper's Table~1 for cohort characteristics; if
 JBI is not yet publicly citeable, reproduce the table as an appendix
 here.\\[.2em]
 
-\textbf{B. Empirical additions a reviewer will ask for}\\
-The following do not exist yet in \texttt{results/full\_bench\_results/}
-and require a re-run inside the regulated environment:
+\textbf{B. Empirical additions}\\
+The following extensions are being staged in the Kineret-Prediction
+repository. Items marked \emph{[inference-only]} reuse the existing
+per-arm checkpoints and do not require retraining.
 \begin{itemize}\setlength{\itemsep}{.05em}
-  \item Multi-seed variance for at least the KB and KB$+$QA arms
-        (three seeds sufficient to bound training-procedure variance).
-  \item Sensitivity of the ladder ordering to $K_{\mathrm{eval}} \in
-        \{2, 3, 5, 6\}$. Currently only $K = 4$ is reported.
-  \item Temporal held-out: retrain the ladder on pre-guideline
-        admissions and evaluate on post-guideline (or vice versa), to
-        test whether prediction quality tracks the practice shift the
-        JBI paper documents.
-  \item Per-hospital leave-one-out for the KB arm (six re-runs), to
-        quantify site generalization.
-  \item Reliability curves and per-outcome ECE, as reported for
-        INTERVenE-Enc on MIMIC-IV in \citep{oded2027intervene}.
-        Predictions and probabilities are available in
-        \texttt{results/full\_bench\_results/runs/<arm>/}; only the
-        plotting and ECE computation are missing.
-  \item Sparse-transcoder attribution reproduction on this cohort.
-        A partial run exists under
-        \texttt{results/transformers-results-old-with-xai/} but for the
-        pre-ladder ss-STraTS variants, not the seven-arm KB+QA arm.
+  \item \emph{[inference-only]} Sensitivity of the ladder ordering to
+        $K_{\mathrm{eval}} \in \{2, 3, 5, 6\}$. Because training augments
+        over $K \in 1\ldots 13$, each trained checkpoint can be re-scored
+        at any $K_{\mathrm{eval}}$ by cutting the same test admissions at
+        a different point; no retraining is required.
+  \item \emph{[inference-only]} Reliability curves and per-outcome ECE
+        (with optional temperature scaling on validation), as reported
+        for INTERVenE-Enc on MIMIC-IV in \citep{oded2026intervene}.
+        Predictions live in \texttt{results/full\_bench\_results/runs/<arm>/}.
+  \item \emph{[inference-only]} Age-band and sex subgroup AUROC/AUPRC
+        (item C below); paired-bootstrap $\Delta$ and BH-FDR across
+        outcomes (item D). Both from the existing predictions.
+  \item \emph{[requires re-run]} Temporal held-out: retrain the ladder
+        on pre-guideline admissions and evaluate on post-guideline (or
+        vice versa), to test whether prediction quality tracks the
+        practice shift documented in the JBI companion paper. Supported
+        natively by the pipeline via \texttt{date\_range\_start} /
+        \texttt{date\_range\_end}.
+  \item \emph{[requires re-run]} Per-hospital leave-one-out for the KB
+        arm (six re-runs), to quantify site generalization. Requires the
+        hospital column to be plumbed through cohort assembly; check
+        \texttt{Kineret-Prediction} PR before running.
+  \item \emph{[inference-only]} Sparse-transcoder attribution
+        reproduction on the KB+QA arm on this cohort. A partial run
+        exists under \texttt{results/transformers-results-old-with-xai/}
+        for pre-ladder ss-STraTS variants; the KB+QA reproduction reuses
+        the pipeline documented in \citep{oded2026intervene}.
+  \item \emph{Optional.} Multi-seed variance for the KB and KB+QA arms.
+        The AAAI companion paper explicitly declined multi-seed at this
+        cohort scale, on cost grounds, and reported patient-level
+        bootstrap intervals only; we adopt the same stance and mention
+        it as a limitation.
 \end{itemize}
 \vspace{.1em}
 

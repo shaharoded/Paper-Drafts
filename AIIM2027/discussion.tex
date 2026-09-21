@@ -5,7 +5,7 @@
 
 \paragraph{The architecture transfers.}
 INTERVenE-Enc, tuned and evaluated on MIMIC-IV ICU-level data
-\citep{oded2027intervene}, retains its ordering against strong raw-stream
+\citep{oded2026intervene}, retains its ordering against strong raw-stream
 baselines on a very different cohort: multicenter, general ward, older,
 longer stays, and shorter observation window in relative terms (K = 4 of
 14 days here versus K = 2 of 14 days on MIMIC). No hyperparameters were
@@ -19,7 +19,7 @@ The single most informative contrast in the paper is the $\sigma$-bin
 arm against the KB arm ($5 \to 6$): identical Transformer, identical
 data, identical labels, replacing only the abstraction layer with a
 seven-band $\sigma$-discretization. On MIMIC-IV that substitution was
-within noise \citep{oded2027intervene}; on Kineret it costs $0.073$
+within noise \citep{oded2026intervene}; on Kineret it costs $0.073$
 AUPRC ($0.454 \to 0.527$) and $0.050$ AUROC, and drops the arm to the
 logistic-regression floor. The interpretation is that a knowledge base
 authored for the diabetes-inpatient network it is deployed on carries
@@ -139,7 +139,7 @@ without a per-cohort tune. Multi-seed variance was not affordable
 inside the regulated environment; the reported bootstrap intervals
 capture sampling variability for the fitted model, not the variance of
 the training procedure. This is the same limitation reported by the
-methodological MIMIC-IV study \citep{oded2027intervene}.
+methodological MIMIC-IV study \citep{oded2026intervene}.
 
 \paragraph{External validity is limited.}
 This is the second cohort INTERVenE has been evaluated on, and both are
@@ -166,7 +166,7 @@ but a data-scale one; a larger extract would resolve it.
 \paragraph{Model calibration is not reported.}
 Reliability curves and expected calibration error were computed on the
 MIMIC-IV cohort and reported per outcome in
-\citep{oded2027intervene}. We omit the corresponding analysis here to
+\citep{oded2026intervene}. We omit the corresponding analysis here to
 stay inside the AIIM figure budget, but the run-outputs contain the
 per-prediction probabilities needed to reproduce them
 (Section~\ref{sec:reproducibility}); this is~\TODO{a candidate for the

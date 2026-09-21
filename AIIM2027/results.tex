@@ -84,7 +84,7 @@ Section~\ref{sec:results-qa}.
 Replacing KBTA with $\sigma$-bin discretization (rung $5$) costs $0.073$
 AUPRC and $0.050$ AUROC relative to rung $6$, and drops the arm to the
 logistic-regression floor. The same substitution on MIMIC-IV
-\citep{oded2027intervene} was within noise---the ablation there
+\citep{oded2026intervene} was within noise---the ablation there
 attributed accuracy on that cohort to the Transformer over persistent
 intervals rather than to the semantic content of the intervals. On the
 data the knowledge base was authored for, that no longer holds:
@@ -132,7 +132,7 @@ only arm that receives the compliance patterns as temporal tokens
 rather than only as context.
 
 The model \emph{does} use them. Sparse-transcoder attribution on the
-QA arm, following the pipeline of \citep{oded2027intervene}, puts
+QA arm, following the pipeline of \citep{oded2026intervene}, puts
 \texttt{*\_PATTERN} tokens among the top drivers for seven of the
 eight outcomes on this cohort: routine glucose monitoring for death
 and kidney complication, basal-dosage and metformin-continuation
