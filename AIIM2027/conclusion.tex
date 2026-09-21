@@ -1,0 +1,41 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+A seven-arm ladder that varies only the input representation---holding
+cohort, labels, patient split, evaluation window and head layout
+constant---separates the effect of the neural architecture, the effect
+of the clinical knowledge base, and the effect of a
+guideline-adherence signal, on a multicenter inpatient-diabetes cohort.
+
+Three findings follow. The interval-based Transformer INTERVenE-Enc
+transfers to a second cohort without hyperparameter retuning, keeping
+its ordering over ss-STraTS and logistic-regression baselines with
+non-overlapping bootstrap intervals. The knowledge base contributes
+$0.073$ AUPRC over a knowledge-free $\sigma$-bin discretization---an
+effect that was within noise on MIMIC-IV---so clinical domain knowledge
+does predictive work on data it was authored for, not merely
+interpretive work. Automatically measured guideline adherence, computed
+by the same abstraction engine that produces the intervals the model
+already reads, is used by the model but does not shift aggregate
+metrics; QA is close to what a KB-consuming model extracts for itself.
+
+The design that let these three effects be measured cleanly is
+transferable, and the release of the code, the frozen configuration and
+the per-arm predictions makes the same experiment repeatable on a
+different network with a different knowledge base. Whether the
+architecture-transferred and knowledge-lift-larger findings extend to
+non-diabetic prediction, and whether adherence signals help
+prediction where a knowledge base is \emph{not} in the model's input,
+are the two questions this ladder leaves for follow-on work.
+
+\section*{Reproducibility}
+\label{sec:reproducibility}
+
+Every number and every figure in this paper is produced by running
+\texttt{notebooks/benchmark.ipynb} in the Kineret-Prediction repository
+against the frozen \texttt{study\_config.json} shipped with it. The
+per-arm predictions, per-outcome metrics, bootstrap intervals and
+figures are additionally shipped as \texttt{results/full\_bench\_results/}
+in the same repository. The abstraction engine, the ETL pipeline, and
+both reference implementations (INTERVenE-Enc, ss-STraTS) are separately
+released; see the \emph{Data and Code Availability} statement.

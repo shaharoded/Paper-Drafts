@@ -1,0 +1,323 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Cohort}
+\label{sec:methods-cohort}
+
+The Kineret dataset spans six Israeli general hospitals, harmonized to a
+common data model by the Kineret project. Extraction, cohort construction
+and abstraction ran inside a regulated hospital computing environment; the
+present study uses the same admission set as the concurrent adherence
+study \citep{oded2027kineret-jbi}.
+
+Eligibility. An admission was eligible if it was an inpatient visit with
+at least one measurement recorded overnight (18:00--07:00, taken as
+evidence of a genuine overnight stay); length of stay between $48$ hours
+and $14$ days; patient at least $18$ years old at admission; the admission
+did not occur in an excluded department (pediatric or obstetric); the
+visit identifier was not associated with more than one patient identifier
+(treated as a data-integrity failure); the patient did not die within
+$48$ hours of admission; and the admission met at least one criterion for
+diabetes or hyperglycemia. Diabetes or hyperglycemia was established by
+at least one of: a documented diabetes diagnosis (from a curated concept
+list); recurrent hyperglycemia (two glucose measurements $\ge 180$\,mg/dL
+separated by $2$--$24$ hours); or extreme hyperglycemia (any glucose
+$\ge 250$\,mg/dL). Hypoglycemia is not an entry criterion; it is treated
+as an outcome throughout.
+
+Restricting the eligible set to the study period of August $2022$ through
+December $2025$ yields the analytic cohort of $48{,}354$ admissions among
+$29{,}577$ patients. Full cohort characteristics are given in
+Table~\ref{tab:cohort} of the concurrent JBI paper
+\citep{oded2027kineret-jbi} and reproduced in Appendix~\TODO{A once
+cross-references are frozen}; salient for prediction, the cohort is
+older (mean age $71.9$\,y, median $73.3$\,y), predominantly non-ICU, with
+a median length of stay of $5.55$ days and $30$-day mortality of
+$9.58\%$.
+
+\subsection{Targets}
+\label{sec:methods-targets}
+
+Ten complications are the candidate targets: $30$-day mortality,
+hyperglycemia, severe hyperglycemia, hypoglycemia, severe hypoglycemia,
+hyperosmolality, ketoacidosis, infection, inpatient acute kidney injury /
+kidney complication, and inpatient myocardial infarction / cardiovascular
+complication. Nine are emitted as event abstractions by the same Mediator
+knowledge base that scores adherence; $30$-day mortality is taken from
+linked death records. Operational definitions match the adherence study
+\citep{oded2027kineret-jbi}; using one endpoint set across both analyses
+lets a recommendation's measured association with an outcome and a
+model's predictive use of that recommendation be read against one
+another.
+
+Two targets carry the labels the raw source table does not: the Mediator
+output records complications as knowledge-base verdicts (e.g.,
+\texttt{HYPERGLYCEMIA\_EVENT}), whereas the raw table records the
+measurements those verdicts read. To bring the two into agreement, our
+pipeline re-derives the raw side's own complication rows by applying, in
+Python, the same threshold rules the Mediator's XML applies (with
+patient-baseline ratios for AKI and a minimum-count guard for the
+glycemic events), and then intersects the two views at $1$-minute
+tolerance to keep only occurrences the two files date identically. The
+result is a canonical event table used for labels and re-injected into
+every arm's input stream, so event support is identical across arms by
+construction. Cross-file rule agreement was audited manually against the
+knowledge-base XML.
+
+\subsection{The prediction task}
+\label{sec:methods-task}
+
+Each admission is observed over its first $K$ days and each of the eight
+target complications that clear a prevalence threshold is predicted with
+three heads: whether it occurs in the label window $(K \cdot 24,\,14 \cdot
+24]$\,hours after admission (multi-label BCE risk), when it occurs (per-
+outcome onset regression trained on positives only, in $z$-normalized
+hours), and length of stay (regression trained on discharged admissions).
+Both onset and length of stay are trained jointly with risk in every arm,
+including logistic regression---this is a wider contract than the
+MIMIC-IV study, where onset was an INTERVenE-only auxiliary.
+
+$K$ enters twice, and the distinction matters. In \emph{training} it is a
+data augmentation: each admission contributes one sample per context
+window it reaches over $K \in \{1,\ldots,13\}$ days---the same trajectory
+cut at a different point with its label window re-derived to match, so
+the model learns to forecast from however much history it happens to
+have. A patient discharged on day $N$ contributes $\min(13, \lceil N
+\rceil - 1)$ samples---exactly $N - 1$ for whole-day stays---so long
+stays contribute more samples than short ones, which is the correct
+weighting since they contain more forecastable history.
+
+In \emph{evaluation} $K$ is a single fixed window, chosen from the
+target-support table before training begins, and every reported number
+comes from it. Reporting at one window rather than sweeping keeps the
+results a table rather than a surface, and keeps the head layout
+fixed---targets are support-filtered once, on train, at that window. On
+this cohort the chosen evaluation window is $K = 4$ days (justification
+in Section~\ref{sec:results-support}), the same order of magnitude as
+INTERVenE's MIMIC-IV window ($K = 2$ days) but longer, reflecting the
+longer inpatient stays of the general-ward cohort.
+
+Because the horizon end is fixed at $14$ days, $K$ also sets how far
+ahead the model is forecasting: $K{=}1$ predicts over $13$ days, $K{=}13$
+over one. Both numbers---current context length and remaining horizon---
+are handed to the model as explicit context features, so this is not
+leakage: they are constant at evaluation and known at prediction time by
+construction.
+
+\subsection{Cohort membership and splits}
+
+A patient is in the study if they can furnish at least one training
+sample---i.e., their stay outlasts the shortest training window. The
+validation and test splits then take only the patients who reach
+$K_{\mathrm{eval}} = 4$ days, because a $3$-day admission cannot be
+scored at $K{=}4$. So a $3$-day stay trains the model (via its $K{=}1$
+and $K{=}2$ cuts) without ever being scored, and raising the evaluation
+window shrinks validation and test while leaving training untouched.
+The alternative---keying membership on the evaluation window---would let
+a reporting decision quietly evict short admissions from training whose
+early cuts are perfectly good supervision. Cohort membership is decided
+against the \emph{minimum} trajectory length across the raw and
+Mediator-derived source tables rather than their union, since a union
+would admit patients the raw-data arms could score but INTERVenE would
+silently drop (the Mediator's last interval routinely closes before the
+last raw measurement).
+
+The split is over \emph{people}, not admissions
+(\texttt{split\_group\_by\_person}): two admissions of one patient share
+comorbidities, baseline physiology and often the same recurring
+complication, so training on one and scoring the other measures
+memorization of that patient rather than generalization to a new one.
+The split is frozen at build time and every augmented sample of an
+admission inherits its admission's split, so a sample can never cross
+splits or appear on both sides of the augmentation.
+
+Admissions whose label window would run past the end of the extract are
+dropped, since scoring their unobservable late complications as
+negatives is a censoring artefact indistinguishable from a true negative
+(\texttt{date\_range\_require\_full\_horizon}).
+
+\subsection{The seven-arm ladder}
+\label{sec:methods-ladder}
+
+Every arm predicts the same targets on the same admissions at the same
+evaluation window with the same head layout; the arms differ only in
+input representation. Table~\ref{tab:ladder-arms} lists them; the
+contrasts they enable follow.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{The seven arms. Every arm shares the cohort, the labels, the
+patient split, and the head layout. Only the input representation changes.}
+\label{tab:ladder-arms}
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}X}
+\toprule
+Rung & Model & Input \\
+\midrule
+1 & LogReg                      & Raw measurements, distribution-summarized; no temporal model \\
+2 & LogReg $+$ QA               & As above, plus aggregated compliance in the context vector \\
+3 & ss-STraTS                   & Raw measurements with learned temporal attention \\
+4 & ss-STraTS $+$ QA            & As above, plus aggregated compliance in the context vector \\
+5 & INTERVenE-Enc ($\sigma$-bins) & Knowledge-free intervals over the same raw data \\
+6 & INTERVenE-Enc (KB)          & Knowledge-based Mediator abstractions \\
+7 & INTERVenE-Enc (KB $+$ QA)   & As above, plus treatment-quality pattern tokens \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Three contrasts carry the argument. Rungs $5 \to 6$ isolate the knowledge
+base: same raw data, same architecture, same labels, different
+abstraction layer. Rungs $6 \to 7$ isolate the treatment-quality signal.
+Rungs $1 \to 2$ and $3 \to 4$ put the same QA question to models that
+cannot represent pattern tokens, so a QA effect that appears only for
+INTERVenE means something different from one that appears everywhere.
+
+\subsubsection*{Arm 1: LogReg}
+For each measurement concept, the observed values over $[0, K \cdot 24]$
+hours are summarized by mean, standard deviation, minimum, maximum,
+first, last, and count; missingness is indicated by a per-concept
+observed-flag. The resulting fixed-length vector is concatenated with the
+static context and passed through a multi-label logistic-regression
+head. Onset and length-of-stay heads share the same input. This arm
+discards temporal ordering entirely, so it is the floor: any arm that
+does not clear it is not using time.
+
+\subsubsection*{Arm 3: ss-STraTS}
+The self-supervised STraTS \citep{tipirneni2022strats} baseline is used
+with the pretraining stage removed. The MIMIC-IV benchmark showed
+pretraining offered no consistent lift on this cohort and the two-stage
+variant is not run inside the regulated environment. Every observation
+is represented as a (concept, time, value) triplet; the sequence is
+processed by set-based Transformer attention. Labels come from the
+shared cohort; onset and length-of-stay heads are added, both trained
+in the same schedule as the risk head. The head layout is $2K + 1$
+outputs ($K$ risk logits, $K$ $z$-scored onset times, one length-of-stay)
+so that timing is scored comparably across arms.
+
+\subsubsection*{Arm 5: INTERVenE-Enc ($\sigma$-bins)}
+The same INTERVenE-Enc architecture, but with the knowledge base
+replaced by a knowledge-free discretization: each measurement is
+bucketed into one of seven bands ($\pm 0.5\sigma$, $\pm 1\sigma$,
+$\pm 2\sigma$; centred on the global training-set mean and standard
+deviation for that concept) and consecutive same-concept observations
+within $24$ hours are merged into a single interval so the encoder has
+interval structure to model at all. Concepts are named
+\texttt{<CONCEPT>\_STD\_<BIN>} and receive an augmented TAK repository
+so INTERVenE's hierarchical embedder still resolves the concept
+ancestry. This arm receives no knowledge-base-derived complication
+events on its input, since without a knowledge base one would not have
+them (\texttt{std\_include\_kb\_events} $= \mathrm{False}$).
+
+\subsubsection*{Arms 6 and 7: INTERVenE-Enc (KB and KB $+$ QA)}
+Arm~6 consumes the Mediator's output directly---the knowledge-based
+temporal abstractions (states, trends, contexts, events) as
+interval-typed tokens. Arm~7 adds the quality-assessment pattern tokens:
+each formalized recommendation from the adherence study
+\citep{oded2027kineret-jbi} emits an interval token
+(\texttt{<PATTERN>\_START} / \texttt{<PATTERN>\_END}) wherever it applies,
+carrying its compliance score in the value channel. Both arms
+additionally receive the aggregated QA block in their static context
+vector (see below).
+
+\subsection{The quality-assessment signal is deliberately asymmetric}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{The QA signal is supplied in the richest form each architecture
+admits. \emph{QA aggregate}: mean compliance per pattern over each
+sample's $[0, K \cdot 24]$ window, appended to the static context vector,
+identical across arms. \emph{Pattern tokens}: the compliance-scored
+intervals themselves, available only to interval-consuming architectures.}
+\label{tab:qa-asymmetry}
+\begin{tabularx}{0.85\textwidth}{Xcc}
+\toprule
+Arm & QA aggregate block in context & \texttt{*\_PATTERN} interval tokens \\
+\midrule
+LogReg (raw + QA)                 & \checkmark & --- \\
+ss-STraTS (raw + QA)              & \checkmark & --- \\
+INTERVenE-Enc (KB + QA)           & \checkmark & \checkmark \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Every QA arm receives the same aggregate block. Only INTERVenE additionally
+receives the compliance patterns as temporal tokens, because it is the only
+model that can represent them (they are intervals). Each architecture gets
+the treatment signal in the richest form it admits: anything else would
+either starve INTERVenE or credit the others with a representation they
+cannot use. The aggregation is a mean of the pattern's compliance scores
+over that sample's own $[0, K \cdot 24]$ window, so a $K{=}2$ sample never
+sees four days of compliance and no arm reads compliance from the label
+window.
+
+\subsection{Knowledge containment and leakage guards}
+\label{sec:methods-guards}
+
+The Mediator emits \texttt{*\_EVENT} concepts that are not prediction
+targets---for example \texttt{AKI\_EVENT} is a knowledge-base verdict
+reached by reading raw creatinine---and handing one to LogReg or
+ss-STraTS gives them a derived clinical judgement they could not have
+computed themselves. Rungs $5 \to 6$, which are meant to isolate the
+value of the knowledge base, would then measure a leak rather than
+abstraction. The two streams therefore differ by design
+(\texttt{kb\_events\_for\_kb\_arms\_only}):
+target events are given to every arm as observed history, whereas
+non-target \texttt{*\_EVENT} concepts are stripped from the raw stream
+and kept in the KB stream. A unit test asserts both directions, and the
+KB abstraction stream is harmonized with the raw stream so both see the
+same reconciled canonical event support.
+
+Terminal markers (\texttt{RELEASE}, \texttt{DEATH}) are stripped from
+every input stream in every spelling. Outcome events falling inside the
+observation window are not stripped: they are observed history, and the
+label window starts strictly after the input window, so an event an arm
+can see is history, never the thing it is being asked to predict.
+Measurements from which outcomes are derived (glucose, creatinine,
+etc.) are never stripped either way: they are legitimate predictors,
+and dropping them would penalize exactly the arms that read raw data.
+
+\subsection{Training}
+
+Models are trained from scratch under a three-phase schedule
+\citep{oded2027intervene}, not fine-tuned from the MIMIC-IV checkpoint.
+The two cohorts differ in target set, patient distribution, and
+knowledge base; a fine-tuned model would confound the architecture's
+contribution with the initialization's, and training from scratch keeps
+the seven arms comparable to one another.
+
+The three neural architectures (LogReg, ss-STraTS, INTERVenE-Enc) are
+all PyTorch models---the logistic-regression arm is a linear head with
+the same optimizer, so all three arms run on the same device.
+Per-model hyperparameters are those released in each model's reference
+repository and are not tuned to this cohort; the per-cohort settings
+are those governing the shared inputs (target list, evaluation window,
+QA aggregation, event reconciliation), which live in a single
+\texttt{configure\_study(\ldots)} call whose exact value is
+\texttt{study\_config.json} in the reproducibility bundle.
+
+\subsection{Evaluation}
+\label{sec:methods-eval}
+
+The primary metric is support-weighted AUPRC across the retained
+targets. AUROC, best-$F_1$, best $F_1$ at $\tau{=}0.5$, minimum
+recall-at-precision, onset MAE (hours), and length-of-stay MAE (hours)
+are secondary. Per-outcome metrics are additionally reported for each
+target. Uncertainty is a $2{,}000$-resample patient-level bootstrap; two
+arms are treated as separated by the data only when their $95\%$
+intervals do not overlap. This is sampling variability for the model
+that was trained, not the variance of the training procedure, since
+multi-seed retraining was not affordable at this scale (see
+Section~\ref{sec:discussion-limits}).
+
+Onset MAE is conditional on occurrence---only positive patients
+contribute. For an outcome with a handful of positives the interval
+reflects which of those few patients got drawn rather than model
+uncertainty, and at $n = 1$ collapses to a point and reads as
+precision, which is the opposite. Rows with fewer than five positives
+per bootstrap draw are flagged \texttt{ci\_reliable = False}: the
+estimates are kept but not to be quoted alone.
+
+A \emph{wiring check} runs all seven arms for one epoch before any full
+training, and asserts that every arm was scored on identical labels and
+identical test patients. It fails loudly if not.

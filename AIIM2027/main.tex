@@ -1,0 +1,212 @@
+\documentclass[preprint,12pt]{elsarticle}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{url}
+
+\graphicspath{{figures/}}
+
+% --------------------------------------------------------------
+% DRAFT-ONLY ANNOTATIONS. Flip to \showtasksfalse for submission.
+% --------------------------------------------------------------
+\newif\ifshowtasks
+\showtaskstrue
+
+\newcommand{\TODO}[1]{\ifshowtasks\textcolor{red}{\textbf{[TODO: #1]}}\fi}
+
+\journal{Artificial Intelligence in Medicine}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Knowledge-Based Temporal Abstractions Transfer Across Hospitals:
+A Seven-Arm Comparison of Complication Prediction on a Six-Hospital
+Inpatient-Diabetes Cohort}
+
+\author[aff1]{Shahar Oded\corref{cor1}}
+\ead{shahar.oded@post.bgu.ac.il}
+\cortext[cor1]{Corresponding author.}
+\author[aff1]{Yuval Shahar}
+\author[aff1]{Erez Shalom}
+\author[aff2,aff3]{Amir Bashkin}
+\author[aff4,aff5]{Leonard Saig}
+\author[aff6]{Dror Cantrell}
+\author[aff7]{Irit Wirsansky}
+\author[aff2,aff8]{Muhamad Badarne}
+\author[aff9]{Irena Barash}
+\author[aff10,aff11]{Avivit Cahn}
+\author[aff4,aff7]{Irit Hochberg}
+
+\address[aff1]{Medical Informatics Research Center,
+Ben-Gurion University of the Negev, Beer Sheva, Israel}
+\address[aff2]{Azrieli Faculty of Medicine,
+Bar-Ilan University, Safed, Israel}
+\address[aff3]{Endocrinology and Diabetes Unit,
+Galilee Medical Center, Nahariya, Israel}
+\address[aff4]{Bruce Rappaport Faculty of Medicine,
+Technion---Israel Institute of Technology, Haifa, Israel}
+\address[aff5]{Endocrinology Institute,
+Bnai Zion Medical Center, Haifa, Israel}
+\address[aff6]{Internal Medicine Department C,
+Shamir Medical Center, Beer Yaakov, Israel}
+\address[aff7]{Endocrinology Unit,
+Hillel Yaffe Medical Center, Hadera, Israel}
+\address[aff8]{Endocrinology and Diabetes Service,
+Tzafon Medical Center, Ramat Poriya, Israel}
+\address[aff9]{Internal Medicine Department C,
+Barzilai Medical Center, Ashkelon, Israel}
+\address[aff10]{Internal Medicine Department A,
+Hadassah Ein Kerem, Jerusalem, Israel}
+\address[aff11]{Faculty of Medicine,
+Hadassah Hebrew University Hospital, Jerusalem, Israel}
+
+\begin{abstract}
+\textbf{Background.} Interval-based Transformers over knowledge-based
+temporal abstractions (KBTA) outperform strong neural baselines for
+short-horizon complication prediction on a MIMIC-IV diabetic cohort, and
+concurrent work has shown that adherence to inpatient hyperglycemia guideline
+recommendations can be measured automatically as continuous compliance scores
+over the same abstraction stream. Whether either result transfers to a
+second, independently collected cohort, and whether the two signals combine
+usefully, has not previously been examined.
+
+\textbf{Objective.} To evaluate the transferability of INTERVenE-Enc across
+health systems and knowledge bases, to test whether measured
+guideline-adherence signals improve predictive performance beyond the
+clinical record they were derived from, and to quantify the marginal
+contribution of clinical domain knowledge to short-horizon complication
+prediction on inpatient diabetes.
+
+\textbf{Methods.} We conducted a retrospective comparison on the Kineret
+inpatient hyperglycemia cohort ($48{,}354$ admissions across six Israeli
+hospitals, August 2022--December 2025). A single seven-arm ladder holds
+cohort, labels, patient split and evaluation window constant and varies only
+the input representation: (i) logistic regression on distribution-summarized
+raw measurements, (ii) ss-STraTS on the raw event stream, (iii) INTERVenE-Enc
+on knowledge-free $\sigma$-bin intervals, (iv) INTERVenE-Enc on KBTA
+intervals, and (v) the same with treatment-quality (QA) pattern tokens.
+Every arm predicts three targets per complication: whether it occurs, when,
+and length of stay. Confidence intervals are $2{,}000$-resample
+patient-level bootstraps.
+
+\textbf{Results.} On $4{,}686$ held-out test admissions, INTERVenE-Enc on KBTA
+intervals achieves support-weighted AUPRC $0.527$ [$0.511, 0.548$] against
+$0.472$ [$0.456, 0.493$] for the best raw-stream baseline (ss-STraTS), with
+non-overlapping confidence intervals, and leads every arm on AUROC and onset
+error. Replacing KBTA with $\sigma$-bins costs $0.073$ AUPRC and drops the
+arm to the logistic-regression floor---a lift that was within noise on
+MIMIC-IV. The QA block leaves aggregate metrics within third-decimal-place
+noise on every model, though sparse-transcoder attribution shows that the
+compliance-pattern tokens are among the top drivers for seven of eight
+outcomes when INTERVenE receives them as intervals.
+
+\textbf{Conclusion.} The architecture transfers, and the knowledge base does
+predictive work on data it was authored for---not merely interpretive work
+as on MIMIC-IV. Automatically measured guideline adherence carries little
+information the interval stream does not already supply, because both are
+deterministic derivations of the same abstraction layer. The design that
+separates them---a seven-arm ladder with identical cohort, labels and
+split---is what let the two effects be read against one another.
+\end{abstract}
+
+\begin{keyword}
+temporal abstraction \sep clinical prediction \sep interval-based Transformer
+\sep knowledge base \sep guideline adherence \sep transferability
+\sep inpatient diabetes
+\end{keyword}
+
+\end{frontmatter}
+
+\IfFileExists{tasks.tex}{\input{tasks}}{}
+
+\input{introduction}
+\input{background}
+\input{methods}
+\input{results}
+\input{discussion}
+\input{conclusion}
+
+\section*{CRediT Authorship Contribution Statement}
+\textbf{Shahar Oded:} Conceptualization, Methodology, Software, Validation,
+Formal analysis, Data curation, Visualization, Writing---original draft.
+\textbf{Yuval Shahar:} Conceptualization, Methodology, Supervision, Funding
+acquisition, Writing---review \& editing.
+\textbf{Erez Shalom:} Resources, Project administration, Writing---review \&
+editing.
+\textbf{Amir Bashkin:} Investigation, Resources, Writing---review \& editing.
+\textbf{Leonard Saig:} Investigation, Resources, Writing---review \& editing.
+\textbf{Dror Cantrell:} Investigation, Resources, Writing---review \& editing.
+\textbf{Irit Wirsansky:} Investigation, Resources, Writing---review \& editing.
+\textbf{Muhamad Badarne:} Investigation, Resources, Writing---review \& editing.
+\textbf{Irena Barash:} Investigation, Resources, Writing---review \& editing.
+\textbf{Avivit Cahn:} Conceptualization, Investigation, Writing---review \&
+editing.
+\textbf{Irit Hochberg:} Conceptualization, Methodology, Validation,
+Resources, Supervision, Writing---review \& editing.
+
+\section*{Funding}
+\TODO{Funding statement outstanding --- to be aligned with the JBI/JAMIA
+companion papers.}
+
+\section*{Declaration of Competing Interest}
+Several of the authors contributed to the national position paper whose
+implementation informs the QA arm of this study. The authors declare no
+competing financial interests or personal relationships that could have
+appeared to influence the work reported in this paper.
+
+\section*{Data and Code Availability}
+The Mediator abstraction engine and its knowledge base, the extraction and
+cohort-construction pipeline, the seven-arm benchmark, and the frozen
+outputs used to produce every table and figure in this paper are publicly
+available:
+
+\begin{itemize}\setlength{\itemsep}{.1em}
+\item Mediator (abstraction + quality-assessment engine):
+      \url{https://github.com/shaharoded/Mediator}.
+\item Kineret ETL pipeline (OMOP CDM $\to$ analysis-ready tables):
+      \url{https://github.com/shaharoded/Kineret-ETL}.
+\item INTERVenE-Enc reference implementation:
+      \url{https://github.com/shaharoded/INTERVenE-Enc}.
+\item ss-STraTS reference implementation:
+      \url{https://github.com/shaharoded/Medical-Transformers-Benchmark}.
+\item This study's pipeline, frozen configuration, per-arm predictions,
+      per-outcome bootstraps and figures:
+      \url{https://github.com/shaharoded/Kineret-Prediction} (see
+      \texttt{results/full\_bench\_results/}).
+\end{itemize}
+
+All processing was performed inside a closed hospital computing environment.
+The code released is a replica of that pipeline; no source data,
+intermediate datasets, or unaggregated outputs leave that environment.
+Reported results are exported aggregate statistics. The patient-level EHR
+data cannot be shared, as it comprises identifiable clinical records
+governed by the approvals under which it was obtained.
+
+\section*{Ethics Approval}
+The study was approved by the institutional Helsinki committee of each
+participating center under a common protocol (NHR-0152-23): Galilee Medical
+Center (NHR-0152-23), Hillel Yaffe Medical Center (HYMC-0074-24), Shamir
+Medical Center (ASF-0117-24), Tzafon Medical Center (POR-0047-24), Barzilai
+University Medical Center (BRZ-0059-24), and Bnai Zion Medical Center
+(BNZ-0067-24). A full waiver of informed consent was granted, since the
+study extracts records from a de-identified repository with no patient
+contact.
+
+\section*{Acknowledgements}
+This study rests on the Kineret project team, who built and maintain the
+harmonized multicenter data warehouse. The authors also thank the Helsinki
+committee coordinators at the participating centers for their assistance
+throughout the approval process.
+
+\bibliographystyle{elsarticle-num}
+\bibliography{references}
+
+\end{document}

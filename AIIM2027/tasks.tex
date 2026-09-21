@@ -1,0 +1,97 @@
+% =====================================================================
+% Draft-only task list. Rendered as a red box on the title page while
+% \showtaskstrue; hidden by \showtasksfalse. Not part of the manuscript
+% and excluded from the word count.
+% =====================================================================
+\label{sec:tasks-open}
+
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{%
+\textbf{\textcolor{red}{OPEN ITEMS BEFORE SUBMISSION}}\\[.4em]
+\footnotesize
+
+\textbf{A. Cross-references to companion papers}\\
+Three placeholder bib keys are used throughout:
+\texttt{oded2027intervene} (the AAAI methodological paper),
+\texttt{oded2027kineret-jbi} (the JBI adherence paper), and
+\texttt{mediator-github}. Update these to the accepted / preprint form
+once the two companion drafts are placed. The \emph{Background} section
+also references the JBI paper's Table~1 for cohort characteristics; if
+JBI is not yet publicly citeable, reproduce the table as an appendix
+here.\\[.2em]
+
+\textbf{B. Empirical additions a reviewer will ask for}\\
+The following do not exist yet in \texttt{results/full\_bench\_results/}
+and require a re-run inside the regulated environment:
+\begin{itemize}\setlength{\itemsep}{.05em}
+  \item Multi-seed variance for at least the KB and KB$+$QA arms
+        (three seeds sufficient to bound training-procedure variance).
+  \item Sensitivity of the ladder ordering to $K_{\mathrm{eval}} \in
+        \{2, 3, 5, 6\}$. Currently only $K = 4$ is reported.
+  \item Temporal held-out: retrain the ladder on pre-guideline
+        admissions and evaluate on post-guideline (or vice versa), to
+        test whether prediction quality tracks the practice shift the
+        JBI paper documents.
+  \item Per-hospital leave-one-out for the KB arm (six re-runs), to
+        quantify site generalization.
+  \item Reliability curves and per-outcome ECE, as reported for
+        INTERVenE-Enc on MIMIC-IV in \citep{oded2027intervene}.
+        Predictions and probabilities are available in
+        \texttt{results/full\_bench\_results/runs/<arm>/}; only the
+        plotting and ECE computation are missing.
+  \item Sparse-transcoder attribution reproduction on this cohort.
+        A partial run exists under
+        \texttt{results/transformers-results-old-with-xai/} but for the
+        pre-ladder ss-STraTS variants, not the seven-arm KB+QA arm.
+\end{itemize}
+\vspace{.1em}
+
+\textbf{C. Fairness / subgroup analyses}\\
+AIIM reviewers routinely ask for at least age-band and sex subgroup
+AUROC/AUPRC. The cohort is $54.3\%$ male and skewed older; a
+per-subgroup table for the KB arm is one bootstrap run away.\\[.2em]
+
+\textbf{D. Statistical practice}\\
+\begin{itemize}\setlength{\itemsep}{.05em}
+  \item Decide whether to report $P$ values for pairwise arm comparisons
+        (currently only overlap-of-CIs is used). If so, the paired
+        bootstrap $\Delta$ distribution is already computed for
+        Figure~\ref{fig:qa-delta}; extend to all pairs.
+  \item Multiple-testing correction across the eight per-outcome
+        comparisons in Table~\ref{tab:per-outcome} (BH-FDR at $q<0.05$
+        matches the JBI paper's convention).
+\end{itemize}
+\vspace{.1em}
+
+\textbf{E. Author contributions and funding}\\
+Funding statement outstanding (aligned with JBI/JAMIA companion
+papers); ORCID identifiers to be added for all authors.\\[.2em]
+
+\textbf{F. Figure budget}\\
+AIIM allows up to $\sim 10$ figures without special permission. The
+current draft uses $5$. Candidates for expansion: (i) event-reconciliation
+diagram of the raw-vs-Mediator alignment pipeline (methods section);
+(ii) sparse-transcoder attribution panel for the KB+QA arm;
+(iii) per-outcome AUROC alongside AUPRC (data exists as
+\texttt{fig4\_per\_target\_auroc.pdf} but is not included in the current
+draft). Add if space permits after the empirical additions in item B.\\[.2em]
+
+\textbf{G. Language and prose}\\
+The draft borrows phrasing from the concurrent JBI/JAMIA drafts by
+design (shared methods sections). Before submission, run a self-plagiarism
+check against those two documents; substantive text overlap should
+either be paraphrased or attributed as a shared methods description.
+The abstract is currently unstructured. AIIM does not require a
+structured abstract but common editorial policy is to prefer one; consider
+converting to Objective / Methods / Results / Conclusion form.\\[.2em]
+
+\textbf{H. Compilation}\\
+Not yet built --- no TeX distribution here. Before submission, compile
+end-to-end with \texttt{pdflatex} + \texttt{bibtex} and reconcile any
+line-breaking / hyphenation issues in the tables. Confirm figure
+placement floats do not push results captions past their referring
+paragraph.
+}}
+\end{center}
+
+\clearpage

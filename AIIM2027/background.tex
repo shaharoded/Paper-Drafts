@@ -1,0 +1,113 @@
+\section{Background and Related Work}
+\label{sec:background}
+
+\subsection{Knowledge-based temporal abstraction}
+
+Knowledge-based temporal abstraction (KBTA) \citep{shahar1997framework}
+converts raw point observations into interval-level states, gradients
+(trends), events, and contextual periods by applying declarative,
+potentially context-sensitive medical domain knowledge. Every KBTA token
+is a named clinical concept---for example \emph{decreasing-glucose trend}
+over three days, \emph{moderate-anemia}, or \emph{on-basal-insulin
+context}---drawn from a curated ontology rather than an unnamed
+discretized bin index. This naming makes downstream attribution resolve
+to clinical concepts by construction. Interval sequences produced this way
+have been mined for outcome-associated patterns using KarmaLego
+\citep{moskovitch2015karmalego} with pattern-frequency summarization via
+Temporal Probabilistic Profiles \citep{sheetrit2019tpf}, or embedded into
+sequence models that consume the interval stream directly. In this paper
+we use the Mediator engine \citep{mediator-github}, which applies a curated
+knowledge base to emit interval-typed abstractions and, in the same pass,
+computes fuzzy-logic compliance scores for each formalized guideline
+recommendation \citep{oded2027kineret-jbi}.
+
+\subsection{Deep learning for irregular clinical streams}
+
+Standard approaches to irregular EHR data include GRU-D
+\citep{che2018recurrent}, which augments a gated recurrent network with
+learned exponential decays that model elapsed time between observations
+and the effects of missingness, and STraTS \citep{tipirneni2022strats},
+which represents each observation as a (concept, time, value) triplet and
+processes the resulting set with a Transformer. Visit-level or
+concept-level Transformer variants such as BEHRT \citep{li2020behrt},
+TransformEHR \citep{yang2023transformehr} and HEART
+\citep{huang2024heart} target longitudinal histories via
+diagnosis-code sequences with time-gap embeddings. In all these
+architectures the model reads either raw or highly aggregated inputs,
+and attributions resolve to raw variables or diagnosis codes rather than
+to named clinical concepts.
+
+\subsection{Interval-based Transformers over KBTA}
+
+INTERVenE \citep{oded2027intervene} tokenizes KBTA intervals as pairs of
+START/END points, each expanded through four hierarchical embedding
+layers---raw concept, TAK abstraction concept, concept-with-value, and
+positional role---so that concepts sharing a common ancestor
+(\emph{glucose-state} vs \emph{glucose-trend}) or a common interval share
+part of their embedding by construction. Continuous time is injected
+through a Time2Vec \citep{kazemi2019time2vec} channel that is concatenated
+with the four concept channels and linearly projected to the model
+dimension, and static patient context is injected through AdaLN-Zero
+\citep{peebles2023adaln0}. Two variants share this backbone: an
+autoregressive decoder (INTERVenE-Ar) that generates full abstraction
+trajectories with a per-step risk readout, and a bidirectional encoder
+(INTERVenE-Enc) that yields single-pass joint risk and time-to-event
+predictions. On $57{,}078$ MIMIC-IV diabetic admissions, INTERVenE-Enc
+reached support-weighted AUPRC $0.672$ against $0.631$ for the strongest
+neural baseline (ss-STraTS) with non-overlapping bootstrap intervals; a
+concurrent ablation showed that replacing KBTA intervals with a
+knowledge-free $\sigma$-bin discretization left the AUPRC essentially
+unchanged, so the accuracy gain on that cohort was attributed to the
+Transformer over persistent intervals rather than to the semantic content
+of the intervals themselves.
+
+The present paper uses INTERVenE-Enc only. INTERVenE-Ar is a generative
+inspection tool rather than a discriminative predictor and is scored
+under a different contract; it is not part of the ladder here. Sparse-
+transcoder attribution \citep{dunefsky2024transcoders,rajamanoharan2024jumping},
+originally developed for INTERVenE-Enc on MIMIC-IV, is used unchanged in
+this study to interpret which tokens the model relies on when the QA
+signal is supplied.
+
+\subsection{Guideline adherence as a temporal-abstraction problem}
+
+Assessing adherence to a clinical guideline at the level of its individual
+recommendations, over the course of an admission, is naturally a temporal
+problem: many recommendations concern a decision that must be made
+\emph{whenever} some clinical state obtains (``insulin following
+hyperglycemia''), rather than a discrete action taken at admission
+(``obtain HbA1c on admission''). Rule- and pattern-based frameworks over
+KBTA intervals \citep{oded2027kineret-jbi} formalize each recommendation
+as a temporal pattern with a fuzzy-logic compliance score, yielding a
+continuous score wherever the pattern applies and a null result where it
+does not. The Kineret adherence study measured such scores for fourteen
+recommendations of the Israeli national inpatient hyperglycemia guideline
+\citep{hochberg2023inpatient} across $48{,}354$ admissions and identified,
+after propensity weighting, above-median adherence as associated with
+lower odds of $30$-day mortality (OR $=0.557$) and severe hyperglycemia
+(OR $=0.485$); the recommendations most strongly linked to outcomes were
+those calling for \emph{repeated} decisions distributed across a stay
+(routine basal insulin dosing, routine glucose monitoring, insulin
+following hyperglycemia), which were also the ones least well
+implemented.
+
+Whether \emph{feeding} such measured signals into a predictive model
+improves what the model does has, to our knowledge, not previously been
+tested. This paper does so in a controlled fashion, in three of the seven
+ladder arms.
+
+\subsection{The comparison design}
+
+Every ladder claim in this paper---architecture, knowledge base, quality
+signal---requires that anything else that could shift performance is
+identical across the compared arms. The clinical adherence literature
+learned this lesson twice over: guideline-outcome associations quietly
+fail when eligibility, exposure window, follow-up horizon, or covariate
+handling drift across compared groups. The corresponding pitfall in
+short-horizon prediction is that each modelling arm can silently see a
+different label set, a different patient set, or a different observation
+window if its own preprocessing decides them independently. Section~\ref{sec:methods}
+describes the shared-cohort machinery that keeps the seven arms on
+identical labels and identical patients, and Section~\ref{sec:methods-guards}
+describes the leakage and knowledge-containment guards that make each
+contrast measure what it is meant to.
