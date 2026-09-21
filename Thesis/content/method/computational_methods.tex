@@ -1,0 +1,293 @@
+% Chapter 3 (Computational Methods). Split out of the former Method chapter,
+% whose evaluation half is now Chapter 4.
+\label{sec:method-computational}
+This chapter describes how the machinery of Chapter~\ref{chapter:background} was
+applied, and what was built where nothing suitable existed. It covers
+preprocessing, abstraction, adherence scoring, model development, and
+optimization. The cohorts, the research questions, and the experiments that
+answer them are the subject of Chapter~\ref{chapter:eval_methods}. Definitions
+are not repeated; where a construct is used, the section defining it is cited.
+
+The work comprises two studies sharing a front end. Both convert an OMOP-formatted record into a stream of KBTA intervals using the same knowledge base and the same abstraction engine, and diverge afterwards. The \emph{methodological study} asks whether a transformer operating on those intervals predicts short-horizon complications better than the established alternatives, and whether its explanations resolve to clinical concepts. It runs on MIMIC-IV \citep{johnson2023mimiciv}, a public benchmark where strong baselines can be reimplemented under a matched protocol. The \emph{clinical study} asks how well the national inpatient diabetes guideline is followed, whether adherence changed after the national implementation effort, and which recommendations remain associated with outcomes. It runs on Kineret \citep{kineret-israel-largest-hospital-network-omop-common-data-model}, across six Israeli hospitals, using the quality-assessment extension of the same knowledge base.
+
+The two are linked by more than a shared front end. The abstraction layer feeding the transformer is the same layer over which adherence is scored, and this thesis closes the loop: INTERVenE-Enc is additionally trained on Kineret, across seven arms running from raw measurements through knowledge-free intervals to knowledge-based abstractions, each with and without the admission's QA profile (Section~\ref{sec:method-kineret-task}). The adherence signal is therefore both analyzed statistically, as an exposure, and consumed by a model, as a feature.
+
+The predictive goal is the task of Section~\ref{sec:prelim-task}: forecast outcomes occurring up to the $N$th hospitalization hour from data observed up to the $K$th, for $48\,\text{h} \le K < N \le 14$ days. Reaching it involves five stages: preprocessing the source database into a concept-based temporal dataset, abstracting it into states, trends, events, and contexts, computing guideline-adherence scores over those abstractions, building the models, and tuning them. Figure~\ref{fig:methodology-overview} shows how the stages connect and where the two studies diverge.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{methodology_overview.png}
+\caption{Overview of the pipeline. Both studies share the front end --- an OMOP-formatted record is resolved through the concept index and abstracted into KBTA intervals by the Mediator --- and diverge afterwards, one into predictive modeling and the other into guideline-adherence scoring over the same intervals.}
+\label{fig:methodology-overview}
+\end{figure}
+
+\section{Temporal Data Preprocessing}
+\label{sec:method-preprocessing}
+
+Neither dataset is directly consumable by an abstraction engine. Both required an extract--transform--load procedure producing a common event stream, a static attribute vector, and a single concept vocabulary.
+
+MIMIC-IV is mapped to standard vocabularies, so its ETL is chiefly selection and unit harmonization. Kineret is not: at the time of this work it carried no mapping to an international coding system, and its local codes had to be resolved by hand. A dataset-specific \emph{concept index} was therefore constructed, mapping roughly $1{,}500$ local measurement, medication, and observation codes onto the approximately $70$ concepts named in the knowledge base, and the transformation from OMOP to the temporal dataset was automated on top of it. The index is what makes the rest of the pipeline dataset-agnostic: once it exists, the same knowledge base and engine run unchanged on either source.
+
+The source OMOP tables were first reorganized into five unified columnar tables --- visits, visit types, clinical events, drug exposures, and measurements --- without semantic transformation. Units were normalized here, but source concept identifiers and names were preserved verbatim, so terminology decisions are made at the abstraction stage rather than buried in the extract. Exclusions are applied through curated indices rather than inline rules, so each is recorded once alongside the vocabulary.
+
+Coverage is not identical across the two datasets, and the shortfall is one-sided. The knowledge base was authored against Kineret, and eighteen of its concepts have no counterpart in the MIMIC-IV extract: medications taken at home before admission, since MIMIC-IV records only what was given in hospital; SGLT2 inhibitors in both home and inpatient form; microbiological cultures and chest imaging; and several renal concepts including dialysis and estimated GFR. The same knowledge base is deployed on both sources, but a definition whose inputs are never recorded produces nothing, so fewer of its units fire on MIMIC-IV. Where a concept is absent its abstractions are not derived, and no imputation is performed.
+
+One consequence shapes the design of this thesis: recommendations anchored on home medication, such as continuing basal insulin on admission or discontinuing an SGLT2 inhibitor, cannot be scored on MIMIC-IV at all --- part of why quality assessment is confined to the clinical cohort.
+
+The \emph{temporal input} is a long-format table in which each row records one time-stamped clinical fact: admission identifier, concept name, start and end datetime, value, and units. Structural tokens make the timeline explicit to the engine --- an \textsc{admission} token at the visit start, a terminal \textsc{release} or \textsc{death} token at its end, and recurring \textsc{meal} tokens supplying the anchors that meal-relative recommendations require. The two datasets differ here. MIMIC-IV records per-oral intake events, so its meal tokens derive from documented intake, labelled breakfast, lunch, dinner, or night snack by time of day. Kineret records no meal times, so its tokens are synthesized at fixed daily times following standard hospital practice --- an assumption that bounds how precisely a meal-relative requirement can be scored there, revisited in Section~\ref{sec:limitations}. Selected concepts recorded before admission, such as chronic diagnoses and home medications, are propagated into the admission window using per-concept lookback periods, so standing conditions are visible to the engine rather than appearing only if re-entered during the stay.
+
+The \emph{context input} is a static table with one row per admission, holding baseline characteristics from the first $48$ hours: age, sex, counts of prior hospitalizations within six and twelve months, prior occurrences of the target complications, chronic-condition flags, and indicators separating medications taken at home from those given in hospital. From these flags a summary of disease burden is computed, following the Charlson Comorbidity Index and referred to as a \emph{modified} CCI. The modification is forced by the source: with no standard-vocabulary mapping, Kineret's condition categories are available only where the codes were identified during curation, so the weighting was adapted to what the extract supports. The vector is standardized with parameters fitted on the training split alone.
+
+\section{Knowledge Acquisition}
+
+Deriving state and trend abstractions requires committing to discretization thresholds, relevance durations, and what counts as a meaningful change (Section~\ref{sec:prelim-kbta}). These were acquired in two passes.
+
+The first pass is data-driven and proposes candidates only. For each numeric concept, one-dimensional $k$-means was run at two to five clusters, with midpoints between adjacent centroids taken as candidates, and the distribution inspected as a kernel-density plot to locate peaks and the dips between them --- a dip often marks a boundary clinical practice already treats as meaningful.
+
+The second pass is clinical and is authoritative. Candidates were reconciled against published reference ranges and the definitions used in the national guideline, and final thresholds were set to clinically defensible values, with the data-driven candidates used only where the literature offers a range rather than a number. Relevance durations and trend limits were established by literature search and expert consultation. Relevance durations were made context-sensitive where the guideline distinguishes contexts: glucose measured under a diabetes context persists for a shorter span than in a patient with no such diagnosis, because it is expected to be re-measured sooner.
+
+Neither pass produced a fixed artifact. The clustering and density analyses were exploratory scaffolding used while the knowledge base was being built, and the thresholds they proposed were revised repeatedly thereafter --- as the medical literature was consulted more closely, as abstraction output was inspected, and as downstream prediction and tuning exposed states that were degenerate or unreachable. The knowledge base is therefore the record of that process rather than a derivation from it, and the deployed TAK repository (Appendix~\ref{appendix:kb}) is the only authoritative statement of the thresholds, durations, and trend limits actually used. The intermediate analyses are not reported, because no version of them corresponds to what was deployed.
+
+Some concepts resist in-engine discretization altogether. Corticosteroid preparations span too many preparation-and-dose combinations for the engine to enumerate as discrete states, and were pre-discretized during data preparation and supplied as already-abstracted primitives.
+
+\section{The Diabetes Knowledge Base}
+
+The knowledge base was authored for this thesis. It encodes the clinical semantics of inpatient diabetes care for adults --- raw concepts, states, trends, events, contexts, and patterns, including declarative definitions such as \emph{high blood pressure} or \emph{prolonged hyperglycemia} --- in the TAK schema of Section~\ref{sec:prelim-kbta}, and encodes the Israeli national position paper on the treatment of diabetes in hospitalization in a general hospital \citep{hochberg2023inpatient}, issued in September 2023, as quality-assessment patterns on top of them.
+
+It was written by the author of this thesis under the guidance of a supervisor specializing in medical informatics and temporal reasoning, together with a clinical collaborator specializing in diabetes care, who reviewed the formalized recommendations for clinical fidelity against the source position paper. That review is its only validation against the guideline as written; the empirical checks of Section~\ref{sec:method-kb-eval} test something different --- whether the thresholds behave sensibly on real data.
+
+Two properties were design goals. It is \emph{transferable}: because it names clinical concepts rather than dataset columns, it applies to any EHR within the same clinical scope once a concept index maps that source's codes onto its vocabulary. And it is \emph{single-schema}: declarative and quality-assessment knowledge live in one representation and are executed by one engine in one pass, rather than split across a declarative formalism and a procedural one (Chapter~\ref{chapter:background}). All domain knowledge is declared externally as XML units validated against a shared schema before evaluation, so the clinical semantics and the guideline requirements are stated once, outside the analysis code.
+
+\section{Temporal Abstraction}
+
+Abstraction is performed by our reimplementation of the Temporal Mediator \citep{mediator-github}, which executes the knowledge base against a patient record and returns the interval set. It is functionally a replica of the engine described in Section~\ref{sec:prelim-kbta}, rebuilt around the TAK schema used here and around the throughput required to abstract tens of thousands of admissions.
+
+Its output is a sequence of discrete abstractions --- analogous to words in a text --- each a named clinical concept holding over a span, some additionally carrying a fuzzy compliance score. This reduces the raw record to clinically relevant structure without the dimensionality a per-variable time grid would impose.
+
+Deployment was itself a constraint. The Kineret data is hosted on a secure cloud platform under Ministry of Health regulation, so the Mediator, the mining pipeline, and the model code all had to run inside Linux containers in a resource-constrained remote environment, with extraction pipelines built in place around the concept index.
+
+\section{QA Score Calculation}
+
+Each recommendation was formalized as a QATP: an anchor identifying the clinical situation in which it applies, an action that satisfies it, a constraint type, and a membership function grading partial compliance (Section~\ref{sec:prelim-qa}). Fourteen recommendations spanning glucose monitoring, admission medication management, and insulin administration and titration were encoded. They are the exposure variable of the entire clinical study, so Table~\ref{tab:pattern-definitions} states them in full rather than deferring them to an appendix.
+
+\begingroup
+\singlespacing
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{
+>{\raggedright\arraybackslash}p{0.23\textwidth}
+>{\raggedright\arraybackslash}p{0.10\textwidth}
+>{\raggedright\arraybackslash}p{0.55\textwidth}
+}
+\caption{The fourteen assessed guideline recommendations and their operational definitions in the knowledge base. Every aspect is scored by a trapezoidal membership function (Section~\ref{sec:prelim-qa}), so all values are continuous on $[0,1]$: full credit throughout the interval in which the recommendation is considered met, linear partial credit on either side, and zero beyond the outer bounds.}
+\label{tab:pattern-definitions}\\
+\toprule
+Recommendation & Aspect & Operational definition \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\footnotesize\itshape Table \thetable\ continued from previous page}\\
+\toprule
+Recommendation & Aspect & Operational definition \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\footnotesize\itshape continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Admission glucose monitoring & Cyclic &
+Glucose measured in each 24-hour window over the first days of admission: three days where diabetes is documented, two otherwise. Full credit at three or more measurements per window, decaying linearly to zero at none. \\[2pt]
+Routine glucose monitoring & Cyclic &
+Glucose measured in each 24-hour window throughout the admission (evaluated to 14 days). While glucose is in a hyperglycemic or hypoglycemic state, full credit is given at three or more measurements per window. Under routine conditions the trapezoid peaks at at least one measurement per window. \\[2pt]
+Glucose monitoring during corticosteroid therapy & Cyclic &
+Glucose measured in each 24-hour window over the first two days of corticosteroid treatment, with full credit at at least three measurements per window. \\[2pt]
+BMI measurement on admission & Time &
+Body mass index or weight recorded within 48 hours of admission, decaying linearly to zero at 72 hours; a measurement recorded up to six months before admission is carried forward as relevant. \\[2pt]
+Creatinine measurement on admission & Time &
+Serum creatinine measured within 48 hours of admission, decaying linearly to zero at 72 hours. Unlike BMI, no pre-admission measurement is carried forward, so the measurement must fall within the admission itself. \\[2pt]
+Antidiabetic discontinuation on admission & Time &
+Prescribed antidiabetic agents carrying high hypoglycemia risk discontinued during the first 72 hours of admission, with credit decreasing linearly to zero if an agent was administered during that time. \\[2pt]
+SGLT2 discontinuation on admission & Time &
+Prescribed SGLT2 inhibitors discontinued during admission. Any in-hospital administration scores 0, and the absence of one scores 1, assuming the patient was treated with the agent at home. \\[2pt]
+Basal insulin continuation on admission & Time &
+Basal insulin administered within 36 hours of admission for patients established on basal insulin at home, decaying linearly to zero at 48 hours. \\[2pt]
+Insulin administration after hyperglycemia & Time &
+Any dose of reactive bolus or intravenous insulin administered overlapping a meal (2-hour window before or after the meal) while glucose is elevated. \\[2pt]
+Antidiabetic discontinuation after hypoglycemia & Time &
+Prescribed antidiabetic agents withheld following a hypoglycemic event, with credit increasing over 72 hours and full credit sustained thereafter. \\[2pt]
+Basal dose reduction after hypoglycemia & Value &
+Basal insulin dose reduced relative to the preceding dose following a hypoglycemic event, scored on the ratio of the new dose to the preceding one: any reduction receives full credit, declining to zero at an unchanged dose. Unlike the bolus pattern below, hypoglycemic events \emph{not} followed by a basal dose within 24 hours are scored as compliant rather than excluded, following the convention that a withheld action satisfies the recommendation. \\[2pt]
+Bolus dose reduction after hypoglycemia & Value &
+Bolus insulin dose reduced following a hypoglycemic event, on the same dose ratio and membership function as the basal pattern above, but evaluated only where bolus insulin was actually administered within 24 hours of the event; events with no subsequent bolus are excluded from scoring rather than counted as compliant (assuming basal is routine and bolus is a reaction to an event). \\[2pt]
+Routine basal dosage (frequency) & Cyclic &
+Basal insulin administered in each 24-hour window through the first 14 days of admission, evaluated in windows where hyperglycemia is present, with full credit between one and four administrations per window and declining credit beyond that range. \\[2pt]
+Routine basal dosage (dose) & Value &
+Judged against body weight for patients not established on basal insulin at home: full credit between 0.2 and 0.6 units per kilogram, rising from zero below 0.2 and declining to zero at 1.0 units per kilogram, using a default weight of 81~kg where no weight measurement is available. For patients already receiving basal insulin at home, the established dose is accepted as given and is not weight-normalized, assuming medical staff reacted to this dose and might have increased the hospital dose due to tolerance. \\
+\end{longtable}
+\endgroup
+
+
+Three conventions govern how the encoding behaves. First, applicability is enforced by context: an anchor falling outside the context in which its recommendation holds generates no obligation and is not scored, so an insulin dose after a meal is required only where glucose is elevated. Second, recurring requirements such as routine glucose monitoring have no single triggering event, and are evaluated by counting qualifying events within fixed-length windows. Third, unmet obligations are resolved by direction: where a recommendation requires an action, an unanswered anchor scores $0$; where it requires an action to be withheld, the absence of a response is itself compliant and scores $1$; and a recommendation that never became applicable yields no output rather than a zero. A low component score therefore means the guideline applied and was not followed, not that the situation never arose.
+
+The differing treatment of the two dose-reduction patterns in Table~\ref{tab:pattern-definitions} follows from this third convention and from how the two insulins are used. Basal insulin is given routinely, so a hypoglycemic event with no basal dose in the following $24$ hours represents a withheld dose, which satisfies the recommendation. Bolus insulin is given reactively, so the absence of a dose carries no information about whether a reduction was warranted, and those events are excluded from scoring instead.
+
+The three constraint types of Section~\ref{sec:prelim-qa} --- time, value, and cyclic --- are also the three compliance aspects along which results are reported. Aspect scores are computed separately and combined only at analysis. Trapezoid boundaries may be rescaled per patient, which is how weight-normalized dosing is expressed without a separate constraint type.
+
+The Mediator emits one scored instance per admission, pattern, compliance aspect, and evaluation time. These are aggregated into the admission's QA profile by the staged averaging of Section~\ref{sec:prelim-qa-tree}, retaining intermediate levels so an overall score can be decomposed into the recommendation and day responsible. These aggregates are the exposure variable for every analysis in Chapter~\ref{chapter:eval_methods}.
+
+Scoring is retrospective and offline: the procedure issues no recommendation and returns nothing to the treating team.
+
+\section{Predictive Model Development}
+
+Two modeling families are developed over the same abstracted records: a pattern-based vector-space approach summarizing each admission as a distribution over mined temporal patterns, and \textbf{INTERVenE}, a transformer family consuming the interval sequence directly. The former supplies the symbolic baseline; the latter is the methodological contribution.
+
+Figure~\ref{fig:architecture} shows the INTERVenE architecture end to end. The subsections that follow take it in order: how intervals become tokens, what the shared backbone does with them, and how the two variants diverge in their attention mask and their training objectives.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{architecture_diagram.png}
+\caption{The INTERVenE architecture. Raw clinical sequences are abstracted into KBTA intervals, tokenized into a hierarchical vocabulary, enriched with Time2Vec continuous temporal encodings, and processed by either an autoregressive decoder (INTERVenE-Ar) or a bidirectional encoder (INTERVenE-Enc). Temporal rotary position embeddings are applied within the attention layers, while AdaLN-Zero injects the static patient context.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Interval Tokenization}
+
+A transformer consumes tokens, but an abstraction is an interval carrying a duration a single token cannot express. Each interval is therefore split into a \emph{START} and an \emph{END} token at its boundaries, so duration becomes the distance between them, read through the temporal encoding rather than an explicit feature. The abstraction step guarantees well-formed sequences: an interval cannot open twice before closing, so no START lacks its matching END.
+
+Each boundary token is embedded through four hierarchical layers, from general to specific --- the raw concept, the abstraction type, the concept-with-value, and the positional role:
+\[
+\begin{aligned}
+\textsc{glucose} \;\rightarrow\;& \textsc{glucose\_state} \;\rightarrow\; \textsc{glucose\_state\_high} \\
+\rightarrow\;& \textsc{glucose\_state\_high\_start}.
+\end{aligned}
+\]
+The hierarchy makes the vocabulary semantically structured rather than flat: \textsc{glucose\_state} and \textsc{glucose\_trend} share the \textsc{glucose} embedding, and the START and END of one interval share three of four layers, so the model begins knowing they concern the same parameter and bound the same episode.
+
+Time enters by concatenation rather than the usual addition. Each token's timestamp, anchored to admission, is encoded with Time2Vec (Section~\ref{sec:prelim-transformers}), and the four concept embeddings and the temporal embedding are concatenated and projected back to the model dimension:
+\begin{equation}
+\begin{aligned}
+z_i =\;&
+\Big[
+E_1(c_i^{(1)}) \,\Vert\,
+E_2(c_i^{(2)}) \,\Vert\,
+E_3(c_i^{(3)}) \,\Vert\,
+E_4(c_i^{(4)}) \,\Vert\,
+\phi_{\mathrm{T2V}}(t_i-t_0)
+\Big],\\[2pt]
+h_i^{(0)} =\;& W z_i + b .
+\end{aligned}
+\end{equation}
+Addition forces concept identity and position to share a subspace; concatenating keeps them separate and lets $W$ learn how they interact, at the cost of a $5d$-dimensional intermediate.
+
+\subsection{Backbone}
+
+The backbone is a stack of pre-normalized blocks with multi-head self-attention and SwiGLU feed-forward networks. Two mechanisms adapt it to clinical data.
+
+Temporal rotary position embeddings (Section~\ref{sec:prelim-transformers}) are applied inside attention, with the rotation angle driven by \emph{elapsed time} rather than token index. Attention between two tokens then depends on the hours between them rather than on how many events were recorded in between --- which matters when event density varies by patient and ward.
+
+Static context is injected through AdaLN-Zero (Section~\ref{sec:prelim-transformers}) rather than occupying sequence positions, acting as a global bias that shifts the event manifold into a patient-specific subspace. Context dropout randomly withholds it during training, so the model cannot become wholly dependent on it.
+
+This is also the pathway through which an admission's QA profile enters as model input. The profile is a fixed-length vector of continuous scores --- one per recommendation, plus the overall score (Section~\ref{sec:prelim-qa-tree}) --- so it is concatenated onto the static context vector and projected through the same path, requiring no architectural change.
+
+\subsection{Phase 1: Representation Pretraining}
+
+Both variants begin by training the embedder alone, before any deep sequence model sits on top of it. The objective is a temporal next-token prediction: a multi-hot binary cross-entropy over the set of events falling within a short future window, augmented by a regression on the time to the next event,
+\begin{equation}
+\mathcal{L}_1 = \mathrm{BCE}_{\text{win}}\big(\hat{y}, y\big) + \lambda_{\Delta t}\,\mathrm{MSE}\big(\widehat{\Delta t}, \Delta t\big).
+\end{equation}
+Predicting a \emph{set} within a window rather than a single next token reflects the data: events recorded minutes apart carry no meaningful order, and a strict next-token target would penalize orderings the record does not fix.
+
+The $\Delta t$ term is held behind a BCE-only warmup and unlocked once the main signal is meaningful. Its weight is then calibrated once from the ratio of the two losses at unlock and capped at a fixed fraction of the BCE. This calibrate-once-and-cap discipline applies to every auxiliary loss in the work.
+
+\subsection{INTERVenE-Ar: Autoregressive Decoder}
+
+INTERVenE-Ar applies a causal mask and generates abstraction trajectories forward in time, reading a risk estimate at every generated step.
+
+\paragraph{Phase 2: causal pretraining.}
+The backbone is pretrained on next-token prediction under teacher forcing, with two modifications the clinical setting forces.
+
+The first is \emph{legality masking}. Not every continuation is coherent: an interval END cannot precede its START, a concept cannot open a second conflicting state while one is already open, and meals follow a fixed cyclic order. At each position a boolean mask over the vocabulary is computed from the accumulated sequence state and applied to both logits and targets, so the model receives no gradient for continuations the TAK grammar forbids. The same mask is recomputed during generation, so illegal trajectories cannot be produced at inference either.
+
+The second is a \emph{soft-kernel temporal target}. Terminal events are sparse and arrive late, so a one-hot next-token target supplies almost no signal in the hours before one. The hard target is replaced by a time-decayed one over the full vocabulary: for query position $t$ and token class $v$,
+\begin{equation}
+  \tilde{y}_v(t) = \exp\big(-\Delta t_{tv} / \tau_v\big), \qquad \Delta t_{tv} \le H,
+\end{equation}
+where $\Delta t_{tv}$ is the gap to the next occurrence of $v$, $H$ a hard look-ahead horizon, and $\tau_v$ a per-class decay constant, so a token approaching in twelve hours contributes signal now, scaled by its proximity. Terminal tokens use a fixed $\tau = 12$\,h; outcome tokens start at $\tau = 48$\,h and remain learnable. The per-outcome risk head is trained on the same decayed labels with its own learnable $\tau_k$ within an outcome horizon $H_{\text{out}}$.
+
+Three auxiliaries shape the representation. A stage-0 set comprises the $\Delta t$ regression, a masked set cross-entropy over legal classes at each non-padding step, and a \emph{time-to-terminal} regression
+\begin{equation}
+\mathcal{L}_{\texttt{ttt}} = \mathrm{MSE}\big(\hat{\delta}_i, \log(1+\delta_i)\big),
+\end{equation}
+with $\delta_i$ the hours from position $i$ to the next terminal event, evaluated at every non-terminal position. A stage-1 pairwise ranking loss, an AUROC proxy on the outcome head, unlocks once the total validation loss plateaus.
+
+Finally, \emph{curriculum-by-masking} corrupts linked START/END pairs atomically on the input side during training, in a growing ratio, teaching the model to tolerate the imperfect context it will later generate for itself.
+
+\paragraph{Phase 3: risk-head alignment.}
+Phase~2 trains the risk head under teacher forcing, but inference reads it off a free-running trajectory --- a train/test mismatch the head is otherwise never asked to survive. Phase~3 closes it by fine-tuning on natural-distribution batches with per-outcome positive weighting, holding the backbone at $0.01\times$ the head learning rate so the representation is preserved while the head adapts. A patient-level attention pool trains in parallel: a learnable query per outcome attends over the backbone hidden states to produce an admission-level signal, calibrated once after the first epoch.
+
+\paragraph{Inference.}
+The decoder is seeded with the observed $48$-hour window and generates freely, reading the risk head at each step to produce a per-complication probability curve over time. Generation is halted by an \emph{inference gate} driven by the model's own time-to-terminal estimate, which allows trajectory length to be recalibrated after training with no retraining. Patients reaching the length cap receive a forced terminal token, selected by highest logit between DEATH and RELEASE and clamped to $\le 336$\,h. A token budget of $2{,}000$ bounds generation as a safety cap.
+
+\subsection{INTERVenE-Enc: Bidirectional Encoder}
+
+INTERVenE-Enc replaces the causal mask with full bidirectional attention, trading the ability to generate for a single-pass discriminative readout.
+
+\paragraph{Phase 2: masked pretraining.}
+The backbone is pretrained by masked language modeling with \emph{atomic-interval masking}. Roughly $15\%$ of eligible positions are selected, and linked START/END pairs are masked jointly using dedicated \texttt{[MASK\_INTERVAL\_*]} tokens. Masking boundaries independently would make the task trivial, since a masked START is recoverable from its visible END. The main loss is full-vocabulary cross-entropy at masked positions.
+
+Two time-aware auxiliaries keep temporal structure in the hidden states. A \texttt{t\_pos} head regresses normalized time-since-admission at every position, and a \texttt{t\_local} head regresses the normalized local neighbor gap $\min(t-t_{\text{prev}},\, t_{\text{next}}-t)/24\text{h}$ at masked positions, forcing a masked token to retain its placement in time even when its identity is hidden.
+
+\paragraph{Phase 3: joint risk and time.}
+A task module attaches a per-outcome attention pool feeding a shared MLP and two heads, optimized jointly:
+\begin{equation}
+\mathcal{L}_3 = \mathrm{BCE}_{w}(\text{risk}) + \lambda_{\text{time}}\,\mathrm{MSE}(\text{time}).
+\end{equation}
+The risk term is a multi-label BCE over the scored outcomes with per-outcome positive weighting drawn from training prevalence, RELEASE being dropped and reported separately as length-of-stay. The time term is a per-outcome MSE in $z$-normalized hours over positive patients only, regressing hours to first occurrence; its RELEASE slot is trained on patients released within the horizon, so it doubles as the length-of-stay predictor. The balance weight $\lambda_{\text{time}}$ is the encoder's most consequential hyperparameter and is set to $0.1$, in the risk-dominant regime. The backbone again runs at a fraction of the head learning rate.
+
+\paragraph{Inference.}
+One bidirectional pass yields, per admission and outcome, a risk probability $P = \sigma(\cdot)$ and a time estimate $T = \mathrm{softplus}(\cdot)$, with $P_{\text{RELEASE}} = 1 - P(\text{DEATH})$. No generation and no terminal forcing are involved, giving the encoder markedly lower inference latency than the decoder.
+
+\subsection{Baselines}
+
+Four baselines span the principal modeling paradigms for irregular clinical sequences (Chapter~\ref{chapter:background}).
+
+\textbf{GRU-D} \citep{che2018recurrent} is the recurrent approach, modeling elapsed time and missingness through learned decays over the raw event stream.
+
+\textbf{STraTS} \citep{tipirneni2022strats} is the set-based attention approach over raw observation triplets. Two configurations from the original codebase are evaluated. \textbf{STraTS (pre+ft)} runs the two-stage recipe: self-supervised forecasting pretraining on the unlabeled trajectory, then supervised fine-tuning, in which the classification head is stacked on top of the pretrained forecasting head so the supervised stage can use the forecasting bottleneck. \textbf{ss-STraTS} is the supervised-only configuration, trained end-to-end from scratch with the classification head placed directly on the backbone embedding. The two therefore share a backbone and hyperparameters but differ by one retained layer, which is why their parameter counts are not identical.
+
+Both are retained because the comparison isolates what the pretraining stage contributes. On this cohort it contributes nothing: the supervised-only configuration is the stronger of the two, and is the strongest neural baseline overall.
+
+\textbf{KarmaLego+TPF} is the symbolic baseline, and the only one operating on the same KBTA representation as INTERVenE. Patterns are mined on the training split only, using a class-balanced discovery subset, a reduced three-relation set, a $1$-minute tolerance, a $4$-hour maximum gap, and a minimum vertical support of $0.20$. Each admission is summarized by per-pattern count and duration statistics (Section~\ref{sec:prelim-tirp}). Features are selected by $\chi^2$ with Benjamini--Hochberg control at $q < 0.05$, and $\ell_2$-regularized logistic regression classifiers are tuned by grid search on the validation split. The mining pipeline is our own reimplementation \citep{karmalego-github}.
+
+All baselines were reimplemented, trained, and selected under the protocol applied to INTERVenE: the same patient-level split, the same $48$-hour observation window, the same static context vector, validation-based early stopping, and a single held-out test evaluation. Differences in the reported results therefore reflect modeling rather than data handling or tuning effort.
+
+One asymmetry is deliberate. GRU-D and STraTS consume the raw event stream and are not given KBTA intervals: for them the abstraction would be a replaceable preprocessing step, whereas for INTERVenE it defines the vocabulary the architecture is built around, so the comparison would not be matched. KarmaLego+TPF is the one that does isolate the representation, consuming the identical interval stream and differing only in modeling it symbolically.
+
+\section{Optimization and Training Configuration}
+\label{sec:method-optimization}
+
+Hyperparameter search was allocated according to cost, and the two model families were searched differently.
+
+The pattern-based baseline is cheap to refit once patterns are mined, so its classifiers were selected by \textbf{grid search} on the validation split, over the regularization strength and the feature-selection threshold, with the mining parameters fixed in advance to keep the mined vocabulary stable across arms.
+
+INTERVenE admits no such treatment: a single full-cohort run occupies hours on one device, and the search space spans the phase schedule, the loss composition, the architecture, and the input representation at once. No automated optimizer was used. The architectures reported here are the endpoints of an \textbf{iterative design search} in two stages --- exploratory arms on a $10{,}000$-admission design subset, then confirmation of the surviving recipe on the full training cohort --- each evaluated on validation performance. Every arm that informed a decision is recorded in Appendix~\ref{appendix:ablations}.
+
+The search covered five groups.
+
+\begin{itemize}
+\item \textbf{Optimization parameters} --- learning rate over $[10^{-3}, 10^{-5}]$, the schedule (ReduceLROnPlateau against OneCycleLR), AdamW betas, weight decay, gradient-clipping norm, batch size and accumulation depth, and early-stopping patience over $5$--$15$ epochs.
+\item \textbf{Decay constants} --- the soft-kernel per-class $\tau$ for terminal and outcome tokens, including whether each is learnable or frozen; the look-ahead horizons $H$ and $H_{\text{out}}$; and the Phase-3 backbone learning-rate fraction, searched at $0.01\times$ and $0.1\times$ the head rate.
+\item \textbf{Loss composition} --- the auxiliary fraction caps and unlock ordering, the \texttt{ttt} cap, the class-imbalance damping function applied to the language-model head (square-root, logarithmic, and fractional-power weighting), inverse-prevalence positive weighting, focal loss, and for the encoder the risk--time balance $\lambda_{\text{time}}$.
+\item \textbf{Architectural components} --- temporal RoPE, curriculum-by-masking and its rate, the \texttt{ttt} auxiliary head and its inference gate, the patient-level attention pool, Phase-3 fine-tuning itself, and hierarchical against atomic-interval MLM masking.
+\item \textbf{Capacity} --- embedding dimension at $64$, $128$, and $256$, and attention-head count and head width traded against one another at fixed and expanded parameter budgets, spanning $0.46$M to $25$M parameters.
+\end{itemize}
+
+Arms that did not survive are reported alongside those that did, since a component that fails to help is as much a result as one that does: hierarchical MLM masking and the larger backbone learning-rate fraction were discarded after the design-subset stage, and inverse-prevalence weighting and focal loss after full-cohort confirmation.
+
+One dependency between the variants bounds what the encoder ablations can claim. INTERVenE-Enc is built on the decoder's backbone and inherits the components already validated there --- hierarchical embeddings, Time2Vec, temporal RoPE, AdaLN-Zero conditioning, the attention pool, and the soft-kernel objective. Those are held fixed rather than re-searched, so the encoder's configuration is conditionally optimal, given a backbone tuned for the decoder.
+
+Both variants were trained on a single NVIDIA RTX~A5000 (24\,GB) under PyTorch 2.4.1 with CUDA 12.4 and Python 3.11, without distributed training, using a fixed random seed of $42$. The Kineret models were trained inside the regulated cloud environment under the same software stack and seed, with the configuration selected on MIMIC-IV carried over unchanged: compute inside the environment is constrained, and re-tuning per dataset would have made the Kineret arms incomparable to the design they were meant to test.
+
+All phases use AdamW with weight decay $0.001$ and gradient clipping at $\mathrm{max\_norm} = 1.0$. Phase~1 and INTERVenE-Ar Phase~3 use the default betas $(0.9, 0.999)$; INTERVenE-Enc Phases~2--3 and INTERVenE-Ar Phase~2 use $(0.9, 0.95)$. Phase~1 schedules the learning rate with ReduceLROnPlateau (factor $0.5$, patience $4$, minimum $10^{-6}$); Phases~2 and~3 use OneCycleLR. The physical batch size is $16$ with gradient accumulation over $4$ steps, an effective batch of $64$. Phases~1 and~2 peak at $3\times10^{-4}$; Phase~3 trains the task head at $10^{-4}$ with the backbone at a fixed fraction of it.
+
+Auxiliary losses follow a staged unlock schedule: each activates only after a minimum number of BCE-only warmup epochs and ramps to its fraction cap over a per-auxiliary window. This is a curriculum over loss composition, distinct from learning-rate warmup. Each phase is capped at $100$ epochs and halts when validation loss fails to improve by a relative margin of $0.001$ for $10$ consecutive epochs.

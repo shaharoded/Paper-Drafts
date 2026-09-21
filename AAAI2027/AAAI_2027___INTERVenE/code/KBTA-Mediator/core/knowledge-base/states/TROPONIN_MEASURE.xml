@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="TROPONIN_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of TROPONIN</description>
+    <derived-from name="TROPONIN_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="24h" interpolate="false"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value max="14"/>
+            </attribute>
+        </rule>
+        <rule value="Minimally Elevated" operator="and">
+            <attribute idx="0">
+                <allowed-value min="14" max="50"/>
+            </attribute>
+        </rule>
+        <rule value="Moderately Elevated" operator="and">
+            <attribute idx="0">
+                <allowed-value min="50" max="200"/>
+            </attribute>
+        </rule>
+        <rule value="Highly Elevated" operator="and">
+            <attribute idx="0">
+                <allowed-value min="200" max="1000"/>
+            </attribute>
+        </rule>
+        <rule value="Severely Elevated" operator="and">
+            <attribute idx="0">
+                <allowed-value min="1000"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

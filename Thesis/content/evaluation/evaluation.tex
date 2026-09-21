@@ -1,0 +1,544 @@
+This chapter reports the results of both studies, in the order the research
+questions are numbered in Chapter~\ref{chapter:eval_methods}. It opens with the
+data each study ran on. Section~\ref{sec:results-mimic} answers RQ1--RQ3 on
+MIMIC-IV, Section~\ref{sec:eval-clinical} answers RQ4--RQ5 on Kineret, and
+Section~\ref{sec:eval-kineret-models} answers RQ6, which joins the two.
+Interpretation of these findings is deferred to
+Chapter~\ref{chapter:summary}; what follows reports what was measured.
+
+\section{The Data}
+\label{sec:results-data}
+
+\subsection{MIMIC-IV}
+
+The methodological cohort comprises $57{,}078$ adult diabetes-related
+admissions drawn from MIMIC-IV, split at the patient level into $39{,}954$
+training, $8{,}562$ validation, and $8{,}562$ held-out test admissions. Six
+binary complications are predicted over hours $48$--$336$, alongside a
+continuous length-of-stay target; event rates across the six span roughly an
+order of magnitude, which is what makes the per-outcome breakdown of
+Section~\ref{sec:eval-per-outcome} informative rather than redundant. Cohort
+construction and outcome definitions are given in
+Section~\ref{sec:evalm-mimic-cohort} and Appendix~\ref{appendix:outcomes}.
+
+\subsection{Kineret}
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Characteristics of the multicenter study cohort.}
+\label{tab:cohort}
+\small
+\begin{tabularx}{\textwidth}{
+>{\raggedright\arraybackslash}X
+>{\raggedleft\arraybackslash}p{0.34\textwidth}
+}
+\toprule
+Characteristic & Value \\
+\midrule
+Hospitals & 6 \\
+Admissions & 48,354 \\
+Unique patients & 29,577 \\
+Age, mean (median), y & 71.9 (73.3) \\
+Male sex & 54.3\% \\
+Length of stay, median, d & 5.55 \\
+30-day mortality & 9.58\% \\
+\midrule
+Documented diabetes diagnosis & 35.3\% \\
+Recurrent hyperglycemia & 74.7\% \\
+Extreme glucose ($\ge$250 mg/dL) & 60.2\% \\
+Hyperglycemia among admissions with diabetes & 50.3\% \\
+Diabetes diagnosis among admissions with hyperglycemia & 21.5\% \\
+\midrule
+Pre-intervention cohort &
+\makecell[r]{21,605 admissions\\17,002 patients} \\
+Post-intervention cohort &
+\makecell[r]{16,182 admissions\\11,201 patients} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The cohort comprises $48{,}354$ admissions among $29{,}577$ adult patients across six Israeli general hospitals, with center-specific sample sizes from $4{,}478$ to $11{,}024$ admissions (Table~\ref{tab:cohort}).
+
+One figure in the table vindicates the cohort design of Section~\ref{sec:evalm-kineret-cohort}. Only $21.5\%$ of admissions meeting a hyperglycemia criterion carried a documented diabetes diagnosis. Had eligibility rested on the recorded diagnosis alone, as it conventionally does, roughly four in five of these admissions would have been excluded --- not because the patients lacked clinically significant inpatient hyperglycemia, but because no one entered a code. The measurement-based criteria recover them.
+
+
+\section{Methodological Study on MIMIC-IV (RQ1--RQ3)}
+\label{sec:results-mimic}
+\label{sec:eval-methodological}
+
+All methods share the train/validation/test split, the $48$-hour observation window, the static context vector, and the evaluation protocol of Chapter~\ref{chapter:eval_methods}. Significance is assessed by non-overlapping $95\%$ patient-level bootstrap confidence intervals over $2{,}000$ resamples. INTERVenE-Ar is reported under its generative rollout contract rather than as a like-for-like discriminative comparison.
+
+\subsection{Headline Performance (RQ1a)}
+
+\begin{table}[htbp]
+  \caption{Patient-level performance on the MIMIC-IV diabetic cohort, support-weighted across the six outcomes. AUPRC$_w$ is the primary metric; AUROC$_w$ and F1$_w$ summarize discrimination; LoS is length-of-stay MAE in hours. Parameter counts are for the deployed models; for KarmaLego the budget is the number of selected sparse TIRP features. Bold marks the best result in each column.}
+  \label{tab:headline}
+  \centering
+\singlespacing
+  \small
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lccccc}
+    \toprule
+    Method & Params & AUPRC$_w$ & AUROC$_w$ & F1$_w$ & LoS (h) \\
+    \midrule
+    KarmaLego+TPF   & 25.6k\,feat. & $0.587{\pm}0.012$ & $0.870{\pm}0.005$ & $0.571{\pm}0.010$ & $100.1{\pm}3.4$ \\
+    GRU-D           & 47.9k        & $0.626{\pm}0.014$ & $0.889{\pm}0.005$ & $0.609{\pm}0.011$ & $47.9{\pm}0.8$ \\
+    STraTS (pre+ft) & 92.7k        & $0.614{\pm}0.014$ & $0.890{\pm}0.005$ & $0.601{\pm}0.011$ & $48.6{\pm}0.9$ \\
+    ss-STraTS       & 86.5k        & $0.631{\pm}0.014$ & $0.895{\pm}0.005$ & $0.618{\pm}0.011$ & $48.5{\pm}0.9$ \\
+    INTERVenE-Ar    & 1.77M        & $0.587{\pm}0.013$ & $0.854{\pm}0.007$ & $0.569{\pm}0.011$ & $65.1{\pm}1.1$ \\
+    \textbf{INTERVenE-Enc} & 1.85M  & $\mathbf{0.672{\pm}0.012}$ & $\mathbf{0.901{\pm}0.005}$ & $\mathbf{0.628{\pm}0.011}$ & $\mathbf{44.4{\pm}0.9}$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \smallskip
+  \footnotesize INTERVenE-Ar is evaluated from a free-running autoregressive rollout, with LoS MAE read from the terminal generated state. Its metrics therefore reflect a generative rollout rather than the single-pass discriminative evaluation used by the other models, and are reported for completeness rather than as a like-for-like comparison. Its locked configuration is given in Table~\ref{tab:abl-ar-all}.
+\end{table}
+
+INTERVenE-Enc achieves the strongest overall performance, raising the primary metric to a support-weighted AUPRC of $0.672$ --- $+0.041$ over the strongest neural baseline, ss-STraTS, and $+0.085$ over KarmaLego+TPF, both with non-overlapping $95\%$ confidence intervals (Table~\ref{tab:headline}). It also achieves the best AUROC$_w$, F1$_w$, and length-of-stay MAE, making it the strongest single-pass discriminative model in the comparison.
+
+Two results in the table are worth separating from that headline. First, KarmaLego+TPF --- the only baseline consuming the same interval stream --- is the weakest arm on every metric, and its length-of-stay error is more than twice that of any neural model. The gap between it and INTERVenE-Enc is the one that isolates modeling from representation, since the two receive identical input, and it is the largest gap in the table.
+
+Second, pretraining does not help STraTS on this cohort: the supervised-only configuration outperforms the pretrained-and-fine-tuned one on AUPRC ($0.631$ against $0.614$), which is why both are retained and why ss-STraTS is treated as the reference neural baseline throughout.
+
+INTERVenE-Ar attains competitive performance despite a substantially harder evaluation protocol, in which predictions are scored only after a full autoregressive rollout. Its strongest results are on the dysglycemia outcomes; death remains difficult, for reasons the per-outcome breakdown makes clear.
+
+\subsection{Per-Outcome Results (RQ1b)}
+\label{sec:eval-per-outcome}
+
+\begin{table}[htbp]
+  \caption{Per-outcome AUPRC, AUROC, best-F1, and time-head MAE. Header rows give the positive prevalence (\emph{prev.}, the AUPRC random baseline) and the median-time baseline MAE (\emph{base MAE}). Bold marks the best value for each outcome--metric pair. MAE is reported only for the INTERVenE variants, since the baselines have no per-outcome time head.}
+  \label{tab:per-outcome}
+  \centering
+\singlespacing
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llcccccc}
+    \toprule
+    Method & Metric & KIDNEY & Hyperglyc. & Sev.\ Hyper. & Hypoglyc. & Sev.\ Hypo. & DEATH \\
+           & \emph{prev.}        & 9.3\%  & 26.4\% & 12.6\% & 5.8\%  & 2.7\%  & 12.9\% \\
+           & \emph{base MAE (h)} & 28.8   & 26.6   & 33.2   & 42.6   & 45.3   & 136.9 \\
+    \midrule
+    \multirow{3}{*}{KarmaLego+TPF}
+      & AUPRC   & $0.704 \pm 0.029$ & $0.776 \pm 0.014$ & $0.521 \pm 0.029$ & $0.211 \pm 0.031$ & $0.081 \pm 0.021$ & $0.477 \pm 0.029$ \\
+      & AUROC   & $0.910 \pm 0.012$ & $0.884 \pm 0.007$ & $0.847 \pm 0.012$ & $0.754 \pm 0.021$ & $0.734 \pm 0.030$ & $0.827 \pm 0.012$ \\
+      & Best-F1 & $0.674 \pm 0.025$ & $0.695 \pm 0.014$ & $0.532 \pm 0.021$ & $0.280 \pm 0.031$ & $0.155 \pm 0.029$ & $0.492 \pm 0.022$ \\
+    \midrule
+    \multirow{3}{*}{GRU-D}
+      & AUPRC   & $0.729 \pm 0.029$ & $0.778 \pm 0.018$ & $0.559 \pm 0.032$ & $0.249 \pm 0.036$ & $0.128 \pm 0.032$ & $0.553 \pm 0.033$ \\
+      & AUROC   & $0.921 \pm 0.011$ & $0.899 \pm 0.007$ & $0.889 \pm 0.010$ & $0.817 \pm 0.018$ & $0.826 \pm 0.024$ & $\mathbf{0.896 \pm 0.010}$ \\
+      & Best-F1 & $0.678 \pm 0.027$ & $0.718 \pm 0.015$ & $0.582 \pm 0.022$ & $0.310 \pm 0.032$ & $0.218 \pm 0.044$ & $0.542 \pm 0.025$ \\
+    \midrule
+    \multirow{3}{*}{STraTS (pre+ft)}
+      & AUPRC   & $0.708 \pm 0.032$ & $0.768 \pm 0.018$ & $0.544 \pm 0.033$ & $0.282 \pm 0.040$ & $\mathbf{0.150 \pm 0.040}$ & $0.522 \pm 0.035$ \\
+      & AUROC   & $0.917 \pm 0.011$ & $0.896 \pm 0.007$ & $0.888 \pm 0.010$ & $0.846 \pm 0.015$ & $\mathbf{0.839 \pm 0.024}$ & $0.888 \pm 0.010$ \\
+      & Best-F1 & $0.672 \pm 0.027$ & $0.710 \pm 0.014$ & $0.561 \pm 0.022$ & $0.336 \pm 0.032$ & $\mathbf{0.245 \pm 0.047}$ & $0.529 \pm 0.026$ \\
+    \midrule
+    \multirow{3}{*}{ss-STraTS}
+      & AUPRC   & $0.726 \pm 0.032$ & $0.782 \pm 0.017$ & $0.566 \pm 0.031$ & $0.267 \pm 0.036$ & $0.123 \pm 0.028$ & $0.563 \pm 0.033$ \\
+      & AUROC   & $0.925 \pm 0.011$ & $0.902 \pm 0.007$ & $0.892 \pm 0.009$ & $\mathbf{0.847 \pm 0.015}$ & $0.833 \pm 0.025$ & $0.895 \pm 0.010$ \\
+      & Best-F1 & $0.695 \pm 0.026$ & $0.718 \pm 0.014$ & $0.575 \pm 0.022$ & $0.336 \pm 0.031$ & $0.230 \pm 0.040$ & $0.553 \pm 0.026$ \\
+    \midrule
+    \multirow{4}{*}{INTERVenE-Ar}
+      & AUPRC   & $0.701 \pm 0.035$ & $0.772 \pm 0.017$ & $0.588 \pm 0.032$ & $0.274 \pm 0.040$ & $0.120 \pm 0.033$ & $0.368 \pm 0.029$ \\
+      & AUROC   & $0.906 \pm 0.014$ & $0.884 \pm 0.009$ & $0.884 \pm 0.011$ & $0.814 \pm 0.020$ & $0.804 \pm 0.028$ & $0.752 \pm 0.015$ \\
+      & Best-F1 & $0.695 \pm 0.027$ & $0.702 \pm 0.014$ & $0.576 \pm 0.024$ & $0.365 \pm 0.033$ & $0.196 \pm 0.038$ & $0.383 \pm 0.023$ \\
+      & MAE (h) & $28.0 \pm 3.0$    & $30.6 \pm 1.7$    & $41.4 \pm 2.9$    & $50.6 \pm 4.4$    & $60.4 \pm 7.5$    & $159.6 \pm 10.2$ \\
+    \midrule
+    \multirow{4}{*}{\textbf{INTERVenE-Enc}}
+      & AUPRC   & $\mathbf{0.790 \pm 0.028}$ & $\mathbf{0.818 \pm 0.014}$ & $\mathbf{0.629 \pm 0.032}$ & $\mathbf{0.308 \pm 0.042}$ & $0.144 \pm 0.036$ & $\mathbf{0.605 \pm 0.030}$ \\
+      & AUROC   & $\mathbf{0.944 \pm 0.009}$ & $\mathbf{0.911 \pm 0.007}$ & $\mathbf{0.901 \pm 0.010}$ & $0.840 \pm 0.017$ & $\mathbf{0.839 \pm 0.024}$ & $0.888 \pm 0.010$ \\
+      & Best-F1 & $\mathbf{0.737 \pm 0.025}$ & $\mathbf{0.733 \pm 0.014}$ & $\mathbf{0.603 \pm 0.024}$ & $\mathbf{0.363 \pm 0.035}$ & $0.234 \pm 0.042$ & $\mathbf{0.576 \pm 0.023}$ \\
+      & MAE (h) & $18.4 \pm 2.4$    & $18.5 \pm 1.1$    & $25.7 \pm 2.0$    & $34.1 \pm 3.1$    & $38.8 \pm 4.7$    & $123.0 \pm 8.1$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \smallskip
+  \footnotesize INTERVenE-Ar's MAE corresponds to the peak predicted probability along the generated trajectory, matched to the nearest ground-truth event.
+\end{table}
+
+INTERVenE-Enc achieves the highest AUPRC on five of six outcomes (Table~\ref{tab:per-outcome}), with the largest improvements on kidney complication ($0.790$ against $0.726$) and death ($0.605$ against $0.563$). On the rarest outcome, severe hypoglycemia at $2.7\%$ prevalence, it ties STraTS with overlapping intervals --- the one place where scarcity of positives, rather than modeling, sets the ceiling.
+
+The auxiliary time head consistently improves event-time prediction, reducing MAE by $7$--$14$ hours against the median-time baseline across all outcomes. This is a genuinely separate capability from ranking: a model can identify who will deteriorate without saying when, and the time head does both from one pass.
+
+INTERVenE-Ar's difficulty with death is visible here: its AUPRC of $0.368$ against the encoder's $0.605$ is the largest gap between the two variants in the table. The dysglycemia outcomes, which occur earlier and more often, are where the generative readout holds up. What separates the two variants is taken up in Section~\ref{sec:disc-methodological}.
+
+\subsection{Calibration (RQ1c)}
+
+Both variants support per-outcome temperature scaling, fitted on the validation split and applied unchanged to the held-out test set. INTERVenE-Enc is well calibrated as emitted, with a support-weighted expected calibration error of $0.016$ and fitted temperatures close to unity; scaling improves it only marginally, to $0.013$. INTERVenE-Ar shows higher calibration error under its peak-detector readout, roughly $4$--$12\%$, but scaling improves the prevalent outcomes substantially --- death moves from $0.050$ to $0.011$. Per-outcome temperatures, before-and-after errors, and reliability diagrams are given in Appendix~\ref{appendix:calibration}.
+
+The asymmetry is expected. The encoder emits a probability directly, whereas the decoder's probability is the maximum over a generated trajectory, a readout with no reason to be calibrated as emitted.
+
+\subsection{What the Interval Representation Contributes (RQ2)}
+
+The two representation ablations of Section~\ref{sec:method-ablations} answer the question the headline comparison leaves open. Both hold the deployed encoder fixed and vary only the input; full results are in Table~\ref{tab:abl-enc-all}.
+
+Replacing the KBTA vocabulary with a standard-deviation discretization leaves discrimination essentially unchanged: AUPRC $0.676$ against $0.672$ and identical AUROC, with the only cost a length-of-stay increase of $3.2$ hours. Collapsing every interval to a one-second point event, by contrast, degrades everything --- AUPRC falls from $0.672$ to $0.593$ and length-of-stay error rises by $7.4$ hours.
+
+Read together these say something specific, and it is not what the framing of the thesis might lead one to expect. The architecture depends on \emph{persistence} --- that a symbol holds over a span, and that spans overlap --- but not on the symbols being clinically named. KBTA is therefore an interpretability substrate rather than a predictive prerequisite. A structured discretization with no clinical semantics predicts just as well; what it cannot do is produce the explanations of the next section, because its features have no names to resolve to.
+
+This is a negative result for one possible claim and a positive result for another. It rules out asserting that clinical knowledge buys predictive accuracy here, and it establishes that the interpretability comes at essentially no accuracy cost --- which is the more useful claim of the two, since interpretability obtained by sacrificing performance is rarely adopted.
+
+\subsection{Concept-Level Explanations (RQ3)}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{xai_death.png}
+  \caption{Per-token death risk drivers recovered from INTERVenE-Enc by gradient-decoupled sparse-transcoder attribution, averaged over $300$ test patients. Red tokens push predicted risk up, blue push it down. The full six-outcome panel is in Appendix Figure~\ref{fig:xai-all}.}
+  \label{fig:xai}
+\end{figure}
+
+Figure~\ref{fig:xai} aggregates per-token attributions for the death outcome across $300$ test patients. Positive attribution is dominated by \emph{severe hypoalbuminemia}, a well-established mortality marker, followed by elevated amino-transferase, indicating liver stress, and rising bicarbonate, indicating acid--base decompensation.
+
+The negative side is the more informative one. Attribution highlights recovery-associated concepts: a decreasing trend in aspartate aminotransferase, and a subcutaneous basal-insulin treatment state. That the model separates a \emph{decreasing} enzyme trend from an elevated enzyme level, assigning them opposite signs, indicates the attribution is tracking clinical direction rather than merely clinical activity --- which a method keyed to how often a concept appears could not do.
+
+Every contribution is expressed as a named clinical concept rather than a raw measurement, and clinically coherent patterns appear across all six outcomes (Appendix Figure~\ref{fig:xai-all}). The limits of Section~\ref{sec:evalm-xai} apply throughout: these describe the model's local sensitivity, not causal necessity, and they describe the fitted function rather than the patient.
+
+INTERVenE-Ar requires no attribution machinery for its primary explanation, since it emits the abstraction trajectory itself alongside a per-step risk curve. Appendix~\ref{appendix:calibration} illustrates two representative test patients, one whose generated risk rises progressively and peaks near the recorded death time, and one whose risk stays near baseline throughout.
+
+\subsection{Deployment Characteristics}
+
+The two variants occupy different niches. INTERVenE-Enc processes a patient in $3.3$\,ms on a single RTX~A5000 at batch size $16$ --- $302$ patients per second, so the full $8{,}562$-patient test set evaluates in under $30$ seconds. INTERVenE-Ar requires $255$\,ms per patient, $3.9$ patients per second, and is impractical on CPU. The roughly $77\times$ latency difference follows directly from generation: the encoder makes one pass, the decoder makes one per emitted token.
+
+The encoder is therefore the production predictor and the decoder the inspection tool. They are complementary rather than redundant: only the decoder localizes \emph{when}, and after \emph{which} events, risk rises.
+
+\section{Clinical Study: Guideline Adherence on Kineret (RQ4--RQ5)}
+\label{sec:eval-clinical}
+
+\subsection{Adherence and Its Change Following National Implementation (RQ4)}
+
+\begingroup
+\singlespacing
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.30\textwidth}rrrrlr}
+\caption{Adherence to each assessed recommendation over the whole study period, and its change following national implementation. Scores run from $0$ (non-adherence) to $1$ (complete adherence). $\Delta$ is the absolute difference in mean adherence between the post- and pre-intervention periods, with unadjusted $95\%$ CIs; $P$ values are adjusted across component-level comparisons by the Benjamini--Hochberg procedure.}
+\label{tab:adherence}\\
+\toprule
+Recommendation & Mean & Median & Before & After & $\Delta$ (95\% CI) & $P$ \\
+\midrule
+\endfirsthead
+\multicolumn{7}{l}{\footnotesize\itshape Table \thetable\ continued from previous page}\\
+\toprule
+Recommendation & Mean & Median & Before & After & $\Delta$ (95\% CI) & $P$ \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{\footnotesize\itshape continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Admission glucose monitoring
+  & 0.85 & 1.00 & 0.78 & 0.93 & $+$0.15 (0.145 to 0.154) & $<.001$ \\
+Routine glucose monitoring
+  & 0.88 & 0.98 & 0.83 & 0.94 & $+$0.11 (0.105 to 0.113) & $<.001$ \\
+Glucose monitoring during corticosteroid therapy
+  & 0.54 & 0.50 & 0.51 & 0.58 & $+$0.07 (0.062 to 0.087) & $<.001$ \\
+BMI measurement on admission
+  & 0.87 & 1.00 & 0.86 & 0.89 & $+$0.03 (0.015 to 0.029) & $<.001$ \\
+Creatinine measurement on admission
+  & 0.98 & 1.00 & 0.98 & 0.99 & $+$0.01 (0.008 to 0.014) & $<.001$ \\
+Antidiabetic discontinuation on admission
+  & 0.66 & 0.86 & 0.62 & 0.75 & $+$0.13 (0.075 to 0.192) & $<.001$ \\
+SGLT2 discontinuation on admission
+  & 1.00 & 1.00 & 1.00 & 1.00 & 0.00 (--) & -- \\
+Basal insulin continuation on admission
+  & 0.66 & 1.00 & 0.63 & 0.67 & $+$0.04 (0.002 to 0.089) & .054 \\
+Insulin administration after hyperglycemia
+  & 0.15 & 0.00 & 0.14 & 0.15 & $+$0.01 (0.009 to 0.020) & $<.001$ \\
+Antidiabetic discontinuation after hypoglycemia
+  & 0.89 & 1.00 & 0.91 & 0.89 & $-$0.02 ($-$0.197 to 0.158) & .818 \\
+Basal dose reduction after hypoglycemia
+  & 0.87 & 1.00 & 0.87 & 0.88 & $+$0.01 ($-$0.015 to 0.034) & .497 \\
+Bolus dose reduction after hypoglycemia
+  & 0.28 & 0.00 & 0.33 & 0.26 & $-$0.07 ($-$0.158 to 0.029) & .210 \\
+Routine basal dosage (frequency)
+  & 0.23 & 0.00 & 0.21 & 0.24 & $+$0.03 (0.027 to 0.043) & $<.001$ \\
+Routine basal dosage (dose)
+  & 0.21 & 0.00 & 0.19 & 0.22 & $+$0.03 (0.021 to 0.036) & $<.001$ \\
+\end{longtable}
+\endgroup
+
+Adherence varies sharply across recommendations, and the split follows the \emph{kind} of action required rather than its clinical weight (Table~\ref{tab:adherence}).
+
+Single discrete actions on admission are near-universal: SGLT2 discontinuation is complete ($1.00$) and creatinine measurement almost so ($0.98$). Recommendations calling for repeated insulin decisions across the stay are not: insulin following hyperglycemia scores $0.15$, the two routine basal dosing components $0.21$ and $0.23$, and bolus reduction after hypoglycemia $0.28$. All four have a median of zero, meaning the expected action was absent altogether in most eligible admissions. Monitoring and admission medication management fall between these extremes, at $0.54$--$0.88$.
+
+This is the study's central descriptive finding, and the grading of Section~\ref{sec:prelim-qa} is what makes it visible. A binary compliant/non-compliant verdict would have compressed a recommendation followed late into the same category as one never followed at all; the trapezoidal membership functions separate them, and the medians of zero show that the low scores are genuine absence rather than accumulated lateness.
+
+Adherence is largely independent of whether diabetes had been formally documented ($0.669$ against $0.661$ among admissions with hyperglycemia in the first $48$ hours), a difference reaching significance only by virtue of the sample size. Undocumented patients are not, on this evidence, managed differently --- they are simply harder to find.
+
+\paragraph{Change following implementation.}
+Overall adherence rose from $0.682$ before the guideline to $0.703$ after ($P<.001$; Figure~\ref{fig:adherence-trend}), with monthly scores trending upward across the period. The absolute change is small against a cohort of $37{,}787$ admissions in the two periods, so the monthly series is reported alongside the $P$ value.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{adherence_trend.png}
+\caption{Overall guideline adherence across the study period. \textbf{Left:} mean adherence during the pre-intervention (August 2022--July 2023) and post-intervention (August 2024--December 2025) periods. \textbf{Right:} monthly mean adherence with $95\%$ CIs; vertical dotted lines delimit the transition period excluded from the primary comparison.}
+\label{fig:adherence-trend}
+\end{figure}
+
+Component-level changes are uneven. Glucose monitoring improved most --- on admission from $0.78$ to $0.93$ --- and discontinuation of high-hypoglycemia-risk antidiabetic agents rose from $0.62$ to $0.75$. Gains in the insulin-management components were statistically significant but marginal, $+0.01$ to $+0.03$, leaving them close to their already low baselines. Dose reduction after hypoglycemia did not change, and SGLT2 discontinuation was already complete in both periods.
+
+The pattern is coherent: the implementation moved the recommendations that were already easy to follow, and left the hard ones roughly where they were.
+
+\paragraph{Inter-hospital heterogeneity.}
+The pooled increase conceals substantial variation between centers (Figure~\ref{fig:adherence-by-hospital}). Center-level trajectories range from improvement through no measurable change to modest decreases, so the national figure reported alone would misrepresent every individual site --- including the sites where practice did not move, and the sites where it moved the wrong way.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{adherence_by_hospital.png}
+\caption{Overall guideline adherence by hospital, before and after national implementation. The pooled improvement is not reproduced uniformly: center-level trajectories range from clear improvement through no measurable change to modest decline.}
+\label{fig:adherence-by-hospital}
+\end{figure}
+
+This matters for how the pre--post result should be used. A national mean is the natural headline, but it is the wrong unit for acting on: an implementation effort that succeeded in some hospitals and not others calls for finding out what differed between them, not for repeating the same intervention nationally. The stratification is what makes that question askable.
+
+\subsection{Adherence and Clinical Outcomes (RQ5)}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{adherence_mortality.png}
+\caption{Association between overall guideline adherence and $30$-day mortality. Strata are shown for display only; strata under $30$ admissions are suppressed and are not the basis of the trend statistic.}
+\label{fig:adherence-mortality}
+\end{figure}
+
+Higher adherence is associated with lower $30$-day mortality (Figure~\ref{fig:adherence-mortality}). Survivors had a higher mean adherence score than those who died ($0.693$ against $0.652$, $P<.001$), and mortality fell across adherence strata from $11\%$ to roughly $3\%$. On the continuous score, each $0.1$-point increase carried $16.8\%$ lower odds of death (OR $0.832$; $95\%$ CI $0.811$--$0.853$), so the association is graded rather than threshold-like. Adjusting for age, sex, comorbidity burden, and hospital left it intact (adjusted OR $0.757$; $95\%$ CI $0.727$--$0.788$, per $1$-SD increase).
+
+As stated in Section~\ref{sec:evalm-mortality}, this is descriptive. Whole-admission adherence spans the entire stay and so does not strictly precede the outcome; the component-level analyses below enforce that ordering.
+
+Adherence to the insulin-management recommendations showed negligible correlation with subsequent hypoglycemic burden, for both hypoglycemia ($r = 0.052$) and severe hypoglycemia ($r = 0.056$; $n = 40{,}719$).
+
+\subsection{Outcome-Associated Recommendations (RQ5)}
+
+Between $9$ and $34$ predictors were retained per outcome, but the number surviving all three window definitions ranged from none to $32$, tracking event frequency: mortality yielded the most robust predictors, and the rarer complications few or none (Table~\ref{tab:firth-summary}). The robustness criterion of Section~\ref{sec:method-influence} is doing real work here --- for most outcomes it discards everything, which is the correct outcome when event counts are in the tens.
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Summary of the bias-reduced (Firth) regression models: positive-event counts per observation window, predictors retained after FDR correction and pruning, and those \emph{robust} across all three windows. AKI, acute kidney injury; MI, myocardial infarction.}
+\label{tab:firth-summary}
+\small
+\begin{tabularx}{\textwidth}{
+>{\raggedright\arraybackslash}X
+ccccc
+}
+\toprule
+Outcome & 24 h & 48 h & 72 h & Retained & Robust \\
+\midrule
+Inpatient MI / cardiovascular complication & 175   & 125  & 90   & 13 & 0 \\
+30-day mortality     & 3130  & 3130 & 2793 & 34 & 32 \\
+Hyperglycemia        & 8565  & 2153 & 1135 & 13 & 0 \\
+Hyperosmolarity      & 75    & 58   & 45   & 9  & 0 \\
+Hypoglycemia         & 2437  & 1742 & 1234 & 24 & 0 \\
+Infection            & 898   & 475  & 291  & 12 & 2 \\
+Ketoacidosis         & 46    & 33   & 25   & 9  & 0 \\
+Inpatient AKI / kidney complication & 1362  & 901  & 655  & 21 & 5 \\
+Severe hyperglycemia & 10019 & 4328 & 2376 & 28 & 8 \\
+Severe hypoglycemia  & 1686  & 1207 & 851  & 22 & 0 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Positive-event counts fall as the cutoff moves later, because admissions in which the complication occurred \emph{before} the cutoff are excluded rather than labelled negative. The last two columns are the ones to read together: the gap between \emph{retained} and \emph{robust} is large for every outcome except mortality, and it tracks event frequency directly.
+
+
+For mortality, the model recovered well-established clinical predictors: age, red cell distribution width, body mass index, dementia, and cardiovascular comorbidity. That these emerge unprompted gives the approach face validity, and several adherence components ranked among the strongest retained predictors (Figure~\ref{fig:death-importance}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{death_feature_importance.png}
+\caption{Retained feature profile for $30$-day mortality from the bias-reduced regression models.}
+\label{fig:death-importance}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{recurring_guideline_components.png}
+\caption{Guideline-adherence components recurring across the outcome models. Direction is not uniform: the same component can carry opposite signs for different endpoints.}
+\label{fig:recurring-guidelines}
+\end{figure}
+
+Across all outcome models (Figure~\ref{fig:recurring-guidelines}), insulin following hyperglycemia and admission glucose monitoring recurred most broadly, while basal-dose components appeared in fewer, more outcome-specific models. Direction was not uniform --- the same component could carry opposite signs for different endpoints, which is what motivates re-examining the recurrent components under weighting rather than reading these coefficients as effects.
+
+\subsection{Propensity-Weighted Evaluation (RQ5)}
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Inverse probability of treatment weighting analysis of overall adherence. Adherence is dichotomized at the median of each outcome's eligible population, so $\beta$ is the log-odds ratio comparing the above-median with the at-or-below-median group and OR $= \exp(\beta)$. Confidence intervals are unadjusted; $P$ values are Benjamini--Hochberg adjusted across outcomes. Balance is the maximum standardized mean difference (SMD) after weighting.}
+\label{tab:iptw-overall}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrlrr}
+\toprule
+Outcome & $\beta$ & OR & 95\% CI (OR) & Max SMD & $P$ \\
+\midrule
+Hyperglycemia        & $-1.742$ & 0.175 & 0.154 to 0.199 & 0.019 & $<.001$ \\
+Severe hyperglycemia & $-0.724$ & 0.485 & 0.450 to 0.523 & 0.012 & $<.001$ \\
+30-day mortality     & $-0.586$ & 0.557 & 0.514 to 0.603 & 0.020 & $<.001$ \\
+Hypoglycemia         & $0.186$  & 1.204 & 1.090 to 1.331 & 0.034 & $<.001$ \\
+Severe hypoglycemia  & $0.121$  & 1.129 & 1.001 to 1.274 & 0.030 & .096 \\
+Hyperosmolarity      & $0.106$  & 1.112 & 0.652 to 1.896 & 0.020 & .800 \\
+Ketoacidosis         & $0.116$  & 1.123 & 0.561 to 2.246 & 0.021 & .800 \\
+Inpatient MI         & $0.055$  & 1.057 & 0.732 to 1.523 & 0.020 & .800 \\
+Infection            & $-0.025$ & 0.975 & 0.809 to 1.175 & 0.020 & .800 \\
+Inpatient AKI        & $0.018$  & 1.018 & 0.888 to 1.168 & 0.022 & .800 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The overall-adherence analyses achieved satisfactory covariate balance, with maximum post-weighting SMD below $0.08$. Relative to the low-adherence group, above-median adherence carried $44\%$ lower odds of $30$-day mortality (OR $0.557$; $95\%$ CI $0.514$--$0.603$), $82\%$ lower odds of hyperglycemia (OR $0.175$), and $52\%$ lower odds of severe hyperglycemia (OR $0.485$), all with adjusted $P<.001$ --- against $20\%$ higher odds of hypoglycemia (OR $1.204$; $95\%$ CI $1.090$--$1.331$; Table~\ref{tab:iptw-overall}). Nothing survived correction for the remaining five outcomes.
+
+The asymmetry between those two directions is the substantive result. Following the guideline more closely is associated with both less hyperglycemia and more hypoglycemia, which is exactly the trade-off inpatient insulin management is designed around. But the two are not comparable in size: the reduction in hyperglycemic burden is roughly ninefold larger on the log-odds scale than the accompanying increase in hypoglycemia, and the increase in \emph{severe} hypoglycemia did not reach significance (OR $1.129$; adjusted $P=.096$). The trade-off is real and it is lopsided.
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Inverse probability of treatment weighting analysis of individual recommendations. Rows are the component--outcome pairs that were both significant after FDR correction and adequately balanced after weighting (maximum SMD $<0.10$). A further six significant associations, all concerning BMI or creatinine measurement on admission, failed the balance criterion (maximum SMD $0.90$--$2.46$) and are not reported. $^{\dagger}$Likely to reflect ascertainment rather than harm: the outcome is detected from glucose measurements, so more frequent early measurement increases the opportunity to record an event.}
+\label{tab:iptw-patterns}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrlr}
+\toprule
+Outcome & Recommendation & $\beta$ & OR & 95\% CI (OR) & $P$ \\
+\midrule
+30-day mortality & Routine basal dosage
+  & $-0.291$ & 0.748 & 0.691 to 0.809 & $<.001$ \\
+30-day mortality & Routine glucose monitoring
+  & $-0.139$ & 0.870 & 0.809 to 0.937 & $<.001$ \\
+30-day mortality & Insulin after hyperglycemia
+  & $-0.098$ & 0.907 & 0.842 to 0.977 & .011 \\
+\midrule
+Severe hyperglycemia & Insulin after hyperglycemia
+  & $-1.514$ & 0.220 & 0.202 to 0.239 & $<.001$ \\
+Severe hyperglycemia & Routine basal dosage
+  & $-0.912$ & 0.402 & 0.372 to 0.434 & $<.001$ \\
+Severe hyperglycemia & Admission glucose monitoring$^{\dagger}$
+  & $0.752$ & 2.121 & 1.974 to 2.280 & $<.001$ \\
+\midrule
+Hyperglycemia & Admission glucose monitoring$^{\dagger}$
+  & $0.980$ & 2.664 & 2.389 to 2.971 & $<.001$ \\
+\midrule
+Hypoglycemia & Insulin after hyperglycemia
+  & $0.249$ & 1.283 & 1.163 to 1.416 & $<.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Only a subset of the recurrent component-level predictors remained significant after weighting, indicating that several predictive associations were largely explained by differences in baseline patient characteristics --- which is the point of running the weighted analysis at all.
+
+A further six significant associations were set aside because weighting failed to achieve acceptable balance, with maximum SMD between $0.90$ and $2.46$. All six concerned BMI or creatinine measurement on admission, for which adherence is near-universal. When almost every admission scores $1.00$, dichotomizing at the median produces groups too dissimilar to balance, and the coefficients were numerically degenerate. Section~\ref{sec:method-influence} commits to reporting such pairs as non-estimable rather than with a caveat, and that is how they are reported.
+
+Eight associations were both significant and adequately balanced (Table~\ref{tab:iptw-patterns}). Above-median adherence to routine basal insulin dosing, routine glucose monitoring, and insulin administration following hyperglycemia each remained associated with lower $30$-day mortality. For glycemic outcomes, insulin following hyperglycemia ($78\%$ lower odds; OR $0.220$) and routine basal dosing ($60\%$ lower odds; OR $0.402$) were associated with substantially lower odds of subsequent severe hyperglycemia, while insulin following hyperglycemia also carried $28\%$ higher odds of hypoglycemia (OR $1.283$) --- the same lopsided trade-off seen at the level of overall adherence.
+
+Adherence to glucose monitoring on admission was associated with a \emph{higher} recorded incidence of hyperglycemia and severe hyperglycemia. These are marked in the table as likely ascertainment artifacts rather than harm: both outcomes are detected from glucose measurements, so measuring more often mechanically increases the chance of recording an event. The mechanical-circularity exclusion of Section~\ref{sec:method-influence} removes this effect for \emph{routine} monitoring but not for the admission-monitoring component, which is why it surfaces here and is flagged rather than interpreted.
+
+\paragraph{The finding that joins the two analyses.}
+The components with the largest implementation gaps are the same ones most strongly associated with outcomes. Insulin following hyperglycemia (mean adherence $0.15$) and routine basal insulin dosing ($0.21$--$0.23$) are simultaneously the least-implemented recommendations assessed and, after weighting, among those most strongly associated with mortality and with severe hyperglycemia.
+
+Both are recommendations calling for repeated decisions distributed across a stay rather than discrete actions at a single decision point. What follows from this convergence is taken up in Section~\ref{sec:disc-clinical}.
+
+\section{Predictive Models on the Kineret Cohort (RQ6)}
+\label{sec:eval-kineret-models}
+
+
+This section is a closing addition, not part of the thesis's main argument. It checks whether INTERVenE-Enc transfers to a second data source, and whether the measured adherence signal helps prediction. Each arm was run once at the configuration deployed on MIMIC-IV, with no tuning to this cohort: compute inside the regulated environment is limited, and the question was transferability rather than best achievable performance.
+
+\subsection{Setup}
+
+Training draws one sample per admission per context window over $K = 1\ldots13$ days, purely to make the model robust to how much history it is given; all inference is at $K = 4$ days, with a label window of $(96, 336]$ hours. This gives $179{,}141$ training samples, $4{,}600$ validation and $4{,}686$ test admissions, split by patient. At $K = 4$ days, only eight of the ten candidate complications clear the $1\%$ prevalence threshold and keep a head; hyperosmolality and ketoacidosis do not (Appendix~\ref{appendix:kineret}).
+
+\subsection{The Ladder}
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Support-weighted performance across the seven arms, on $4{,}686$ held-out patients at $K = 4$, with $95\%$ patient-level bootstrap intervals.}
+\label{tab:kineret-ladder-results}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llllll}
+\toprule
+Arm & AUROC & AUPRC & Best F1 & Onset MAE (h) & LoS MAE (h) \\
+\midrule
+LogReg                     & 0.754 [0.743, 0.764] & 0.452 [0.436, 0.472] & 0.527 & 32.9 & 47.7 \\
+LogReg $+$ QA              & 0.754 [0.743, 0.764] & 0.450 [0.434, 0.469] & 0.530 & 33.1 & 47.7 \\
+ss-STraTS                  & 0.772 [0.762, 0.781] & 0.472 [0.456, 0.493] & 0.535 & 33.2 & 46.4 \\
+ss-STraTS $+$ QA           & 0.771 [0.762, 0.781] & 0.471 [0.455, 0.491] & 0.532 & 32.8 & 47.7 \\
+INTERVenE-Enc ($\sigma$-bins) & 0.755 [0.744, 0.765] & 0.454 [0.438, 0.473] & 0.518 & 33.3 & \textbf{45.1} \\
+\textbf{INTERVenE-Enc (KB)}   & \textbf{0.805 [0.795, 0.813]} & 0.527 [0.511, 0.548] & \textbf{0.561} & \textbf{30.8} & 45.9 \\
+INTERVenE-Enc (KB $+$ QA)     & 0.802 [0.793, 0.811] & \textbf{0.535 [0.518, 0.554]} & 0.557 & 30.9 & 46.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{kineret_ladder.png}
+\caption{The seven arms, support-weighted at $K = 4$. Shaded rows are the INTERVenE-Enc arms.}
+\label{fig:kineret-ladder}
+\end{figure}
+
+The architecture transfers. INTERVenE-Enc on knowledge-based abstractions leads every arm on AUROC, best F1 and onset error, at a support-weighted AUPRC of $0.527$ against $0.472$ for the best raw-stream baseline, with non-overlapping intervals. The KB\,$+$\,QA arm edges it on AUPRC alone, at $0.535$; the two are separated by less than their interval width, and Section~\ref{sec:eval-kineret-qa} takes that difference up.
+
+The knowledge base matters more here than it did on MIMIC-IV. Replacing it with $\sigma$-bins costs $0.073$ AUPRC and drops the arm to the logistic-regression floor, whereas the same substitution on MIMIC-IV was within noise. On the data the knowledge base was authored for, the clinical knowledge is doing predictive work and not only interpretive work. What that does and does not license is taken up in Section~\ref{sec:disc-joint}.
+
+\subsection{Does the Adherence Signal Help?}
+\label{sec:eval-kineret-qa}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{kineret_qa_delta.png}
+\caption{Change from adding the aggregated QA compliance block, per model and metric.}
+\label{fig:kineret-qa-delta}
+\end{figure}
+
+Not measurably. Every change sits at the third decimal place with overlapping intervals (Figure~\ref{fig:kineret-qa-delta}). The largest is INTERVenE-Enc's $+0.007$ AUPRC, the only arm that receives the compliance patterns as temporal tokens rather than as context alone.
+
+The model does use them, though. Sparse-transcoder attribution on the QA arm (Figure~\ref{fig:kineret-xai-qa}) puts \texttt{*\_PATTERN} tokens among the top drivers for seven of the eight outcomes: routine glucose monitoring for death and kidney complication, basal-dosage and metformin-continuation patterns for the glycemic endpoints, and reduced basal insulin after hypoglycemia for severe hypoglycemia. The signal is read and assigned weight; it simply does not change the aggregate metrics. Compliance scores are derived deterministically from the same abstractions, so they are close to what the model already extracts for itself --- available and used, but carrying little the interval stream does not.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{kineret_xai_qa.png}
+\caption{Per-token risk drivers for the QA arm, by gradient-decoupled sparse-transcoder attribution over $300$ test patients. Red pushes risk up, blue down. Compliance patterns appear as \texttt{*\_PATTERN} tokens.}
+\label{fig:kineret-xai-qa}
+\end{figure}
+
+\subsection{Per-Outcome Results}
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Per-outcome AUPRC at $K = 4$, ordered by positive count. LR is logistic regression, ST is ss-STraTS, $\sigma$ is INTERVenE-Enc on $\sigma$-bins, KB and KB$+$QA the knowledge-based arms. AKI, acute kidney injury; MI, myocardial infarction.}
+\label{tab:kineret-per-target}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Outcome & $n_{+}$ & LR & LR+QA & ST & ST+QA & $\sigma$ & KB & KB+QA \\
+\midrule
+Hyperglycemia         & 1470 & 0.450 & 0.449 & 0.486 & 0.493 & 0.459 & 0.578 & \textbf{0.595} \\
+Severe hyperglycemia  & 1317 & 0.439 & 0.436 & 0.472 & 0.463 & 0.449 & 0.513 & \textbf{0.516} \\
+AKI / kidney complication & 566  & 0.590 & 0.588 & 0.578 & 0.576 & 0.605 & 0.587 & \textbf{0.606} \\
+Death                 & 341  & 0.587 & 0.581 & 0.559 & 0.573 & 0.577 & \textbf{0.645} & 0.609 \\
+Hypoglycemia          & 181  & 0.135 & 0.132 & 0.138 & 0.130 & 0.119 & 0.149 & \textbf{0.163} \\
+Severe hypoglycemia   & 111  & 0.104 & 0.103 & 0.104 & 0.102 & 0.085 & 0.119 & \textbf{0.133} \\
+MI / cardiovascular       & 69   & 0.564 & 0.556 & \textbf{0.583} & 0.508 & 0.295 & 0.568 & 0.500 \\
+Infection             & 37   & 0.067 & 0.064 & 0.076 & 0.077 & 0.067 & 0.058 & \textbf{0.100} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{kineret_per_target_auprc.png}
+\caption{Per-outcome AUPRC across the seven arms.}
+\label{fig:kineret-per-target}
+\end{figure}
+
+The aggregate ordering is carried by the two frequent glycemic outcomes, where the knowledge-based arms gain most: hyperglycemia $0.578$ against $0.486$ for ss-STraTS, severe hyperglycemia $0.513$ against $0.472$. Death is the only outcome where KB without QA leads outright ($0.645$).
+
+Below roughly $200$ positives the arms stop separating. Infection ($37$ positives), MI / cardiovascular complication ($69$) and severe hypoglycemia ($111$) sit near their prevalence floors throughout, and the single largest swing in the table --- the $\sigma$-bin arm at $0.295$ on MI / cardiovascular complication against $0.564$ for logistic regression --- rests on $69$ events and should not be read as an ordering. Weighting all eight outcomes equally rather than by support lowers every figure --- macro AUPRC runs from $0.332$ to $0.403$ --- but leaves the ranking of the arms unchanged.

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="HEMOGLOBIN_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of HEMOGLOBIN</description>
+    <derived-from name="HEMOGLOBIN_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="24h" interpolate="true" max-skip="1"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Critical Anemia" operator="and">
+            <attribute idx="0">
+                <allowed-value max="7"/>
+            </attribute>
+        </rule>
+        <rule value="Moderate Anemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7" max="10"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Anemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="10" max="12"/>
+            </attribute>
+        </rule>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value min="12" max="16"/>
+            </attribute>
+        </rule>
+        <rule value="Polycythemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="16"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

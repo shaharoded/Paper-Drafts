@@ -1,0 +1,258 @@
+\documentclass[preprint,12pt]{elsarticle}
+
+% --------------------------------------------------
+% Packages required by the current manuscript
+% --------------------------------------------------
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{xcolor}
+
+% --------------------------------------------------------------
+% DRAFT-ONLY ANNOTATIONS
+% One switch controls every draft annotation: the pre-submission task
+% list after the front matter and all inline [TODO] markers. Flip it
+% to \showtasksfalse for a clean submission PDF.
+% --------------------------------------------------------------
+\newif\ifshowtasks
+\showtaskstrue          % <-- set to \showtasksfalse before submitting
+
+\newcommand{\TODO}[1]{\ifshowtasks\textcolor{red}{\textbf{[TODO: #1]}}\fi}
+
+% --------------------------------------------------
+% Document
+% --------------------------------------------------
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Association Between Adherence to Inpatient Diabetes Care Guidelines
+and Hospitalization Complications: A Multicenter Real-World Study}
+
+% --------------------------------------------------
+% Authors
+% --------------------------------------------------
+\author[aff1]{Shahar Oded}
+\author[aff1]{Yuval Shahar}
+\author[aff1]{Erez Shalom}
+\author[aff2,aff3]{Amir Bashkin}
+\author[aff4,aff5]{Leonard Saig}
+\author[aff6]{Dror Cantrell}
+\author[aff7]{Irit Wirsansky}
+\author[aff2,aff8]{Muhamad Badarne}
+\author[aff9]{Irena Barash}
+\author[aff10,aff11]{Avivit Cahn}
+\author[aff4,aff7]{Irit Hochberg}
+
+% --------------------------------------------------
+% Affiliations
+% --------------------------------------------------
+\address[aff1]{Medical Informatics Research Center,
+Ben-Gurion University of the Negev, Beer Sheva, Israel}
+
+\address[aff2]{Azrieli Faculty of Medicine,
+Bar-Ilan University, Safed, Israel}
+
+\address[aff3]{Endocrinology and Diabetes Unit,
+Galilee Medical Center, Nahariya, Israel}
+
+\address[aff4]{Bruce Rappaport Faculty of Medicine,
+Technion--Israel Institute of Technology, Haifa, Israel}
+
+\address[aff5]{Endocrinology Institute,
+Bnai Zion Medical Center, Haifa, Israel}
+
+\address[aff6]{Internal Medicine Department C,
+Shamir Medical Center, Beer Yaakov, Israel}
+
+\address[aff7]{Endocrinology Unit,
+Hillel Yaffe Medical Center, Hadera, Israel}
+
+\address[aff8]{Endocrinology and Diabetes Service,
+Tzafon Medical Center, Ramat Poriya, Israel}
+
+\address[aff9]{Internal Medicine Department C,
+Barzilai Medical Center, Ashkelon, Israel}
+
+\address[aff10]{Internal Medicine Department A,
+Hadassah Ein Kerem, Jerusalem, Israel}
+
+\address[aff11]{Faculty of Medicine,
+Hadassah Hebrew University Hospital, Jerusalem, Israel}
+
+% --------------------------------------------------
+% Abstract
+% --------------------------------------------------
+\begin{abstract}
+
+\textbf{Objective:}
+To measure adherence to a national inpatient hyperglycemia guideline at the
+level of its individual recommendations across a hospital network, to
+determine whether adherence changed following the guideline's introduction,
+and to identify which recommendations are associated with subsequent
+clinical outcomes.
+
+\textbf{Methods:}
+Retrospective multicenter study of 48,354 admissions among 29,577 adult
+patients with diabetes or inpatient hyperglycemia across six Israeli general
+hospitals, August 2022 to December 2025. Each of fourteen guideline
+recommendations was formalized as a quality-assessment temporal pattern over
+knowledge-based temporal abstractions of the clinical record, yielding a
+continuous compliance score wherever the recommendation applied. Adherence
+before and after the guideline's introduction was compared using Welch's
+$t$-test with false discovery rate correction. Associations with ten
+complications were estimated by bias-reduced logistic regression over 24-,
+48-, and 72-hour observation windows, and by inverse probability of
+treatment weighting contrasting above- with at-or-below-median adherence.
+
+\textbf{Results:}
+Adherence varied widely across recommendations, from near-universal
+implementation of admission and medication-management actions to substantial
+gaps in insulin management (mean scores $0.15$--$0.28$).
+Overall adherence increased modestly after the guideline was issued
+($0.682$ to $0.703$, $p<0.001$), with substantial inter-hospital
+heterogeneity. After propensity weighting, above-median adherence was
+associated with lower odds of 30-day mortality (OR $=0.557$, 95\% CI
+$[0.514, 0.603]$), hyperglycemia (OR $=0.175$, 82.5\% lower odds) and severe hyperglycemia
+(OR $=0.485$), and with a modest increase in hypoglycemia (OR $=1.204$, 20.4\% higher odds). 
+The association with severe hypoglycemia was directionally consistent but
+not significant. At the component level, routine basal insulin dosing,
+routine glucose monitoring, and insulin administration following
+hyperglycemia remained associated with lower mortality.
+
+\textbf{Conclusion:}
+Guideline adherence can be assessed automatically and per-recommendation at
+the scale of a national implementation. The recommendations least well
+implemented were largely those whose adherence tracked subsequent outcomes:
+the repeated insulin decisions distributed across a
+hospitalization, rather than the discrete actions taken on admission. These
+associations are not treatment effects, but they identify where fuller
+implementation would most plausibly matter.
+
+\end{abstract}
+
+% JBI permits 1--7 keywords.
+\begin{keyword}
+inpatient diabetes
+\sep clinical guideline adherence
+\sep quality assessment
+\sep temporal abstraction
+\sep fuzzy logic
+\sep propensity score
+\sep causal inference
+\end{keyword}
+
+\end{frontmatter}
+
+% --------------------------------------------------
+% Draft-only task list (suppressed by \showtasksfalse; not part of the
+% manuscript). Guarded, so the manuscript still compiles wherever this
+% draft-only file is absent -- e.g. a submission upload that omits it.
+% --------------------------------------------------
+\IfFileExists{tasks.tex}{\input{tasks}}{}
+
+% --------------------------------------------------
+% Main manuscript
+% --------------------------------------------------
+% introduction.tex already begins with \section{Introduction}
+\input{introduction}
+
+% related_work.tex already begins with \section{Related Work}
+\input{related_work}
+
+% methods.tex already begins with \section{Methods}
+\input{methods}
+
+% results.tex already begins with \section{Results}
+\input{results}
+
+% discussion.tex already begins with \section{Discussion}
+\input{discussion}
+
+% conclusion.tex already begins with \section{Conclusion}
+\input{conclusion}
+
+% --------------------------------------------------
+% End matter
+% --------------------------------------------------
+\section*{CRediT Authorship Contribution Statement}
+\textbf{Shahar Oded:} Conceptualization, Methodology, Software, Validation,
+Formal analysis, Data curation, Visualization, Writing -- original draft.
+\textbf{Yuval Shahar:} Conceptualization, Methodology, Supervision, Funding
+acquisition, Writing -- review \& editing.
+\textbf{Erez Shalom:} Resources, Project administration, Writing -- review \&
+editing.
+\textbf{Amir Bashkin:} Investigation, Resources, Writing -- review \& editing.
+\textbf{Leonard Saig:} Investigation, Resources, Writing -- review \& editing.
+\textbf{Dror Cantrell:} Investigation, Resources, Writing -- review \& editing.
+\textbf{Irit Wirsansky:} Investigation, Resources, Writing -- review \& editing.
+\textbf{Muhamad Badarne:} Investigation, Resources, Writing -- review \& editing.
+\textbf{Irena Barash:} Investigation, Resources, Writing -- review \& editing.
+\textbf{Avivit Cahn:} Conceptualization, Investigation, Writing -- review \&
+editing.
+\textbf{Irit Hochberg:} Conceptualization, Methodology, Validation,
+Resources, Supervision, Writing -- review \& editing.
+
+\section*{Funding}
+\TODO{Funding statement outstanding --- see open task 1 after the front
+matter.}
+
+\section*{Declaration of Competing Interest}
+Several of the authors contributed to the national position paper whose
+implementation is assessed in this study. The authors declare no competing
+financial interests or personal relationships that could have appeared to
+influence the work reported in this paper.
+
+\section*{Data Availability}
+The abstraction engine, the knowledge base of temporal-abstraction and
+quality-assessment definitions, and the analysis notebooks are publicly
+available in the Mediator repository \citep{mediator-github}, and the
+extraction and cohort-construction pipeline in a companion repository
+\citep{kineret-etl-github}. The curated concept indices mapping the source
+vocabulary onto the concepts named in the knowledge base are provided as
+supplementary material.
+
+All processing and analysis were performed inside a closed hospital
+computing environment. The code released here is a replica of that
+pipeline; no source data, intermediate datasets, or unaggregated outputs
+leave that environment, and the results reported in this paper are exported
+aggregate statistics. The underlying patient-level electronic health record
+data cannot be shared, as it comprises identifiable clinical records
+governed by the approvals under which it was obtained.
+
+\section*{Ethics Approval}
+The study was approved by the institutional Helsinki committee of each
+participating center under a common protocol (NHR-0152-23): Galilee Medical
+Center (NHR-0152-23), Hillel Yaffe Medical Center (HYMC-0074-24), Shamir
+Medical Center (ASF-0117-24), Tzafon Medical Center (POR-0047-24), Barzilai
+University Medical Center (BRZ-0059-24), and Bnai Zion Medical Center
+(BNZ-0067-24). Recruitment was approved for up to 30,000 participants across
+all centers combined. A full waiver of informed consent was granted, since
+the study extracts records from a de-identified repository with no patient
+contact.
+
+\section*{Acknowledgements}
+This study would not have been possible without the Kineret project team,
+who built and maintain the harmonized multicenter data warehouse on which it
+rests. Transforming the records of a national hospital network into a
+common data model, and sustaining the infrastructure and governance that
+make it usable for research, represents a substantial body of work in its
+own right; the authors are grateful for that effort and for the team's
+support in accessing the data and extracting the study cohort. The authors
+also thank the Helsinki committee coordinators at the participating centers
+for their assistance throughout the approval process.
+
+\bibliographystyle{elsarticle-num}
+\bibliography{references}
+
+% appendix.tex begins with \appendix
+\input{appendix}
+
+\end{document}

@@ -1,0 +1,102 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Diabetes mellitus affects approximately 537 million adults worldwide, a
+figure projected to reach 783 million by 2045
+\citep{idf-atlas-10th-edition-2021}. In Israel, the national diabetes
+registry documents a steadily growing patient population over the past
+decade
+\citep{israel-national-center-disease-control-diabetes-registry-report-2012-2022},
+with a corresponding burden on the health system
+\citep{summary-cost-diabetes-israel-2018}. That burden is concentrated in
+hospital care: approximately 40\% of patients admitted to Israeli general
+hospitals have diabetes \citep{hochberg2023inpatient}.
+
+In hospital the clinically relevant object is not the diagnosis but the
+glycemic state during the admission. Hyperglycemia arising in hospital is
+associated with infection, delayed healing, metabolic decompensation and
+increased mortality, and occurs in patients with and without documented
+diabetes. Its counterpart, hypoglycemia, is acute, harmful, and largely
+iatrogenic---a consequence of the insulin used to correct the first problem.
+Inpatient glycemic management is therefore a balancing act shaped less by any
+single decision than by how monitoring, medication management and insulin
+dosing are carried out repeatedly across a stay. That makes the treatment
+process itself, not only the patient's state, worth measuring.
+
+Guidelines exist to standardize such processes. In September 2023 the Israel
+Endocrine Society, the Israel Diabetes Association and the National Diabetes
+Council issued a national position paper on inpatient diabetes care
+\citep{hochberg2023inpatient}, specifying how often glucose should be
+measured, how oral antidiabetic agents should be handled on admission, when
+basal and correction insulin should be given, and how to respond to
+hyperglycemic and hypoglycemic episodes. Recommendations of this kind are
+checkable in principle because they are procedural, temporal and
+conditional: an action is expected, within some window or at some frequency,
+when a triggering situation holds.
+
+Establishing whether they were followed is harder. Guidelines are published
+as text, must be adapted to the individual patient, and are known to be
+applied incompletely. Retrospective assessment has conventionally required
+chart review, which does not scale past modest single-institution
+samples---too small to separate one ward's practice from the effect of a
+guideline, and far too small to see how practice shifts when a guideline is
+introduced nationally. The question that matters most to a guideline's
+authors is therefore rarely answerable: not whether the guideline is sound,
+but which of its individual recommendations are adopted, and which of them
+measurably change what happens to patients.
+
+This study addresses that question. Each recommendation was formalized as a
+temporal pattern over abstracted clinical data, using knowledge-based
+temporal abstraction \citep{shahar1997framework} and the quality-assessment
+formulation of adherence \citep{ben2024supporting}, producing a continuous
+compliance score automatically wherever the recommendation applies. Applying
+this to 48,354 admissions across six general hospitals spanning the
+guideline's introduction, we ask how completely each recommendation was
+implemented and whether that changed after issue; whether adherence is
+associated with subsequent outcomes once measured patient characteristics
+are accounted for; and which individual recommendations carry that
+association. Adherence thus serves as an explanatory variable, and the
+guideline's recommendations as hypotheses to be tested against what
+subsequently happened to the patient.
+
+% JBI requires a Statement of Significance at the end of the Introduction.
+\begin{table}[h]
+\centering
+\caption{Statement of Significance}
+\label{tab:significance}
+\begin{tabularx}{\textwidth}{
+>{\raggedright\arraybackslash}p{0.22\textwidth}
+>{\raggedright\arraybackslash}X
+}
+\toprule
+
+\textbf{Problem} &
+Adherence to inpatient diabetes guidelines is known to be incomplete, but
+assessing it retrospectively has required manual chart review. This does not
+scale to the size needed to distinguish local practice from the effect of a
+guideline, or to observe how practice changes when one is introduced
+nationally. \\
+
+\midrule
+
+\textbf{What is Already Known} &
+Knowledge-based temporal abstraction and quality-assessment temporal
+patterns allow guideline adherence to be scored automatically from clinical
+records, and have been demonstrated in single-institution settings. Prior
+applications evaluate care \emph{against} the guideline, which serves as the
+reference standard. \\
+
+\midrule
+
+\textbf{What This Paper Adds} &
+An automated, component-level assessment of a national inpatient
+hyperglycemia guideline across six hospitals and 48,354 admissions spanning
+its introduction, together with a transferable knowledge base encoding it.
+By treating each recommendation as a testable hypothesis rather than as a
+fixed standard, the study identifies which recommendations were least
+implemented and which are associated with subsequent outcomes---and finds
+these to be largely the same set. \\
+
+\bottomrule
+\end{tabularx}
+\end{table}

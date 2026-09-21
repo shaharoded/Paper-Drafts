@@ -1,0 +1,91 @@
+\section{Motivation}
+
+Diabetes mellitus is a global epidemic, responsible for millions of deaths annually and for a steadily growing share of health-care expenditure worldwide \citep{idf-atlas-10th-edition-2021}. In Israel, people with diabetes make up more than 7\% of the population, yet they account for roughly one-third of total health-care spending \citep{israel-national-center-disease-control-diabetes-registry-report-2012-2022}. They occupy a disproportionate share of inpatient days and drive costly complications such as infection, acute kidney injury, cardiovascular events, and diabetic ketoacidosis \citep{summary-cost-diabetes-israel-2018}.
+
+Within the hospital, dysglycemia is not a static comorbidity but an actively managed process. Hyperglycemia and hypoglycemia during admission prolong length of stay and increase mortality risk, and both are largely a function of how insulin therapy is titrated day by day. Adherence to evidence-based insulin protocols, however, is inconsistent in routine internal-medicine practice. Recent Israeli interventions --- updated national guidelines, a mandatory diabetes e-learning module for clinical staff, and a new quality indicator for persistent hyperglycemia --- were introduced precisely to close that gap, but their real-world effect on treatment behavior and on patient outcomes has not been quantified at scale.
+
+This creates a twofold need. Clinically, we need to \emph{measure} how well guidelines are actually followed across hospitals and over time, and whether adherence translates into better outcomes. Computationally, we need models that can reason over the irregular, sparse, and heterogeneous temporal data of an electronic health record (EHR) well enough to anticipate short-term deterioration, while remaining interpretable enough for clinicians to act on. This thesis addresses both, and treats them as a single problem: guideline adherence is simultaneously a subject of analysis and a feature of the predictive model.
+
+\section{Problem Statement and Research Goal}
+
+The central task studied in this thesis is \emph{short-horizon outcome prediction for diabetic inpatients}. Given an admission of $N$ days, we observe only the first $K$ days and predict clinically significant outcomes --- among them myocardial infarction, hypoglycemia, ketoacidosis, and in-hospital mortality --- occurring in the remaining $N-K$ days, for admissions of $48\,\text{hours} \le K < N \le 14\,\text{days}$.
+
+The input representation is built as a chain of increasingly abstract views of the same admission:
+%
+\begin{center}
+raw EHR data $\rightarrow$ temporal intervals $\rightarrow$ scored procedural intervals
+\end{center}
+%
+Raw EHR data --- laboratory measurements, medication administrations, and observations, together with the patient's recorded clinical history --- is first abstracted into \emph{temporal intervals}: states, trends, events, and contexts produced by knowledge-based temporal abstraction (KBTA) \citep{shahar1997framework}, each a named clinical concept holding over a time span. Those intervals are then matched against formalized insulin-management guidelines to yield \emph{procedural intervals}, which mark where a guideline-relevant clinical situation arose and what was done about it. Unlike the preceding levels, a procedural interval also carries a \emph{score}: a fuzzy-logic evaluation of how well the action taken matched what the guideline prescribed, so that adherence is expressed as a graded quantity rather than a binary compliant/non-compliant verdict. Aggregated over an admission, these scores form its quality-assessment (QA) profile.
+
+Alongside this temporal chain, each admission is represented by a \emph{static feature vector} derived from the EHR --- demographics, comorbidities, and admission-level summaries of the patient's prior clinical history --- providing the time-invariant context against which the temporal sequence is interpreted.
+
+A defining aspect of this research is the integration of \emph{two distinct kinds of medical knowledge}. The first is general declarative knowledge --- definitions such as ``high blood pressure'' or ``persistent hyperglycemia'' --- which is what turns raw measurements into named clinical concepts. The second is procedural quality-control knowledge --- whether a clinician did the right thing at the right time, such as administering insulin following a documented hyperglycemic episode. Most predictive work on EHR data uses the first and ignores the second. We argue that the second carries independent signal, because it describes the treatment process rather than only the patient state, and that it is the component clinicians can most directly change.
+
+Accordingly, the thesis pursues two research questions:
+
+\begin{enumerate}
+\item Can transformers operating over interval-based temporal abstractions and guideline-compliance scores match or exceed state-of-the-art models for short-term complication prediction over irregular clinical time series, while inheriting the explainability that symbolic abstractions provide by construction? This includes asking how far the abstraction and scoring layers contribute beyond raw measurements alone, and how two formulations over the same abstracted timeline --- a bidirectional encoder for single-pass risk estimation and an autoregressive decoder that generates future abstraction trajectories --- differ in what they capture about the same clinical process.
+\item Which guideline components are most informative for explaining outcomes, how did adherence to them change following the national implementation effort, and what does that imply about which recommendations are critical, redundant, or hard to apply in practice?
+\end{enumerate}
+
+\section{Approach}
+
+The original research plan proposed three progressively richer uses of a patient's temporal record: abstracted states, events, trends, and patterns taken directly as features alongside demographics; a distributional summary of frequent temporal patterns, following the Temporal Probabilistic proFile (TPF) method \citep{moskovitch2015karmalego, sheetrit2019tpf}; and a transformer architecture consuming interval-based abstractions to generate a predicted event stream as the basis for classification. All three are retained here, the first two as symbolic baselines and the third as the main methodological contribution.
+
+\subsection{Interval-Based Transformers}
+
+The methodological core of the thesis is \textbf{INTERVenE}, a transformer family operating directly on temporal symbolic intervals rather than on raw time series \citep{methodology-paper}. Each KBTA interval becomes a named concept token, making the model's vocabulary clinical by construction, and the resulting sequence carries state progression, duration, and event ordering --- none of which a standard transformer \citep{attention-is-all-you-need} recovers from raw measurements on its own. Irregular timing is preserved by continuous time encoding \citep{kazemi2019time2vec}, while the static feature vector conditions the model through AdaLN-Zero modulation \citep{peebles2023adaln0} --- the same pathway through which an admission's adherence profile enters as model input.
+
+Two complementary variants were developed. \textbf{INTERVenE-Enc} is bidirectional and performs single-pass joint risk and time-to-event prediction from the observation window, favoring discriminative accuracy, and it surpasses state-of-the-art baselines on this task. \textbf{INTERVenE-Ar} is autoregressive and continues the abstraction sequence forward, yielding a generated clinical trajectory with token-level risk readouts and thus a temporally resolved view of how risk develops. Each supports its own form of explanation --- sparse-transcoder attribution over the encoder's internal representations \citep{dunefsky2024transcoders}, and direct inspection of the decoder's generated tokens --- and because the vocabulary consists of named concepts, both resolve to clinical statements rather than anonymous feature indices. Both variants were validated on ICU admissions from MIMIC-IV \citep{johnson2023mimiciv} against strong neural and symbolic baselines.
+
+\subsection{Guideline Adherence: Implementation and Influence}
+
+The second part of the work moves from a controlled benchmark to routine hospital practice, using the Kineret dataset, which spans six Israeli general hospitals under an OMOP common data model \citep{kineret-israel-largest-hospital-network-omop-common-data-model}. Here adherence is studied along three axes \citep{kineret-guidelines-paper}. \emph{Measurement}: formalizing insulin-management guidelines as quality-assessment temporal patterns turns compliance into a continuous quantity, comparable across sites and over time rather than resting on chart review. \emph{Implementation}: comparing adherence before and after the national implementation period separates the recommendations the intervention succeeded in changing from those that remained stubbornly uneven. \emph{Influence}: component-level regression and propensity-weighted analyses isolate the guideline components that remain tied to outcomes once measured baseline characteristics are balanced, moving the claim from correlation toward a defensible causal reading.
+
+The two parts close a loop: the guidelines study supplies the adherence signal and the clinical evidence that it is worth modeling, and the transformer work supplies the machinery to use it predictively and to identify which of its components matter.
+
+\section{Main Results and Contributions}
+
+Four results carry the thesis. INTERVenE-Enc outperforms the established
+neural and symbolic alternatives on the MIMIC-IV benchmark, and leads the
+narrower comparison run on the Kineret cohort. Ablations locate
+the source of that gain in the persistence and concurrency of intervals rather
+than in their clinical naming, making knowledge-based abstraction an
+interpretability substrate obtained at essentially no cost in accuracy.
+Guideline adherence divides by the kind of action a recommendation requires
+rather than by its clinical weight, and rose only modestly after national
+implementation. And the recommendations least adhered to are among those most
+strongly associated with patient outcomes --- the finding with the clearest
+practical consequence.
+
+The main contributions of this thesis are:
+
+\begin{itemize}
+\item A tokenization framework casting knowledge-based temporal abstractions as a named-concept vocabulary for transformer models over irregular clinical data, making the input representation interpretable by construction.
+\item Two complementary interval-based transformer architectures --- a bidirectional encoder for single-pass risk and time-to-event prediction, and an autoregressive decoder for abstraction-trajectory generation with per-step risk curves --- together with a systematic comparison of what each formulation captures.
+\item A declarative and procedural knowledge base, encoding both the clinical semantics of diabetes care and the quality-assessment rules that define guideline adherence, applicable to any EHR dataset within the same clinical scope.
+\item A treatment of guideline adherence as an explanatory variable rather than only a reported one, bringing procedural quality-control knowledge to bear on patient outcomes alongside the declarative knowledge such analyses normally rely on.
+\item An attribution pipeline whose explanations resolve to named clinical concepts, identifying the guideline components that drive predicted risk.
+\item A multi-center analysis of insulin-guideline adherence across six Israeli hospitals, quantifying how it changed following a national implementation effort and how it relates to patient outcomes.
+\end{itemize}
+
+Section~\ref{sec:contributions} returns to these once the results are in hand,
+separating what the thesis contributes to computer science from what it
+contributes to medicine and medical informatics.
+
+\section{Thesis Outline}
+
+The remainder of this thesis is organized as follows.
+Chapter~\ref{chapter:background} supplies the background: the definitions
+required throughout --- temporal abstraction, quality-assessment patterns, and
+transformer architectures --- followed by a review of prior work on temporal
+data mining in medicine, guideline-based decision support and quality
+assessment, and deep learning over electronic health records.
+Chapter~\ref{chapter:comp_methods} presents the computational methods:
+preprocessing, temporal abstraction, QA-score computation, model development,
+and optimization. Chapter~\ref{chapter:eval_methods} introduces the data, states
+the research questions, and describes the experiments and measures used to
+answer them. Chapter~\ref{chapter:results} reports the results in that order.
+Chapter~\ref{chapter:summary} summarizes the findings, states the
+contributions, sets out the limitations, and concludes.

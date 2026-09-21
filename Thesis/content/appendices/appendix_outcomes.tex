@@ -1,0 +1,43 @@
+This appendix gives the operational definitions of every predicted and analyzed outcome. The two cohorts use different sets, for the reasons given in Section~\ref{sec:method-kineret-task}, and are listed separately.
+
+\section{MIMIC-IV: Target Complications}
+\label{app:outcomes-mimic}
+
+All six targets are defined directly from physiological measurements rather than from diagnosis codes, so that each carries a precise onset time. They are evaluated over the $48$--$336$\,h prediction window.
+
+\begin{itemize}
+\item \textbf{Hyperglycemia} --- a glucose measurement $\ge 250$\,mg/dL, or a glucose measurement $\ge 180$\,mg/dL with a prior measurement also $\ge 180$\,mg/dL (recurrent).
+\item \textbf{Severe hyperglycemia} --- a single glucose measurement $\ge 250$\,mg/dL.
+\item \textbf{Hypoglycemia} --- a glucose measurement $\le 54$\,mg/dL, or a glucose measurement $\le 70$\,mg/dL with a prior measurement between $20$ and $70$\,mg/dL (recurrent).
+\item \textbf{Severe hypoglycemia} --- a single glucose measurement $\le 54$\,mg/dL.
+\item \textbf{Kidney complication (acute kidney injury)} --- a serum creatinine measurement $\ge 4.0$\,mg/dL (AKI stage-3 criterion), or a serum creatinine measurement $\ge 2.0$ times the baseline creatinine recorded at admission (AKI stage-2$+$ criterion).
+\item \textbf{Death} --- the patient's recorded time of death, covering in-hospital mortality and $30$-day post-discharge mortality where linked via state death records.
+\end{itemize}
+
+Deriving labels from timestamped measurements rather than administrative codes means the task is to forecast clinically meaningful deterioration, not to recover a coding decision.
+
+\section{Kineret: Analyzed Complications}
+\label{app:outcomes-kineret}
+
+Ten complications are evaluated on the clinical cohort. All are emitted as abstractions by the same engine that scores adherence, and they differ only in where the underlying logic is evaluated.
+
+Derived by the engine directly from measurements:
+
+\begin{itemize}
+\item \textbf{Hyperglycemia} and \textbf{severe hyperglycemia} --- from glucose values, using a parameterized concept that separates a sustained state from an isolated reading.
+\item \textbf{Hypoglycemia} and \textbf{severe hypoglycemia} --- likewise from glucose values.
+\item \textbf{Inpatient acute kidney injury (AKI)} --- from serum creatinine and its ratio to baseline, defined as stage $2$ or above so that stage-$1$ fluctuation does not qualify.
+\end{itemize}
+
+Precomputed during data preparation and supplied to the engine as primitive concepts, which it re-emits as complication events:
+
+\begin{itemize}
+\item \textbf{Ketoacidosis}, \textbf{infection}, and \textbf{hyperosmolality} --- each requiring multi-step logic that combines several concept types over their own temporal windows.
+\item \textbf{Inpatient myocardial infarction (MI)} --- requiring evidence of an ischemic cardiac event together with a troponin level of at least $600$, so that coded cardiac history unaccompanied by biochemical evidence of acute injury does not qualify.
+\end{itemize}
+
+Taken from linked records:
+
+\begin{itemize}
+\item \textbf{Thirty-day mortality} --- death occurring between $14$ days before and $30$ days after the recorded discharge datetime. The backward tolerance captures in-hospital deaths whose death record precedes the administrative discharge timestamp.
+\end{itemize}

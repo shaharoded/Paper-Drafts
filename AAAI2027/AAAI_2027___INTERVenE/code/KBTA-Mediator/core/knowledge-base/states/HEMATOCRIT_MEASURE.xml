@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="HEMATOCRIT_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of HEMATOCRIT</description>
+    <derived-from name="HEMATOCRIT_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="24h" interpolate="true" max-skip="1"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Critical Anemia" operator="and">
+            <attribute idx="0">
+                <allowed-value max="20"/>
+            </attribute>
+        </rule>
+        <rule value="Moderate Anemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="20" max="30"/>
+            </attribute>
+        </rule>
+        <rule value="Borderline" operator="and">
+            <attribute idx="0">
+                <allowed-value min="30" max="36"/>
+            </attribute>
+        </rule>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value min="36" max="45"/>
+            </attribute>
+        </rule>
+        <rule value="Hemoconcentration" operator="and">
+            <attribute idx="0">
+                <allowed-value min="45"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

@@ -1,0 +1,70 @@
+\section{Related Work}
+\label{sec:related-work}
+
+The work reviewed here forms one continuous line of research, running from
+the representation of clinical concepts, through the machine-interpretable
+representation of clinical guidelines, to the retrospective assessment of
+whether those guidelines were followed. It supplies both the abstraction
+layer and the adherence measure used here, beginning with knowledge-based
+temporal abstraction and the Temporal Mediator
+\citep{shahar1997framework}---the framework that turns time-stamped clinical
+data into named interval concepts, and the engine that executes a knowledge
+base against a patient record to derive them.
+
+Formalizing a guideline requires two kinds of knowledge: \emph{declarative}
+knowledge, defining what its terms mean, and \emph{procedural} knowledge,
+specifying what to do and when. Asbru
+\citep{shahar1997asbru, shahar1998asgaard} is the language in which the
+procedural half is conventionally expressed, representing sequential,
+concurrent, conditional and repetitive actions as a hierarchy of execution
+plans.
+
+Picard
+\citep{shalom2016architecture}
+combines declarative knowledge executed by the Mediator with procedural
+knowledge in Asbru to generate real-time recommendations, adherence reports,
+and alerts for critical deviations. It served as the decision-support engine
+of the MobiGuide project
+\citep{peleg2022mobiguide},
+which supported chronic disease management in Spain and Italy; there, the
+engine improved clinicians' compliance with guidelines from 41\% in manual
+mode to 93\%---direct evidence that adherence is malleable, and therefore
+worth measuring.
+
+Retrospective assessment required a third body of knowledge.
+\emph{Quality-assessment} knowledge \citep{ben2024supporting} re-expresses a
+guideline's procedural content declaratively, as the temporal pattern its
+correct execution would have left in the record---a quality-assessment
+temporal pattern. Acquiring it is a knowledge-engineering task in itself:
+each recommendation must be classified by the constraint it imposes and given
+a membership function grading partial compliance rather than a binary
+verdict. Such systems are conventionally evaluated for the correctness and
+completeness of their recommendations, first against simulated scenarios and
+then silently on real data \citep{shalom2015multiple}. The assessment
+machinery has also been applied institutionally: a system for long-term
+management at a geriatric hospital \citep{shalom2024implementation} showed
+that automated assessment recovers clinically meaningful variation in how
+protocols are followed.
+
+The present study adopts this formulation of adherence, but not the systems
+that introduced it. No recommendations are produced and no decision-support
+engine is deployed; scoring is performed offline, over records already
+collected. Three differences position the work. In \emph{representation},
+rather than maintaining a procedural formalism alongside a declarative one,
+both are encoded in a single schema evaluated by one engine, and the
+knowledge base itself---formalizing the national inpatient diabetes
+guidelines together with their quality-assessment extension---is a
+contribution transferable to any electronic health record within that
+clinical scope. In \emph{scale}, prior assessments have generally been
+confined to modest cohorts within a single institution, which can separate
+neither the practice of a particular ward from the effect of a guideline,
+nor observe how practice shifts when a guideline is introduced nationally;
+here adherence is measured across six hospitals spanning such an
+implementation. In \emph{purpose}, these systems are evaluated \emph{against}
+the guideline, which serves as the yardstick and whose clinical value is
+inherited from the research establishing it. This study encodes the same
+predetermined guideline, but treats its individual recommendations as
+hypotheses to be tested against what subsequently happens to the patient.
+Adherence thus serves as an explanatory variable rather than only as the
+quantity reported: the question is not whether the guideline was applied
+correctly, but which of its recommendations demonstrably matter.

@@ -1,0 +1,123 @@
+1 
+ 
+מבנה תזה לתואר שני או שלישי  
+ 
+להלן המבנה שרצוי  לראות בתזה חישובית.  הוא  אינו בדיוק המבנה של הצעות מחקר לפקולטה להנדסה,  
+למשל , אלא של תזה שלמה לתואר שני או שלישי 
+אגב, זה פחות או יותר המבנה הסטנדרטי בסטנפורד, ייל או  MIT לתזות במדעי המחשב ובמיוחד בתחום
+BIOMEDICAL INFORMATICS .  
+מנסיוני בהנחיית בערך כ- 90 תזות- ] )מבנה כזה מועיל מאד גם  
+לצרכים נוספים, כגון לצורך קריאה מהירה  על ידי סוקרים,  שליחת מאמרים לכנסים ולכתבי עת, או כדי לשמש  
+ככרטיס ביקור  בעתיד  למסיים התזה, אשר ניתן להבין במהירות מה כלול בו.  
+ 
+מבנה תזה לתואר שני או שלישי לפי סדר הפרקים שצריכים להיות:  
+0. תקציר ABSTRACT כמקובל בתזות 
+1. פרק ראשון הוא פרק המבוא INTRODUCTION שבו יש להציג מוטיבציה לכל המחקר, לסכם בקצרה מה
+קיים, לסכם בקצרה ממבט- על את שאלות המחקר ואת שיטות המחקר, ולסיים בסיכום קצר של התוצאות  
+העיקריות והתרומות CONTRIBUTIONS .  
+ [-תזה'. יחד עם פרק הדיון
+ומסקנות, יכול כל אדם  בעל הבנה טכנית סבירה  להבין במהירות מה נעשה במחקר] 
+ 2 . פרק שני  BACKGROUND AND RELATED WORK.  כל הRELATED WORK צריך להיות חלק
+מפרק הרקע  BACKGROUND. בפרק הרקע מפורטות כל השיטות החישוביות הרלוונטיות למחקר, כאלו  
+שאתם  תשתמש ו בהם, וכאלו  שאחרים השתמשו בהן למחקרים בתחום דומה, אך מסיבה טובה כלשהי אתם   
+לא תשתמש ו בהם. וגם רקע על  ה  DOMAIN –  עלהבעיה הרפואית,  או הפסיכולוגית, למשל,  שעימה  
+מתמודד המחקר ומה נעשה לגביה עד עתה. ושיטות שקיימות בעולם ובמעבדה שלנו להתמודדות עם בעיות  
+מסוג זה, ובמיוחד כאלו שבאמת תשתמש ו  בהן.  
+3. לאחר הרקע מגיע הפרק השלישי, פרק השיטות החישוביות, COMPUTATIONAL METHODS  בו
+מופיעה הארכיטקטורה החישובית, כל האלגוריתמים, פרטים חשובים שונים לגבי עיבוד הנתונים, וכל פרט  
+אחר שקשור  לאספקטים החישוביים, תוך הפניה ל SECTION המתאים בפרק2, אבל בלי לחזור עליו, אלא
+כדי להסביר אפוא ומתי ואיך בדיוק השתמשתם  בו.  
+4. לאחר מכן יופיע הפרק הרביעי,  פרק  שיטות הערכה EVALUATION METHODS  שבו לראשונה
+מופיע   תת -פרק THE DATA ושם יוסבר מאפוא מגיעים הנתונים, מה טיבם, איך נאספו,  ומה תעשו  איתם כדי  
+לבדוק את שיטות המחקר שהוצגו בפרק 3.  ואזתפרטו מה הן בדיוק שאלות המחקר, ומה הניסויים  
+שביצעתם כדי לענות עליהן, ומה המדדים  MEASURES בהם תשתמשו כדי לדעת מה התשובה לשאלות  
+המחקר, ואיך תדעו  שהצלחת ם לעמוד במשימת הפיתוח או לענות על שאלת המחקר?  
+5 .הפרק החמישי הוא כמובן תוצאות  -   RESULTS  .כדי להקל על הקורא, הוא יהיה מאורגן בדיוק לפי סדר  
+ההופעה של ההצגה ושל שאלות המחקר והניסויים שהופיעו בפרק 4.   ראשית, תיאור הנתונים: מה קבלתם   
+לצורך עיבוד, כמה קיבלתם , סטטיסטיקה תיאורית דמוגרפית ואחרת על נתוני הקלט. ואז פרוט כל התוצאות  
+בדיוק לפי סדר שאלות ותתי- שאלות המחקר  בפרק 4: שאלה1א, שאלה1ב; שאלה 2א2ב2ג 
+זה מקל מאד על הקוראים וגם מוודא שאכן  עניתם על כל השאלות. לכל תוצאה אתם  מראים  טבלה או  
+דיאגרמה עם הסברים  בטקסט מה היה לנו: מה בעצם התוצאה  
+כאן ומה משמעותה.  
+ שימו לב:  אל תיתנו  לקורא לגלות לבד  מה מעניין ומה חשוב בטבלאות  או בתרשימים! רמזים  אינם רצויים  
+בתזה :  אם  זאת נקודה  חשוב ה, או מפתיעה, או מעניינת,  ציינו אותה במפורש.  
+2 
+ 
+אמנם נדגיש שמצד שני,  פרק התוצאות  אינו המקום להוסיף בו כל מיני השערות לגבי הסיבות לתוצאות  
+שקיבלתם, או משמעותן יחסית למטרות העל של המחקר , או התפלספות כלשהי לגבי השלכות  
+התוצאות.  את זה יש להשאיר לפרק  6  (דיון) ובפרט לפרק  6.1 או6.2 .  בפרק התוצאות צריכות להופיע רק
+תוצאות  ועובדות, והסברים קצרים  של הבהרה  לגבי משמעותם  או חשיבותם  בהקשר בו הם מופיעים, כגון  
+להבליט את העובדה שיש ירידה בדיוק החיזוי של המודל,   כשחוזים יותר מחמש שנים קדימה, אך לא  מדוע  זה  
+כך.  
+6. הפרק הששי הוא פרק של סיכום, דיון ומסקנות .  SUMMARY , DISCUSSION AND CONCLUSIONS  .
+הוא כולל  
+[1 ] סיכום SUMMARY  קצר של תוצאות התזה, משמעויותיה,  והערות פילוסופיות כלשהן שאולי יש לכם  על  
+משמעותן;   
+[2 ] תרומות CONTRIBUTIONS עיקריותשל המחקר  למדעי המחשב,  למדעי הרפואה, ולחברה בכלל;   
+[3 ] מגבלות LIMITATIONS  - כגון סט נתונים מצומצם, רק ממרכז רפואי אחד וכן הלאה, ואיך ניתן בעתיד
+לפתור זאת במחקרי המשך.  
+[4 ] מסקנות CONCLUSIONS -  בערך חצי עמוד שמסכם מה היו לנו בתזה ואשר יועיל גם לתפקיד דומה  
+במאמר.  
+ 
+7. ביבליוגרפיהBIBLIOGRAPHY  מלאה ומסודרת עם שמות כל הכותבים  
+בטקסט של התזה תצטטו מאמר או ספר על ידי שיופיע CALL  למאמר שיכלול את  שמות הכותבים  
+והשנה, לא על ידי מספר , כך שיהיה קל לקורא להבין על איזה מאמר מדובר; למשל –  
+ “By applying the KarmaLego algorithm [Shahar and Moskovitch, 2015a],  after using the TD4C 
+algorithm to determine the optimal cut-off values for State  and Trend abstractions [Moskovitch 
+and Shahar, 2015c], and generating temporal-abstraction intervals from the time-stamped raw 
+data by applying the temporal mediator, using these cut-off values, 12,475 frequent temporal 
+patterns were discovered. Then, using the frequent temporal patterns as classification features, 
+as suggested by Shahar and Moskovitch [2015b], I had created a prediction model.....” 
+בעוד שבביבליוגרפיה יופיעו כל הרפרנסים באופן מלא ממוינים לפי שמות המחברים  [תח ראשוני  ואז  
+השנה [מספור פנימי עבור כותרים שונים  כלומר, רפרנס  עם כותבים זהים ותאריך זהה יופיע  
+עם מספור כגון a, b, c] ]... . 
+ככה מופיעיםמאמרים :  
+1. Moskovitch, R. and Shahar, Y. (2015a). Fast time intervals mining.  Knowledge and 
+Information Systems 42:21-48. (Published online Dec 27, 2013; DOI 10.1007/s10115-
+013-0707-x). 
+2. Moskovitch, R. and Shahar, Y . (2015b). Classification-driven temporal discretizatio n of 
+multivariate time series. Data Mining and Knowledge Discovery  29 (4):871-913. 
+DOI:10.1007/s10618-014-0380-z. Published online Oct 2, 2014. 
+3. Moskovitch, R. and Shahar, Y. (2015c). Classification of multivariate time series via 
+temporal abstraction and time intervals mining.  Knowledge and Information Systems  45 
+(1):35-74. DOI:10.1007/s10115-014-0784-5.   Published online Oct 1, 2014.  
+ 
+ 
+ 
+3 
+ 
+ככה יופיעספר :  
+ 
+4. Combi, C., Keravnou, E ., and Shahar, Y.   Temporal Information Systems in Medicine . 
+Springer-Verlag, New York, 2010. 
+ 
+ככה מופיעפרק  בספר :  
+5. Musen, M .A., Shahar, Y.,  and Shortliffe, E.H.  Clini cal Decision Support 
+Systems.  In: Shortliffe, E.H., and Perrealt, L.E., Wiederhold G., and Fagan, L.M. 
+eds, Medical Informatics: Computer Applications in Health Care and 
+Biomedicine (2nd Ed.), pp. 573-609.  Springer-Verlag, New York, 2000.  
+ 
+ככה מופיע ספר המאמרים של כנס:  
+ 
+6. Combi, C., Shahar, Y., and Abu-Hanna, A. (eds). Artificial Intelligence in Medicine 
+(Proceedings of the 12th Conference on Artificial Intelligence in Medicine, AIME 2009, 
+Verona, Italy, 2009). Lecture Notes in Computer Science (LNCS) 5651, 2009. 
+ 
+ככה תופיעתזה:  
+7. Shahar, Y. (1994).  A Knowledge-Based Method for Temporal Abstraction of Clinical 
+Data.  Ph.D. dissertation, Program in Medical Information Sciences, Knowledge 
+Systems Laboratory Report No. KSL -94-64, Department of Computer Science report 
+No. STAN -CS-TR-94-1529, Stanford University, Stanford, CA , USA .                                   
+https://exhibits.stanford.edu/stanford-pubs/catalog/ch619kv7930 . 
+ככה יופיעפרסום מקדים בארכיב:  
+8. Shinitzky H., Shahar Y ,  Parpara, O., Ezrets, M., Klein, R. (2022). Meta-learning approaches 
+for a one -shot collective-decision aggregation: Correctly choosing how to choose correctly.  
+arXiv Preprint , April 2022, No. 2204.01721.  https://arxiv.org/abs/2204.01721 . 
+ 
+ 
+8. לאחררשימת הרפרנסים יתכן מאד שיופיעו נספחים  APPENDICES  - אפס, אחד, או יותר נספחים כגון
+Appendix A  .כאן שמים כל מיני פרטים שלא רציתם  שיפריעו  לשטף הקריאה של הקורא על ידי פירוטם בגוף  
+התזה ובכל זאת יש להם חשיבות מסוימת.  כגון טבלאות המרה או אבחון שהשתמשתם   בהם, או שהוזכרו  
+בפרק הרקע או השיטות או התוצאות, ניתוחים נוספים שרק הסיכום שלהם הופיע בתוצאות,פרטים של  
+אלגוריתמים שאינם קריטיים לפרק השיטות ושהקורא הופנה שם  לנספח כדי לעיין בהם, וכן הלאה.  
+ 

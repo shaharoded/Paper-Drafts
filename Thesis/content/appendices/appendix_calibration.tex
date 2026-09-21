@@ -1,0 +1,115 @@
+This appendix expands the calibration results of Section~\ref{sec:eval-methodological}, the autoregressive risk trajectories, and the interpretability analysis. Calibration is evaluated without retraining: locked checkpoints remain unchanged, and only the test-time logit-to-probability mapping is optimized, so rank-based metrics are unaffected by the monotonic scaling.
+
+\section{INTERVenE-Enc Calibration}
+\label{app:calibration-enc}
+
+Per-outcome temperatures $T_k$ are fitted by LBFGS on the validation split and applied unchanged to the held-out test split.
+
+\begin{table}[htbp]
+  \caption{INTERVenE-Enc per-outcome temperature (validation fit) and expected calibration error before and after scaling (test split). $T_k = 1$ denotes perfect calibration as emitted; $T_k > 1$ denotes over-confidence. The last row is the support-weighted aggregate.}
+  \label{tab:calibration}
+  \centering
+\singlespacing
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    Outcome & $T_k$ & ECE$_\text{uncal}$ & ECE$_\text{cal}$ & $\Delta$ECE \\
+    \midrule
+    KIDNEY                  & 0.866 & 0.0228 & 0.0151 & $-0.0077$ \\
+    SEVERE\_HYPERGLYCEMIA   & 0.907 & 0.0224 & 0.0176 & $-0.0048$ \\
+    SEVERE\_HYPOGLYCEMIA    & 0.913 & 0.0101 & 0.0067 & $-0.0033$ \\
+    HYPERGLYCEMIA           & 0.970 & 0.0166 & 0.0157 & $-0.0010$ \\
+    HYPOGLYCEMIA            & 0.974 & 0.0071 & 0.0080 & $+0.0009$ \\
+    DEATH                   & 1.039 & 0.0097 & 0.0075 & $-0.0022$ \\
+    \midrule
+    Weighted (by $n_\text{pos}$) & --- & $0.0162$ & $0.0134$ & $-0.0027$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+INTERVenE-Enc is well calibrated as emitted, with every fitted temperature close to unity ($T_k \in [0.87, 1.04]$). Temperature scaling yields only a modest improvement in support-weighted ECE ($0.016 \rightarrow 0.013$), consistent with the reliability diagrams of Figure~\ref{fig:reliability}. The fitted temperatures are provided alongside the released checkpoint as an optional refinement rather than as a required post-processing step.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{enc_reliability.png}
+  \caption{INTERVenE-Enc reliability diagrams ($10$ equi-width bins, held-out test split). Blue: uncalibrated. Orange: after $T_k$ scaling. The dashed diagonal is perfect calibration; panel titles report ECE and $T_k$.}
+  \label{fig:reliability}
+\end{figure}
+
+\section{INTERVenE-Ar Calibration}
+\label{app:calibration-ar}
+
+Calibration follows the same protocol, using the per-patient maximum outcome probability over the generated trajectory --- the same readout used for the headline metrics.
+
+\begin{table}[htbp]
+  \caption{INTERVenE-Ar per-outcome temperature (validation fit) and expected calibration error before and after scaling (test split). $T_k < 1$ denotes over-confidence, $T_k > 1$ under-confidence. Readout: per-patient maximum $P_\text{outcome}$ over generated positions.}
+  \label{tab:ar-calibration}
+  \centering
+\singlespacing
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    Outcome & $T_k$ & ECE$_\text{uncal}$ & ECE$_\text{cal}$ & $\Delta$ECE \\
+    \midrule
+    SEVERE\_HYPOGLYCEMIA    & 0.6543 & 0.1119 & 0.0754 & $-0.0365$ \\
+    HYPOGLYCEMIA            & 0.7838 & 0.1174 & 0.0911 & $-0.0263$ \\
+    KIDNEY                  & 0.9566 & 0.0523 & 0.0490 & $-0.0033$ \\
+    SEVERE\_HYPERGLYCEMIA   & 1.0241 & 0.0450 & 0.0469 & $+0.0018$ \\
+    HYPERGLYCEMIA           & 1.2365 & 0.0389 & 0.0184 & $-0.0205$ \\
+    DEATH                   & 1.4700 & 0.0495 & 0.0108 & $-0.0387$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+INTERVenE-Ar shows a far wider range of fitted temperatures than the encoder ($T_k \in [0.65, 1.47]$), reflecting the greater calibration difficulty of an autoregressive readout. Scaling substantially improves the prevalent outcomes --- death moves from $0.050$ to $0.011$ ECE --- while the rare hypoglycemia outcomes remain hardest to calibrate, consistent with their low prevalence and low AUPRC. An aggregate ECE is omitted because calibration here is evaluated on a trajectory-derived peak-probability readout rather than on a native discriminative output.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{ar_reliability.png}
+  \caption{INTERVenE-Ar reliability diagrams ($10$ equi-width bins, held-out test split). Blue: uncalibrated. Orange: after $T_k$ scaling. Prevalent outcomes improve substantially after scaling; the rare hypoglycemia panels show wider residual deviation, consistent with the AUPRC floor in Table~\ref{tab:per-outcome}.}
+  \label{fig:ar-reliability}
+\end{figure}
+
+\section{Autoregressive Risk Trajectories}
+\label{app:ar-trajectories}
+
+The Ar variant emits a per-step risk curve over the generated trajectory. The risk head is evaluated at every generation step, producing a time-resolved signal that can express multiple risk peaks within a single admission. Peak width is governed by the Phase-2 soft kernel ($\tau = 12$\,h for death), so absolute risk values should be read relative to $\tau$ rather than as binary decisions.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{ar_risk_trajectory_death.png}
+  \caption{INTERVenE-Ar per-step death risk trajectories for two held-out test patients. Red: a true-positive admission, where risk rises progressively and peaks near the recorded death time ($\approx 171$\,h, dotted). Blue: a true-negative admission, where risk stays near baseline throughout. The $x$-axis begins at the $48$\,h observation cutoff; the $y$-axis is normalized to the local peak.}
+  \label{fig:ar-trajectory}
+\end{figure}
+
+\section{Concept-Level Attribution Across All Outcomes}
+\label{app:xai}
+
+Figure~\ref{fig:xai-all} gives the per-token attribution panels for all six forecast outcomes; the death panel appears in the main text as Figure~\ref{fig:xai}. Attribution sums the signed gradient$\times$activation of an outcome's risk logit over all layer--feature pairs at each token, averaged across $300$ test patients, with interval START and END boundaries collapsed so a single interval contributes one bar. Across outcomes the drivers are clinically coherent and expressed entirely in named KBTA concepts.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{xai_all_outcomes.png}
+  \caption{Per-token top risk drivers for all six forecast outcomes, recovered from INTERVenE-Enc by gradient-decoupled sparse-transcoder attribution and averaged over $300$ test patients. Within each panel the bars are signed gradient$\times$activation contributions summed over layers and features; red tokens push predicted risk up, blue push it down. The $x$-axis scale is panel-specific, so bar lengths should be compared only within a panel.}
+  \label{fig:xai-all}
+\end{figure}
+
+\section{Implementation Details}
+\label{app:implementation}
+
+\paragraph{Legality masking (INTERVenE-Ar Phase 2).}
+At each position $i$ a dynamic boolean mask $\mathbf{m}_i \in \{0,1\}^{V}$ is computed from the accumulated sequence state and applied to both the logits and the BCE targets, so the model never receives gradient for an illegal continuation. Illegality is determined by three stateful rules: an interval \texttt{END} is illegal if its \texttt{START} has not been seen; an interval \texttt{START} is illegal if the same base concept, or a conflicting value of it, is already open; and meal tokens must follow a fixed cyclic order. The mask is derived deterministically from the TAK interval grammar at every training step and recomputed autoregressively during generation.
+
+\paragraph{Soft-kernel horizons and Phase-2 label exposure.}
+The terminal BCE window is $H_\text{term} = 168$\,h and the outcome risk-head horizon $H_\text{out} = 48$\,h. Per-class decay $\tau_k$ is initialized at $48$\,h for outcome tokens and $12$\,h for terminal and default language-model tokens. The terminal $\tau$ is frozen after an early diagnostic showed unconstrained widening; the outcome $\tau$ remains learnable in Phase~2 and is frozen in Phase~3.
+
+Phase~2 pretraining runs on full patient trajectories and therefore sees post-$48$\,h tokens. This is intentional --- a generative objective must learn future sequence structure --- and it does not leak the task: outcome labels are introduced only in Phase~3, and inference is seeded solely with the $0$--$48$\,h window, so no task-relevant label information is accessible during Phase~2.
+
+\paragraph{Convergence.}
+Both variants share the Phase~1 embedder, which ran $27$ epochs with the best checkpoint at epoch $22$. INTERVenE-Enc Phase~2 ran $99$ epochs (best at $94$) and Phase~3 ran $49$ (best at $44$). INTERVenE-Ar Phase~2 ran $32$ epochs (best at $27$) and Phase~3 ran $70$ (best at $65$).
+
+\paragraph{Generation horizon (INTERVenE-Ar).}
+Generation is bounded by a token budget of $2{,}000$ and a temporal limit of $336$ hours from admission, and halts early on emitting a terminal token. In practice the temporal or terminal condition binds; the token budget is a safety cap.
+
+\paragraph{Knowledge-base scale.}
+The diabetes knowledge base comprises $174$ TAK abstraction definitions (Appendix~\ref{appendix:kb}).

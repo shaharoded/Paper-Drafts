@@ -1,0 +1,364 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{caption}
+\captionsetup[table]{skip=6pt}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\ifLuaTeX
+  \usepackage{luacolor}
+  \usepackage[soul]{lua-ul}
+\else
+  \usepackage{soul}
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\ifPDFTeX
+  \TeXXeTstate=1
+  \newcommand{\RL}[1]{\beginR #1\endR}
+  \newcommand{\LR}[1]{\beginL #1\endL}
+  \newenvironment{RTL}{\beginR}{\endR}
+  \newenvironment{LTR}{\beginL}{\endL}
+\fi
+\ifluatex
+  \newcommand{\RL}[1]{\bgroup\textdir TRT#1\egroup}
+  \newcommand{\LR}[1]{\bgroup\textdir TLT#1\egroup}
+  \newenvironment{RTL}{\textdir TRT\pardir TRT\bodydir TRT}{}
+  \newenvironment{LTR}{\textdir TLT\pardir TLT\bodydir TLT}{}
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\includegraphics[width=2.62865in,height=1.57545in]{media/image1.png}\LR{}
+
+\LR{}
+
+\LR{}
+
+Thesis Progress Report
+
+Predicting Clinical Outcomes and Assessing the Effects of Diabetes Care
+Guidelines Compliance in Hospitals Using Time-Dependent Machine Learning
+and Deep Learning Methods
+
+January 2026
+
+\textbf{Submitted by:}
+
+Shahar Oded
+
+Faculty of Computer and Information Science
+
+Ben-Gurion University of the Negev
+
+E-Mail:
+\href{mailto:odedshah@post.bgu.ac.il}{\ul{odedshah@post.bgu.ac.il}}
+
+\textbf{Supervised by:}
+
+Prof. Yuval Shahar
+
+Faculty of Computer and Information Science
+
+Ben-Gurion University of the Negev
+
+E-Mail: \href{mailto:yshahar@bgu.ac.il}{\ul{yshahar@bgu.ac.il}}
+
+\ul{Dataset:}
+
+Significant progress has been made in the end-to-end data engineering
+pipeline, transforming raw administrative and clinical data into a
+research-ready, longitudinal format. This phase focused on the
+\emph{Kineret} dataset, comprising data from six government hospitals,
+and involved the following key achievements:
+
+\begin{itemize}
+\item
+  \textbf{ETL and Indexing:} A robust Extract, Transform, Load (ETL)
+  process was developed to map the source data into a standardized
+  longitudinal format. Since the raw data lacked international coding
+  standards, a comprehensive \textbf{concept index} of \textasciitilde2K
+  rows was constructed to map all relevant local codes to unified
+  clinical concepts, including unit normalization. This enabled the
+  ingestion of heterogeneous data sources into a single, cohesive
+  structure.
+\item
+  \textbf{Knowledge Base (KB) and Discretization:} A machine-readable KB
+  was defined to support Temporal Abstraction. To ensure clinical
+  validity, \textbf{discretization rules} were established using a
+  hybrid approach: data-driven K-means clustering, KDE density plots
+  were used to identify natural data thresholds, which were then refined
+  by real world medical knowledge. The KB currently encompasses
+  definitions for \textbf{raw concepts, states, events, trends, and
+  contexts}. The knowledge base follows a custom scheme I developed to
+  support my treatment guidelines requirements, and data manipulation
+  goals, turning the data to pluggable input to Machine Learning and
+  Deep Learning architectures.
+\item
+  \textbf{Treatment Patterns and QA Scoring:} Beyond basic abstractions,
+  the KB now includes \textbf{treatment patterns} that define "correct"
+  therapeutic actions according to the clinical guidelines.
+  \textbf{Fuzzy logic scores} were implemented to quantify adherence to
+  these patterns. These patterns are outputted as a part of the
+  longitudinal dataset, accompanied by a compliance scores table that
+  includes the fuzzy scores. \emph{Note: As the clinical protocol
+  evolves, these specific pattern definitions and scoring mechanisms
+  remain adaptable to future updates.}
+\item
+  \textbf{Mediator Implementation and Context Vector:} A version of the
+  \textbf{Temporal Mediator} system was successfully implemented to
+  apply these KB rules to the raw data. This system outputs an
+  informative, interval-based longitudinal dataset. Additionally, a
+  parallel ETL process was built to generate a static \textbf{context
+  vector} for each hospitalization, capturing demographic information,
+  essential background data, the Charlson Comorbidity Index (CCI), and
+  relevant home medications.
+\item
+  \textbf{Data Reduction and Optimization:} The efficacy of this
+  pipeline is demonstrated by the massive reduction in data noise and
+  dimensionality. The process successfully filtered and abstracted
+  \textbf{hundreds of millions of raw records} down to a streamlined,
+  informative table of approximately \textbf{10 million interval
+  records}, which includes the calculated Guideline (GL) adherence
+  scores for every admission.
+\end{itemize}
+
+\ul{Architectures:\\
+}Parallel to the data processing efforts, the computational
+architectures for both the frequent-pattern-based approach and the deep
+sequential modeling approach have been fully implemented and are ready
+for the experimental phase.
+
+\textbf{1. Vector-Space Modeling (VSM): The KarmaLego Engine}
+
+For the baseline comparison, a complete, end-to-end Python
+implementation of the \textbf{KarmaLego} algorithm has been developed to
+mine frequent Time Interval Relation Patterns (TIRPs). This engine
+transforms the longitudinal interval data into fixed-length feature
+vectors suitable for standard machine learning classifiers. Key
+technical achievements include:
+
+\begin{itemize}
+\item
+  \textbf{Pipeline Architecture:} The system manages the full lifecycle
+  from data ingestion to pattern application. It executes the "Karma"
+  phase (temporal relation encoding) and the "Lego" phase (tree-based
+  pattern extension) to discover high-order temporal patterns. After
+  patterns are globally detected, the engine applies them on the
+  patient's dataset (see ``Feature Generation'').
+\item
+  \textbf{Performance Optimization:} To handle the scale of the EMR
+  dataset, the implementation incorporates \textbf{Apriori pruning} and
+  \textbf{memoized temporal relation transitivity}. Crucially, it
+  implements \textbf{Consistent Subset of Active Candidates (CSAC)}, a
+  rigorous pruning method that maintains exact parent embedding indices
+  to avoid searching impossible extensions, ensuring scalability on
+  dense timelines. Target oriented parallelism was also added.
+\item
+  \textbf{Feature Generation:} The pipeline is capable of applying
+  discovered patterns back to the patient cohort to generate
+  \textbf{Temporal Probabilistic Profiles (TPF)}. It supports multiple
+  output modes, including pattern counts, cohort-normalized
+  distributions, and duration-based features, effectively creating the
+  input vectors required for classical ML experiments.
+\end{itemize}
+
+\textbf{2. Deep Sequential Modeling: The Transform-EMR Architecture}
+
+A novel, two-phase deep learning pipeline, titled
+\textbf{Transform-EMR}, has been finalized to model the complex
+dependencies in the EMR data (Mediator's output). This architecture is
+designed to predict patient event trajectories by explicitly modeling
+time, hierarchy, and patient context.
+
+\begin{itemize}
+\item
+  \textbf{Phase 1: Representation Learning (EMREmbedding):} A dedicated
+  embedding module was built to isolate the core structure of patient
+  timelines.
+
+  \begin{itemize}
+  \item
+    \textbf{Hierarchical Tokenization:} Events are decomposed into four
+    hierarchical components (Raw Concept -\textgreater{} Concept
+    -\textgreater{} Value -\textgreater{} Position) to enforce
+    similarity across related medical tokens.
+  \item
+    \textbf{Temporal \& Contextual Fusion:} Time is encoded using a
+    \textbf{Time2Vec} layer (learning periodic and linear trends) and
+    concatenated with event tokens via Early Fusion. Static patient
+    context (e.g., demographics) is projected and added to the sequence
+    as a global bias.
+  \item
+    \textbf{Pre-training Objectives:} The embedder is trained using a
+    multi-objective loss function combining Next-Token Prediction (BCE),
+    Time Prediction (MSE), and Masked Language Modeling (MLM).
+  \end{itemize}
+\item
+  \textbf{Phase 2: Sequence Modeling (Transformer Decoder):} The
+  generative model is built upon a \textbf{GPT-style decoder-only
+  architecture} tailored for clinical sequences.
+
+  \begin{itemize}
+  \item
+    \textbf{Context Conditioning:} Standard normalization layers were
+    replaced with \textbf{AdaLN-Zero (Adaptive Layer Norm)} blocks,
+    allowing the static patient context vector to dynamically modulate
+    the generation process at every transformer block.
+  \item
+    \textbf{Constrained Training \& Inference:} The training loop
+    utilizes a weighted focal loss combined with \textbf{structural
+    penalties} (e.g., enforcing logical interval starts/ends and meal
+    ordering). An inference engine was developed to support step-by-step
+    generation with dynamic masking, ensuring the model cannot predict
+    "illegal" tokens that violate the temporal logic of the generated
+    stream.
+  \end{itemize}
+\end{itemize}
+
+\ul{Analysis:}
+
+To validate the clinical relevance of the generated data and adherence
+scores, we analyzed the abstracted output from the Mediator. This
+analysis, \textbf{submitted to the \emph{Israeli Endocrinology
+Conference 2026}}, utilized the \emph{Kineret} dataset to examine the
+link between guideline adherence and hospital-acquired complications.
+
+\begin{itemize}
+\item
+  \textbf{Methodology:} We compared adherence scores - calculated via
+  the framework described above - between the pre- and
+  post-implementation periods of the national guidelines.
+\item
+  \textbf{Key Findings:} The analysis revealed that higher adherence to
+  the protocols was associated with lower rates of in-hospital
+  mortality. Specific improvements were observed in the discontinuation
+  of high-risk medications and insulin de-escalation following
+  hypoglycemia.
+\item
+  \textbf{Predictive Validation:} Using bootstrapped elastic-net
+  multivariate models, we found that guideline adherence scores
+  accounted for up to \textbf{40\% of the predictive weight} for
+  hospital-acquired complications. This strongly validates the
+  hypothesis that the QA scores generated by our pipeline are critical,
+  high-signal features for the subsequent deep learning prediction
+  tasks.
+\end{itemize}
+
+\ul{Future Timeline:\\
+}Building on the completed architectures and the preliminary clinical
+analysis, the remaining research phase will focus on rigorous
+experimentation and benchmarking:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.1811}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.8189}}@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Period & Milestone \& Objectives \\
+Jan -- Mid-Feb 2026 & Execute core experiments comparing Transform-EMR
+vs. TPF baselines and possibly additional SOTA models like STraTS /
+BEHRT/ TransformEHR.
+
+Finalize prediction quality metrics for the "AIME" conference or
+workshop deadline.
+
+Submit preliminary algorithmic results. \\
+Feb -- March 2026 & ablation studies (Impact of QA scores/Time2Vec).
+
+Explainability Analysis: Perform SHAP analysis on the finalized model.
+
+Draft the "Results" and "Discussion" chapters of the thesis. \\
+April -- July 2026 & \textbf{Complete full thesis manuscript and
+presentation.}
+
+Refine the thesis work into camera-ready papers for major conference
+submissions.
+
+Submit final manuscripts to top-tier venues (e.g., IEEE-BIBM 2026, AAAI
+2027) dividing the work to architectural novelty and to medical
+implementation. \\
+August 2026 & Formal submission of the Master\textquotesingle s Thesis +
+defense. \\
+\end{longtable}
+}
+
+\LR{}
+
+\end{document}

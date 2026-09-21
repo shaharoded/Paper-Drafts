@@ -1,0 +1,50 @@
+This appendix supports Section~\ref{sec:method-kb-eval}.
+
+The knowledge base was built iteratively rather than derived in one pass, so the artifact itself --- not any intermediate analysis --- is the reproducible record of it.
+
+\section{The TAK Repository}
+\label{app:kb-artifacts}
+
+All domain knowledge is declared externally as XML units validated against a shared schema (\texttt{tak\_schema.xsd}) before the engine runs. The deployed repository holds $174$ units across the eight TAK families, together with the quality-assessment patterns encoding the national guideline. It is published with the Mediator engine \citep{mediator-github} and is the authoritative statement of every threshold, relevance duration, and trend limit used in this work.
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Composition of the deployed TAK repository.}
+\label{tab:tak-composition}
+\small
+\begin{tabular}{lrl}
+\toprule
+Family & Units & Role \\
+\midrule
+Raw concepts                & 65 & Measurements, medications and observations as recorded \\
+Parameterized raw concepts  & 7  & Raw concepts whose behaviour varies by context \\
+States                      & 27 & Discretized value ranges (e.g.\ \textsc{glucose\_high}) \\
+Trends                      & 24 & Directional change over a clinically significant span \\
+Events                      & 28 & Point occurrences, including the complication endpoints \\
+Contexts                    & 9  & Intervals that gate when other abstractions apply \\
+Local patterns              & 10 & Quality-assessment patterns over a single recommendation \\
+Global patterns             & 4  & Patterns spanning the admission \\
+\midrule
+Total                       & 174 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Kineret concept index --- roughly $1{,}500$ local hospital codes mapped onto the concepts named above --- is not reproduced here. It is a site-specific lookup of no use outside that network, and it is the pipeline input described in Section~\ref{sec:method-preprocessing} rather than a result.
+
+\section{On the Absence of a Threshold-Discovery Table}
+\label{app:kb-thresholds}
+
+Chapter~\ref{chapter:comp_methods} describes $k$-means and kernel-density analysis over each concept's value distribution, and the three post-abstraction checks on interval duration, interval-to-event ratio, and state reachability. Neither is reported here as a table of results, and the reason is worth stating plainly rather than leaving as an omission.
+
+Both were instruments of construction, not experiments. They ran many times over successive revisions of the knowledge base, and the thresholds they proposed were subsequently overridden by clinical literature, by inspection of abstraction output, and by what downstream prediction and tuning revealed about degenerate or unreachable states. No snapshot of either corresponds to the deployed knowledge base. Reporting one would document a version that was superseded, and reporting the earliest --- the version that appeared in the thesis proposal --- would misrepresent how much the knowledge base changed afterwards.
+
+Figure~\ref{fig:kde-discretization} illustrates the procedure on a representative concept, as an example of the method rather than as a result. The value distribution is rarely unimodal, and the dips between modes often fall close to boundaries the clinical literature already recognizes --- which is what made the analysis useful for resolving a published range into a single number, and also what made it unsafe alone, since a mode can equally reflect a charting habit rather than a physiological boundary.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{disdcretization_kde_plot.png}
+\caption{Threshold discovery for a representative numeric concept: the kernel-density estimate over observed values, with candidate cut-points from $k$-means centroid midpoints and from the dips between density modes. Illustrative of the exploratory pass; the adopted thresholds are those of the TAK repository.}
+\label{fig:kde-discretization}
+\end{figure}

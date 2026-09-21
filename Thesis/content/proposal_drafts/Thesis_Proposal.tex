@@ -1,0 +1,2856 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{caption}
+\captionsetup[table]{skip=6pt}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\ifLuaTeX
+  \usepackage{luacolor}
+  \usepackage[soul]{lua-ul}
+\else
+  \usepackage{soul}
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\ifPDFTeX
+  \TeXXeTstate=1
+  \newcommand{\RL}[1]{\beginR #1\endR}
+  \newcommand{\LR}[1]{\beginL #1\endL}
+  \newenvironment{RTL}{\beginR}{\endR}
+  \newenvironment{LTR}{\beginL}{\endL}
+\fi
+\ifluatex
+  \newcommand{\RL}[1]{\bgroup\textdir TRT#1\egroup}
+  \newcommand{\LR}[1]{\bgroup\textdir TLT#1\egroup}
+  \newenvironment{RTL}{\textdir TRT\pardir TRT\bodydir TRT}{}
+  \newenvironment{LTR}{\textdir TLT\pardir TLT\bodydir TLT}{}
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\includegraphics[width=4.8394in,height=2.01563in]{media/image1.png}\LR{}
+
+\LR{}
+
+\LR{}
+
+\LR{}
+
+Thesis Proposal
+
+Predicting Clinical Outcomes and Assessing the Effects of Diabetes Care
+Guidelines Compliance in Hospitals Using Time-Dependent Machine Learning
+and Deep Learning Methods
+
+August 2025
+
+\textbf{Submitted by:}
+
+Shahar Oded
+
+Department of Information Systems Engineering
+
+Ben-Gurion University of the Negev
+
+E-Mail:
+\href{mailto:odedshah@post.bgu.ac.il}{\ul{odedshah@post.bgu.ac.il}}
+
+\textbf{Supervised by:}
+
+Prof. Yuval Shahar
+
+Department of Information Systems Engineering
+
+Ben-Gurion University of the Negev
+
+E-Mail: \href{mailto:yshahar@bgu.ac.il}{\ul{yshahar@bgu.ac.il}}
+
+Dr. Irit Hochberg
+
+Institute of Endocrinology, Diabetes and Metabolism
+
+Rambam Medical Center
+
+E-Mail:
+\href{mailto:i_hochberg@rambam.health.gov.il}{\ul{i\_hochberg@rambam.health.gov.il}}
+
+\hyperref[abstract]{\textbf{Abstract 3}}
+
+\hyperref[introduction]{\textbf{1 Introduction 4}}
+
+\hyperref[related-work]{\textbf{2 Related Work 5}}
+
+\begin{quote}
+\hyperref[knowledge-based-temporal-abstraction]{2.1 Knowledge Based
+Temporal Abstraction 6}
+
+\hyperref[automated-support-to-guidelines-based-care]{2.2 Automated
+Support to Guidelines Based Care 8}
+
+\hyperref[assessing-the-quality-of-guideline-based-care]{2.3 Assessing
+the Quality of Guideline-Based Care 10}
+
+\hyperref[time-interval-mining]{2.4 Time Interval Mining 12}
+
+\hyperref[sequential-models-in-medical-outcome-prediction]{2.5
+Sequential Models in Medical Outcome Prediction 15}
+
+\hyperref[explainable-ai-explaining-a-models-decision]{2.6 Explainable
+AI: Explaining a Model's Decision 18}
+\end{quote}
+
+\hyperref[methods]{\textbf{3 Methods 20}}
+
+\begin{quote}
+\hyperref[computational-methods]{3.1 Computational Methods 21}
+
+\hyperref[temporal-data-abstraction-and-qa-scores-calculation]{3.1.1
+Temporal Data Abstraction and QA Scores Calculation 22}
+
+\hyperref[predictive-model-development]{3.1.2 Predictive Model
+Development 23}
+
+\hyperref[frequency-based-temporal-patterns-vector-space-modeling-tpftirpvsm]{3.1.2.1
+Frequency-Based Temporal-Patterns Vector-Space Modeling (TPF/TIRP+VSM)
+23}
+
+\hyperref[sequential-models]{3.1.2.2 Sequential Models 24}
+
+\hyperref[comparison-and-research-goals]{3.1.2.3 Comparison and Research
+Goals 29}
+
+\hyperref[hyperparameter-optimization]{3.1.3 Hyperparameter Optimization
+30}
+
+\hyperref[evaluation-methods]{3.2 Evaluation Methods 31}
+
+\hyperref[evaluation-of-the-knowledge-base]{3.2.1 Evaluation of the
+Knowledge-Base 33}
+
+\hyperref[evaluation-of-the-predictive-models]{3.2.2 Evaluation of the
+Predictive Models 35}
+
+\hyperref[feature-importance-analysis-explainability-and-protocol-refinement]{3.2.3
+Feature Importance Analysis: Explainability and Protocol Refinement 38}
+
+\hyperref[adherence-assessment-before-and-after-interventions]{3.2.4
+Adherence Assessment Before and After Interventions 38}
+\end{quote}
+
+\hyperref[initial-results-and-schedule]{\textbf{4 Initial Results and
+Schedule 39}}
+
+\begin{quote}
+\hyperref[initial-results]{4.1 Initial Results 39}
+
+\hyperref[planned-evaluation-methods]{4.2 Planned Evaluation Methods 42}
+
+\hyperref[proposed-schedule]{4.3 Proposed Schedule 43}
+\end{quote}
+
+\hyperref[references]{\textbf{References 45}}
+
+\hyperref[appendices]{\textbf{Appendices 47}}
+
+\begin{quote}
+\hyperref[appendix-1-abstractions-quality-assessment]{Appendix 1:
+Abstractions Quality Assessment 47}
+
+\hyperref[appendix-2-automated-tak-generation-tool]{Appendix 2:
+Automated TAK Generation Tool 54}
+\end{quote}
+
+\section{}\label{section}
+
+\section{Abstract}\label{abstract}
+
+Diabetes affects over\,7\,\% of Israelis yet consumes nearly a third of
+hospital spending, mainly through complications triggered by in‑hospital
+dysglycemia. Although new insulin protocols and quality indicators
+exist, adherence is uneven and its impact unclear. We present an
+explainable framework that predicts short‑term complications
+(≤\,14\,days) from early EMR data. Raw, time-stamped patient data
+recorded in the first K days, 2 ≤\,K\,\textless14, of each admission,
+are converted into clinically meaningful interval-based abstractions,
+and then into temporal patterns composed of frequent combinations of
+such intervals. The patterns are exploited as predictive features.
+Quality Assessment (QA) scores, on a {[}0, 1{]} scale, which assess the
+compliance of the attending medical staff to established clinical
+guidelines, are computed for each patient, relevant period, and
+guideline component. These scores are used as features as well. QA
+scores are also used to assess the effect of several interventions
+intended to increase compliance to the guidelines. Patient demographics
+are used as additional features. Two approaches are compared:\,(i) a
+temporal pattern vector representation baseline, where Temporal
+Probabilistic Profiles (TPF) turn symbolic patterns into fixed‑length
+pattern distribution vectors; and\,(ii) a decoder‑only Transformer that
+reads the same tokens with inter‑event gaps encoded by Time2Vec to learn
+temporal rhythms. SHapley values reveal the most influential patterns,
+highlighting critical protocol steps. We will also track adherence
+before and after two national interventions - a diabetes e‑learning
+module and a persistent‑hyperglycemia indicator - to situate the
+predictions. The study aims to yield scalable risk‑stratification tools
+and actionable guidance for improving inpatient diabetes care.
+
+\section{1 Introduction}\label{introduction}
+
+Diabetes mellitus is a global epidemic that claimed 3.4 \,million lives
+in\,2024\,{[}25{]}. In Israel, people with diabetes already make up more
+than\,7\,\% of the population and account for about one‑third of total
+health‑care expenditure\,{[}26{]}. They occupy a disproportionate share
+of inpatient days and drive costly complications such as infection,
+acute kidney injury, cardiovascular events and diabetic
+ketoacidosis\,{[}27{]}. Hyper‑ and hypoglycemia during admission extend
+length of stay and raise mortality, yet adherence to evidence‑based
+insulin protocols is inconsistent. Recent interventions - updated
+guidelines, a diabetes e‑learning module and new quality indicators for
+persistent hyperglycemia - aim to improve compliance, but their
+real‑world impact remains unknown. Advanced analytics that quantify
+guideline adherence at scale and predict short‑term complications are
+therefore urgently needed.
+
+Our study aims to predict the short term medical outcomes of diabetes
+treatments (eg. Myocardial Infarction, Hypoglycemia, Ketoacidosis) by
+leveraging Temporal Data Mining methods to process
+patients\textquotesingle{} \emph{EMR} data, demographic information, and
+treatment \emph{Quality Assessment (QA)} scores as features for short
+term prediction models. If an Internal Ward admission is N days long,
+we'll use information from the first K days to predict outcomes in the
+subsequent N-K days (for 48 hours \textless= K \textless{} N \textless=
+14 days admissions). We plan to evaluate multiple approaches, including:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Using temporal intervals, gradients and patterns alongside demographic
+  data as features;
+\item
+  Representing these patterns the distribution of frequent temporal
+  patterns, i.e., the \emph{Temporal Probabilistic proFile (TPF)}
+  method;
+\item
+  Utilizing \emph{Decoder-Only} \emph{Transformer} architecture capable
+  of processing interval-based temporal abstractions and patterns (such
+  as produced by the \emph{Temporal Mediator}) to generate a predicted
+  events stream as basis for classification.
+\end{enumerate}
+
+A novel aspect of this research is the integration of medical knowledge
+from two sources: general declarative knowledge (e.g., definitions such
+as ``high blood pressure'') and procedural quality-control knowledge
+(e.g., adherence to Insulin medical guidelines). Furthermore, by
+employing explainable AI techniques like SHapley Additive ExPlanations
+(SHAP), we aim to identify the most influential features in predicting
+treatment outcomes, particularly the role of treatment adherence and
+guideline compliance. This analysis will offer actionable insights into
+clinical practices, highlighting which guidelines are critical,
+redundant, or challenging to implement.
+
+In addition, since the guideline-compliance scores are key features in
+our predictive model, we will investigate how they may have been
+influenced by recent interventions aimed at improving clinical care.
+Specifically, we will assess the impact of two initiatives: (1) the
+implementation of learnware software to train clinical staff on diabetes
+management and (2) the introduction of a new quality measure for
+managing persistent hyperglycemia lasting two or more days.
+Understanding the effect of these interventions will help contextualize
+the model's predictions and improve its relevance for evaluating care
+quality and outcomes.
+
+\section{2 Related Work}\label{related-work}
+
+This chapter presents an overview of the key concepts and research areas
+that serve as the foundation for this study. It explores existing
+methodologies and systems in knowledge-based temporal abstraction,
+automated support for guideline-based care, and the assessment of
+guideline adherence - providing essential tools for integrating clinical
+knowledge into predictive models.
+
+We also examine advances in temporal data mining, focusing on sequential
+pattern discovery from electronic medical records (EMRs) and the
+integration of temporal patterns into predictive tasks. Additionally, we
+introduce Transformer-based architectures, which have gained significant
+traction in medical research, as an alternative to traditional data
+mining methods. Finally, we highlight the growing importance of
+explainable AI in clinical prediction, emphasizing methods that enhance
+transparency in model decisions - critical for improving guideline
+adherence and identifying key factors influencing treatment outcomes.
+
+Each of these areas is discussed in detail in the following sections,
+laying the groundwork for our study, which aims to predict short-term
+medical outcomes through advanced temporal modeling and explainable
+Machine Learning \& Deep Learning techniques.
+
+\subsection{2.1 Knowledge Based Temporal
+Abstraction}\label{knowledge-based-temporal-abstraction}
+
+\textbf{The Knowledge-Based-Temporal-Abstraction (\emph{KBTA)}
+principles} {[}24, 4{]} - A methodology that structures the task of
+transforming time-stamped clinical data into abstract, interpretable
+context dependent concepts (e.g., "decreasing temperature for 3 days").
+It abstracts raw time-stamped data into interval-based meaningful
+representations like states, events and gradients. It does so by
+combining domain-specific knowledge of relationships and constraints,
+data, and context from the patient's \emph{Electronic Health Record}.
+
+\begin{itemize}
+\item
+  State abstractions: Representing raw numeric values (e.g., heart rate)
+  as symbolic states (e.g., low, normal, high) over specific time
+  intervals. Requires pre definition of the discretization thresholds
+  and relevance duration (e.g., glucose measurement is relevant for up
+  to 6 hours).
+\item
+  Gradient abstractions: Describing trends or changes in a parameter
+  over time (e.g., increasing, stable, decreasing). Requires pre
+  definition of what a meaningful change in a parameter is and over what
+  duration (e.g., an increase of 5 {[}unit{]} over 12 hours).
+\item
+  Context-sensitive abstractions: Allowing for the generation of
+  abstractions based on specific clinical contexts or conditions. For
+  example, in the context of diabetes management, blood glucose levels
+  can be abstracted differently to low, normal and high ranges depending
+  on background diseases.
+\end{itemize}
+
+The representation of \emph{KBTA} is done using \emph{\textbf{TAK}}
+language which defines the abstraction guidelines using different types
+of logic files:
+
+\begin{itemize}
+\item
+  \textbf{Raw concepts}: Basic clinical parameters, such as systolic
+  blood pressure.
+\item
+  \textbf{Events}: An event in time, with no specific duration. For
+  example, admission of a medication or a Ketoacidosis event.
+\item
+  \textbf{Context}: A temporal information that may affect the
+  conditions applied when calculating the intervals, like Alcohol Abuse
+  or prior surgery.
+\item
+  \textbf{State patterns}: High-level temporal patterns derived from raw
+  concepts, such as repeated instances of elevated glucose levels over a
+  specified period.
+\item
+  \textbf{Trend}: Represent trends (gradient) or changes in clinical
+  parameters over time, such as increasing, stable, or decreasing blood
+  glucose levels.
+\item
+  \textbf{Pattern}: Represent a sequence of temporal events/ intervals
+  that occur at a specific order, for example Meal \ul{before} Insulin
+  Admission \ul{before} Glucose level decreases.
+\item
+  \textbf{Quality Assessment (QA)}: Refers to compliance with clinical
+  objectives or guidelines, coded as \emph{patterns}, such as
+  administering insulin within a prescribed time frame in relation to
+  meals. This concept expands on the original architecture, as detailed
+  in Paper 2 by Shalom, Erez, et al., and will be further elaborated in
+  \textbf{Section 2.3}.
+\end{itemize}
+
+\textbf{The Temporal Mediator} {[}4{]} serves as a system designed to
+enable temporal reasoning and abstraction in clinical decision-making.
+By automatically executing TAK files, it processes time-stamped clinical
+data, such as blood test results, medical events (e.g., insulin
+injections), and abstraction goals like pattern recognition or
+therapeutic decision-making. The Mediator generates interval-based,
+context-aware abstractions, such as "five days of increasing glucose
+levels," to aid in diagnosis or treatment planning.
+
+\includegraphics[width=6.58854in,height=2.8928in]{media/image24.png}
+
+\textbf{Figure 1:} An illustration of the temporal abstraction process:
+Multivariate clinical time series data is transformed into
+interval-based abstractions representing states and gradients.
+
+Unlike baseline temporal discretization methods-such as
+\textbf{equal-length} (dividing the timeline into fixed-size intervals)
+or \textbf{equal-frequency} (splitting the timeline so each bin contains
+a similar number of observations)-KBTA does not impose arbitrary,
+data-agnostic boundaries. Instead, it uses clinically meaningful
+thresholds, relevance durations, and contextual rules to define
+intervals that reflect the \emph{semantics} of the patient's state. This
+knowledge-driven approach preserves the temporal coherence of clinical
+events, captures durations as first-class features, and produces
+abstractions that are both interpretable to clinicians and aligned with
+real-world treatment logic, rather than being artifacts of uniform
+binning strategies.
+
+\subsection{2.2 Automated Support to Guidelines Based
+Care}\label{automated-support-to-guidelines-based-care}
+
+\textbf{Clinical Guidelines (GLs)} {[}2{]} are evidence-based protocols
+developed to standardize medical care, improve treatment outcomes, and
+reduce variability in clinical decisions. They aim to enhance care
+quality, reduce errors, and improve patient outcomes by offering
+structured decision pathways. They can make treatments more uniform,
+improve decision quality, enhance patient survival, reduce morbidity,
+and potentially lower costs. However, their implementation in practice
+is complicated, as \emph{GLs} are text-based and not easily accessible
+to therapists who need to adapt them to their patients and apply them at
+the point of care, leading to low adherence and adaptation among
+physicians.
+
+Consequently, there is a need for \emph{Clinical Decision Support
+Systems (CDSSs, healthcare specific DSSs)} that automatically apply and
+assess \emph{GLs}, improving care quality.
+
+This causes for an important task which is acquiring these \emph{GLs} in
+a machine-interpretable manner that can be enforced algorithmically,
+creating a \emph{medical knowledge base (KB)}.
+
+\emph{\textbf{Asbru} {[}23, 2, 3{]}}- A computer-interpretable language
+for \emph{GL} specification. Guideline representation language that
+allows guideline designers to represent sequential, concurrent,
+conditional and repetitive procedural actions as a hierarchy of
+execution plans.
+
+\emph{\textbf{DeGeL}} {[}2{]}- Digital Electronic Guidelines Library is
+a web-based, distributed architecture, developed at BGU Medical
+Informatics Research Center, that facilitates the gradual conversion of
+clinical guidelines from text to a formal representation in
+\emph{Asbru.} The conversion is handled through a graphical tool called
+\emph{Gesher}, which helps in the construction process of the
+\emph{GLs}, with the knowledge engineer helps in its formal
+representation.
+
+When transporting \emph{GLs} from textual instructions to
+machine-readable, we need to formalize two types of medical knowledge
+{[}2{]}:
+
+\begin{itemize}
+\item
+  \emph{\textbf{Declarative Knowledge ("What Is"):}} Describes medical
+  terms and conditions, such as definitions of diseases and diagnostic
+  criteria (based on \emph{KBTA} principles). Utilized for understanding
+  the underlying facts. This knowledge is represented in the \emph{TAK}
+  language and is the abstraction guidelines for the \emph{Mediator}.
+\item
+  \emph{\textbf{Procedural Knowledge ("How To"):}} Specifies the
+  sequence of actions, such as treatment steps and administration
+  protocols. Represented in \emph{Asbru.}
+\end{itemize}
+
+\emph{\textbf{Picard}} is a continuous-care guideline application
+framework and clinical decision support system (CDSS) designed to help
+clinicians apply clinical guidelines over extended periods. It offers
+real-time, data-driven recommendations based on
+patients\textquotesingle{} longitudinal clinical data, with the goal of
+improving guideline adherence, enhancing decision completeness, and
+reducing errors and redundant actions.
+
+The engine operates using several key components:
+
+\begin{itemize}
+\item
+  Declarative Knowledge: Based on predefined \emph{TAK} files, the
+  engine uses the \emph{Temporal Mediator} for temporal reasoning and to
+  answer specific queries about patient data.
+\item
+  Procedural Knowledge: Guides the expected course of action based on
+  clinical guidelines (\emph{GLs}).
+\item
+  \emph{DeGeL} Digital Library: Supplies procedural and declarative
+  knowledge for clinical guidelines in a machine-readable format.
+\item
+  Service-Oriented Architecture (SOA): Enables modular, distributed
+  deployment for clinicians, patients, and knowledge engineers
+\end{itemize}
+
+The engine processes time-stamped clinical data (e.g., lab results,
+vital signs) and patient-specific context from electronic medical
+records (EMRs) to generate actionable recommendations (e.g., "Administer
+magnesium sulfate"), reports on guideline adherence, and alerts for
+critical deviations or omissions {[}5,6{]}.
+
+\emph{Picard} served as the core DSS engine in the \textbf{MobiGuide}
+project, which supported chronic disease management through distributed
+decision support (local mobile DSS and backend DSS) in Spain and Italy.
+The engine helped improve clinicians\textquotesingle{} compliance with
+guidelines dramatically, from 41\% in manual mode to 93\% with Picard.
+The system provided real-time, patient-specific recommendations by
+integrating data from hospital medical records, mobile biosensors, and
+patient inputs. This approach enabled continuous monitoring and
+personalized guidance {[}6,7{]}.
+
+\emph{\textbf{e-Picard}} is an adaptation of \emph{Picard} for
+non-continuous, episodic use where care is sought sporadically and not
+in real-time. It conducts retrospective \emph{Quality Assessment} of
+past actions using \emph{Temporal Fuzzy Logic} {[}\textbf{Section
+2.3}{]}, and returns recommendations for future actions based on partial
+or omitted implementations, all while incorporating patient-specific
+contexts such as lifestyle or situational changes {[}1{]}. Such system
+is usually evaluated on 2 criterias {[}6{]}:
+
+\begin{itemize}
+\item
+  \textbf{correctness -} accuracy of recommendations.
+\item
+  \textbf{completeness} - coverage of guideline-recommended actions.
+\end{itemize}
+
+These are usually applied in 2 evaluation phases:
+
+\begin{itemize}
+\item
+  \textbf{Technical Evaluation:} Focuses on ensuring the system
+  generates the correct recommendations and avoids incorrect ones in
+  predefined scenarios. It verifies the system\textquotesingle s
+  functionality against a controlled, simulated longitudinal dataset
+  tailored to predefined scenarios.
+\item
+  \textbf{Silent Evaluation:} Assesses the system\textquotesingle s
+  performance on real-world data without presenting its recommendations
+  to the treatment team, allowing for independent expert review of the
+  system\textquotesingle s outputs.
+\end{itemize}
+
+\subsection{2.3 Assessing the Quality of Guideline-Based
+Care}\label{assessing-the-quality-of-guideline-based-care}
+
+\textbf{Fuzzy Logic} {[}2{]} - Serves as a nuanced approach to assessing
+guideline adherence by assigning degrees of compliance rather than
+binary outcomes. This method is particularly valuable in clinical
+scenarios where actions may partially fulfill the ideal protocol. Using
+\emph{Temporal Fuzzy Logic functions}, it evaluates adherence to
+constraints such as timing, frequency, and value ranges of medical
+actions. Scores range from 0 (non-compliance) to 1 (full compliance),
+allowing for a more flexible and realistic assessment of care quality.
+
+For example, a test required within 72--120 hours after admission would
+score 1 if performed within 72 hours, with scores decreasing
+proportionally for delays up to 120 hours. \emph{Fuzzy Logic} is applied
+within \emph{Quality-Assessment Temporal Patterns (QATPs)} to evaluate
+partial compliance with temporal constraints, such as periodic
+assessments or gaps between linked actions. This approach is integral to
+the \emph{Quality Assessment System}, enabling a detailed and automated
+evaluation of healthcare interventions.
+
+To retrospectively assess the execution of procedural knowledge within
+patient data, as in the \emph{e-Picard} engine, a third type of
+knowledge was developed in addition to the \emph{Declarative and
+Procedural Knowledge}. This knowledge transforms the procedural aspects
+of \emph{GLs} into declarative temporal-abstraction patterns,
+representing the expected execution trace in patient records for correct
+therapy application {[}2{]}.
+
+\begin{itemize}
+\item
+  \emph{\textbf{Quality-Assessment (QA) Knowledge:}} Focuses on
+  evaluating the intended outcomes and processes of guideline
+  application. It facilitates the computation of quality-assessment
+  scores by identifying \emph{Quality Assessment Temporal Patterns
+  (QATPs)} in a patient's longitudinal record. These patterns serve as
+  an "execution trace," indicating whether the guideline was implemented
+  correctly. In fact, these files are written to represent the
+  \emph{procedural knowledge} in a \emph{declarative} manner.
+  Represented in the \emph{TAK} language with \emph{Temporal Fuzzy
+  Logic} extensions, this knowledge supports partial evaluations of
+  guideline adherence over time.
+\end{itemize}
+
+When acquiring the QA knowledge, a few steps are needed:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Actions from the procedural guideline are categorized based on their
+  attributes in Asbru's plan types (e.g., single-action, cyclical,
+  sequential) and mapped to specific constraint types, which define how
+  compliance is assessed. The key constraint types include:
+\end{enumerate}
+
+\begin{itemize}
+\item
+  Cyclical (Periodic): Specifies actions that need to be performed
+  periodically, such as routine check-ups or recurring tests within
+  defined intervals.
+\item
+  Temporal Gap: Represents the required time interval between
+  consecutive actions or plans, ensuring appropriate spacing (e.g.,
+  waiting a set number of hours between medication doses).
+\item
+  Temporal Relation: Captures relationships between actions, such as one
+  action needing to precede or overlap with another (e.g., administering
+  insulin before meals). The possible values are relations: precedes,
+  meets, overlaps, starts, during, finishes, equal, with the default
+  being precedes.
+\item
+  Value: Assesses compliance based on specific thresholds or ranges for
+  measured values, such as ensuring a patient\textquotesingle s glucose
+  level remains within an acceptable range during treatment.
+\end{itemize}
+
+\begin{quote}
+These constraint types ensure that procedural actions are systematically
+mapped and compliance is evaluated with precision, reflecting the
+intended execution of the guideline. Cyclical (Periodic), Temporal Gap,
+and Value constraints utilize \emph{Temporal Fuzzy Logic} to enable
+partial compliance assessments. Fuzziness accounts for variability in
+frequency for cyclical actions, time gaps between consecutive actions,
+and measured values, allowing for flexible and realistic evaluations of
+adherence to guidelines.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  Defining \emph{QATPs} (Quality-Assessment Temporal Patterns):
+  \emph{Temporal Fuzzy Logic} is applied to define \emph{QATPs}, which
+  specify the constraints on actions and the calculation of partial
+  compliance scores. This ensures nuanced evaluation by accounting for
+  degrees of adherence. This is done using a trapezoidal model, in which
+  the non-parallel edges represent the slopes on which a partial action
+  will be scored, depending on its position on the slope.
+\item
+  Creating a Weighted QA Tree: The \emph{Procedural} \emph{GL} is
+  translated into a weighted tree structure based on Asbru's hierarchy,
+  where each node represents a plan with a defined weight. This tree
+  serves as a compliance framework, linking procedural elements to their
+  QA representation.
+\item
+  Compliance Assessment: Compliance is calculated recursively through
+  the QA tree. Child nodes' compliance scores are aggregated, using
+  weights, to derive the compliance score of their parent nodes. This
+  hierarchical approach ensures that the overall adherence reflects both
+  individual actions and their relationships.
+\end{enumerate}
+
+With the QATP extensions, the \emph{Mediator}, described in
+\textbf{Section 2.1}, can retrospectively calculate adherence scores to
+the guidelines, leveraging protocol data already transformed into
+machine-readable files {[}2{]}. These scores will be used as additional
+features in our study and its influence on the treatment's outcome will
+be examined.
+
+\subsection{2.4 Time Interval Mining}\label{time-interval-mining}
+
+This chapter outlines the key methodologies for transforming
+longitudinal electronic medical record (EMR) data into feature vector
+representations that capture a patient's state up to a specific point in
+time. We explore tools and techniques in temporal pattern mining that
+form the foundation of our prediction models, enabling the conversion of
+raw time-stamped data into structured and semantically rich features.
+
+\textbf{KarmaLego} {[}9{]} is a framework that extends the
+\emph{Knowledge-Based Temporal Abstraction (KBTA)} method and integrates
+time-interval mining capabilities to identify Frequent \emph{Time
+Interval Relation Patterns (TIRPs)} in multivariate time series. For
+example, it can detect patterns like "a period of high-dose insulin
+administration" preceding "two or more hypoglycemia events" using
+Allen's seven basic interval relations. It identifies temporal
+relationships such as "Before", "Meets'', or "Overlaps" when they appear
+in more than p\% (minimum support) of the longitudinal patient records
+(abstracted states by the \emph{Mediator}). The output are the frequent
+patterns discovered in the data based on parameters.
+
+KarmaLego begins where KBTA ends. KBTA generates symbolic intervals and
+establishes the abstraction layer, while KarmaLego uses these intervals
+as its input to discover and analyze complex temporal patterns across
+multiple continuous features.
+
+It was shown that both temporal abstractions of raw data and
+combinations of these abstractions, which create more complex temporal
+patterns, can serve as effective features for machine learning tasks
+such as clustering, classification, prediction, visualization, and
+interactive analysis of large temporal datasets.
+
+The \emph{Semantic Adjacency Criterion (SAC)} {[}11{]} is a filtering
+principle designed to enhance temporal pattern discovery by ensuring
+that mined patterns are semantically coherent and domain-relevant. It
+operates by applying semantic constraints during the mining process to
+exclude patterns where intermediate intervals disrupt or contradict
+meaningful relationships. By focusing on semantically valid patterns,
+SAC reduces computational overhead significantly, simplifies datasets,
+and improves the interpretability of results.
+
+When integrated with KarmaLego, SAC can refine its output by ensuring
+that the discovered \emph{Time Interval-Relation Patterns (TIRPs)} are
+not only frequent but also align with domain-specific semantics.
+
+An interesting usage example can be found in the study by Raymond,
+Michal Weisman, and Yuval Shahar {[}12{]} which leveraged the
+\emph{KBTA} and \emph{KarmaLego} tools to predict the next clinical
+action for ICU patients. The study aimed to assist clinicians by
+predicting the most likely next action based on patterns observed in
+historical data of similar patients, providing valuable decision
+support.
+
+Using the \emph{MIMIC-IV} dataset - a comprehensive repository of
+critical care admissions - the study focused on subsets of patients
+diagnosed with Hypoglycemia, Hypokalemia, and Hypotension. It employed a
+two-step machine learning approach: a Random Forest classifier was used
+to determine whether a treatment was necessary, followed by a Gradient
+Boosting Regressor to predict the appropriate dosage when a treatment
+was deemed necessary.
+
+This research highlights the potential for decision support systems to
+enhance clinical practice by enabling medical teams to make more
+informed and timely decisions regarding ICU patients. It also
+demonstrates the utility of the data abstraction tools (\emph{KBTA} and
+\emph{KarmaLego}) in transforming raw, time-stamped clinical data into
+actionable insights. Moreover, the goal of predicting the next action
+for a patient assumes the existence of an optimal ``best action'',
+aligning with our methodology of using QA scores to predict treatment
+outcomes.
+
+\textbf{Dynamic Time Warping (DTW)} {[}18{]}: is a well-known method for
+measuring similarity between time-series data of different lengths. It
+works by finding an optimal alignment (or "warping") between two
+sequences to minimize the distance between them. Originally developed
+for speech recognition, it is now widely applied in various fields,
+including medicine. DTW is effective in handling temporal misalignments
+and identifying similar patterns even if they occur at different times.
+However, classical DTW is limited to univariate sequences, assumes
+complete datasets, and does not consider clinical abstractions.
+
+\textbf{Interval-Based Dynamic Time Warping (iDTW)} {[}18{]}: extends
+DTW to handle interval-based, multivariate, and abstracted data from
+longitudinal medical records (e.g., "HIGH glucose for 2 days"). It
+produces a distance measure quantifying the similarity between patient
+records, enabling its use in machine learning. The method focuses on
+differences in patients\textquotesingle{} longitudinal data and
+introduces two key components:
+
+\begin{itemize}
+\item
+  \emph{iRep (Interval Representation):} Transforms raw time-stamped
+  clinical data into interval-based temporal abstractions using
+  domain-specific knowledge (e.g., Knowledge-Based Temporal Abstraction
+  - KBTA). Produces a 2D matrix of temporal abstractions that represent
+  states (e.g., HIGH/LOW) and trends (e.g., INCREASING/DECREASING) for
+  multiple variables at predefined granularities.
+\item
+  \emph{iMatch (Interval Matching):} Extends DTW by matching the
+  multivariate interval-based representations. It calculates the
+  distance between intervals using domain-specific metrics, considering
+  both value and duration.
+\end{itemize}
+
+The paper further describes how this method was utilized in order to
+create a distance matrix between patients, based on their longitudinal
+data, which was then utilized by a KNN-like model to evaluate similarity
+and perform classification.
+
+\textbf{Temporal Probabilistic ProFiles (TPF)} {[}10{]} Is used for
+classification and prediction tasks of multivariate time series. TPFs
+are the distributions of the number (cardinality) or duration of the
+frequent temporal patterns found in each patient's record (and by
+averaging, in the whole patient's population). These profiles
+incorporate temporal dependencies and uncertainties, allowing for
+comparison between different profiles or used as meta-features for
+classification tasks on the time series / outcome prediction (of events
+such as medical conditions) by measuring their distance, either to the
+aggregated vector of each class (\emph{the Category method}), or to the
+individual profiles of each of the entities, using negative cross
+entropy to find the closest K (\emph{the Top K method}). Unlike
+TIRP-based classification, which relies on a pattern's horizontal
+support as a classification feature, this method goes further by using
+the pattern's relative horizontal support within a patient- compared to
+other patients - or its duration, as indicators of its potential
+importance in the treatment trajectory.
+
+How it works:
+
+\begin{itemize}
+\item
+  Input: Multivariate longitudinal data.
+\end{itemize}
+
+\begin{itemize}
+\item
+  Process:
+
+  \begin{itemize}
+  \item
+    The data is abstracted to shorter interval based representation
+    using the \emph{KBTA} principles (\emph{Mediator}).
+  \item
+    The data is mined for frequent patterns across groups of patients
+    using the \emph{KarmaLego} algorithm.
+  \item
+    \emph{Temporal Probabilistic Profiles (TPFs)} are created based on
+    the distribution of said frequent patterns, as a singular vector per
+    patient up to time t.
+  \end{itemize}
+\item
+  Output: A summary vector (profile) defining the important patterns
+  (and their distribution) in a patient's EHR.
+\end{itemize}
+
+These profiles can be directly applied for classification using
+vector-space methods like KNN or by measuring similarity to the
+aggregated vector of the closest group. Additionally, they may serve as
+features for more advanced classification models in our research.
+
+\includegraphics[width=5.96354in,height=2.22917in]{media/image12.png}
+
+\textbf{Figure 2:} Overview of the temporal-probabilistic profile-based
+and prediction method.
+
+In the same paper, the authors used this methodology to predict a sepsis
+complication in ICU patients by integrating temporal data mining with
+machine learning.
+
+Using the \emph{MIMIC III} dataset, which includes 40,000 critical care
+admissions from 2001 to 2012, this study demonstrated the effectiveness
+of the \emph{TPF} abstraction method. The performance of a \emph{Random
+Forest} model trained on \emph{TPF}-generated vectors was compared to
+that of an \emph{RNN (GRU-D)} model trained on the original multivariate
+raw data combined with patients' demographic information. The GRU-D
+input is the event token and the time since the last observation of this
+variable (the time gap/delta)
+
+In various configurations, the \emph{TPF}-based approach paired with a
+traditional machine learning model consistently outperformed the more
+complex sequential model.
+
+Despite dealing with a different dataset on a different prediction
+problem, this proves the potential effectiveness of the \emph{TPF}
+methodology, which might be of use to us in the representation of the
+first K days before prediction.
+
+\subsection{2.5 Sequential Models in Medical Outcome
+Prediction}\label{sequential-models-in-medical-outcome-prediction}
+
+Sequential models, particularly \emph{Transformers}, as introduced in
+"Attention is All You Need" {[}13{]}, have emerged as a powerful
+approach for tasks like outcome prediction by capturing dependencies
+across temporal sequences. These Encoder-Decoder models consist of an
+encoder that processes input sequences (e.g., time-series data
+representing clinical states) and a decoder that generates output
+sequences (e.g., predicted treatment actions or dosages). The attention
+mechanism, a key innovation in this architecture, enables the model to
+focus on the most relevant parts of the input sequence, addressing the
+limitations of traditional recurrent models in handling long-term
+dependencies. This mechanism is capable of capturing implicit patterns
+in the temporal data, unlike \emph{KarmaLego} based methods that capture
+explicit patterns.
+
+Building on this foundation, I reviewed several studies that applied
+sequential models - particularly machine learning and Transformer-based
+approaches - on raw Electronic Health Records (\emph{EHRs}) for various
+predictive tasks. I also reviewed experimental methods for embeddings
+and positional encodings needed for the prediction task using models
+such as these. This review provided valuable insights into preprocessing
+strategies, feature engineering, and modeling approaches relevant to
+structuring the experiments in this research.
+
+The paper \emph{``\hl{Treatment Prediction in the ICU Using a
+Partitioned, Sequential, Deep Time Series Analysis}'' {[}20{]}}
+introduced a framework for treatment prediction in ICU settings using a
+bidirectional LSTM model, leveraging multivariate time-series data
+(e.g., vital signs, lab results) and static features (e.g.,
+demographics) from the MIMIC-IV ICU database. The approach incorporated
+partitioned prediction windows, splitting a 12-hour horizon into three
+4-hour sub-windows, using data from the previous 24 hours for
+predictions. Temporal features were imputed for hourly granularity,
+while constant features were integrated into the LSTM, with internal
+integration yielding better performance.
+
+The prediction tasks focused on hypoglycemia (IV glucose), hypokalemia
+(IV and oral potassium), and hypotension (IV fluids, Dopamine, and
+Norepinephrine). The two-step model first predicted treatment necessity
+and then estimated dosage. Sequential reuse of earlier sub-window data
+enhanced training for later predictions.
+
+This research demonstrated the effectiveness of temporal neural networks
+in predicting both treatment necessity and dosage, mimicking ICU
+decision-making processes. The integration of constant features and
+partitioned predictions highlights its potential for decision support,
+reducing clinician cognitive load while improving accuracy. Unlike our
+study, this study does not mention the usage of abstraction methods or
+QA scores, which might yield good results when incorporated with
+bidirectional models such as the one mentioned here.
+
+Moving beyond recurrent models, attention-based architectures such as
+Transformers have further advanced this field. The paper
+\emph{``TransformEHR: Transformer-Based Encoder-Decoder Model for
+Disease Outcome Prediction''} {[}15{]} presents a generative
+encoder-decoder architecture specifically designed for predicting future
+disease outcomes using longitudinal EHR data. TransformEHR processes
+multi-level embeddings of patient data, including ICD-10 diagnostic
+codes, visit-level information, and demographic features. To incorporate
+temporal information, the authors explicitly encode time gaps between
+visits as sinusoidal embeddings of visit dates or day differences,
+enabling the model to account for irregular visit intervals in clinical
+practice. The embeddings for visit, demographic info and time were
+summed up to a full visit embedding vector, fed into the transformer
+encoder as a one-channel stream.
+
+Unlike prior EHR-focused models (which use only encoder-based
+architectures), TransformEHR's encoder-decoder transformer leverages
+cross-attention to connect historical patient data to future disease
+predictions, and self-attention in the decoder to sequentially predict
+all outcomes within a future visit. This architecture was pre-trained to
+recover all ICD codes of a future visit from past visits, a strategy
+that outperformed conventional code-level masking used in BERT-style
+models.
+
+This framework demonstrated state-of-the-art performance in predicting
+both common and rare conditions, including tasks like pancreatic cancer
+onset prediction and intentional self-harm in PTSD patients. The study
+also highlights challenges similar to ours, particularly in handling
+multi-dimensional sequential EHR data and determining the optimal way to
+encode time and integrate visit-level information into the transformer
+architecture.
+
+A third interesting paper I would like to mention is "Zero shot health
+trajectory prediction using transformer" {[}14{]}. The paper introduces
+\emph{ETHOS} (Enhanced Transformer for Health Outcome Simulation), a
+decoder-only transformer architecture designed for zero-shot prediction
+of Patient Health Timelines (PHTs). \emph{ETHOS} treats health events,
+including admissions, lab tests, and medications, as tokens - with
+static patient data (like demographics) embedded at the start of each
+sequence - and feeds these flattened chronological sequences into the
+transformer. Temporal gaps are encoded using explicit interval tokens
+(e.g., 5-15 minutes, 1-6 months), rather than learned sinusoidal or
+positional embeddings that feed on the exact 𝚫t. This approach enables
+ETHOS to operate directly on irregular, noisy data, using quantile-based
+tokens to mitigate bias from missing values.
+
+\emph{ETHOS} demonstrates robust zero-shot performance across multiple
+tasks, including ICU mortality prediction (AUC 0.927), hospital
+mortality (AUC 0.921), length of stay estimation (MAE 2.26 days), and
+even DRG classification (top-1 accuracy 84.8\%). Crucially, ETHOS
+achieves these results without fine-tuning, highlighting the power of
+unified foundation models for diverse clinical prediction tasks. The
+study underscores the feasibility of deploying transformer-based models
+trained once to perform a broad range of patient trajectory predictions,
+addressing challenges in handling multidimensional, sequential, and
+temporally irregular EHR data.
+
+While both \emph{TransformEHR} and \emph{ETHOS} address temporal
+dependencies in \emph{EHR} data, neither directly incorporates data
+abstraction techniques (like \emph{Mediator}), pattern mining
+(\emph{KarmaLego}), or \emph{QA scores} - methods we believe are crucial
+for mitigating overfitting and highlighting clinically significant
+intervals. This gap motivated us to explore temporal embeddings and
+tokenization methods that can generalize across data granularities.
+
+A solution for the gap in Δt representation was found in the paper
+"Time2vec: Learning a vector representation of time" {[}19{]}. Time2Vec
+is a general-purpose, model-agnostic representation of time that
+addresses the challenge of incorporating temporal information in
+sequence models. Unlike approaches that treat time as an ordinary
+feature or rely on handcrafted time representations, Time2Vec learns a
+compact vector embedding for each timestamp, capturing both periodic and
+non-periodic patterns in the data. It consists of a linear term and a
+series of periodic sine terms with learnable frequencies and phase
+shifts. This enables it to encode complex temporal behaviors, such as
+seasonality or cyclicity, in a data-driven manner. Crucially, Time2Vec
+is invariant to time rescaling, ensuring robust performance across
+different temporal granularities. By directly concatenating these
+learned time embeddings with other input features, Time2Vec can be
+seamlessly integrated into various models (like LSTMs or Transformers),
+consistently improving performance across diverse datasets, as
+demonstrated in the authors' experiments.
+
+Building upon these insights, our sequential model leverages a
+decoder-only transformer architecture enhanced with Time2Vec embeddings
+and multiple levels of temporal abstraction to address the unique
+challenges of modeling EMR data, and more specifically, address the
+unique challenges of modelling abstracted EMR data (Mediator's output),
+under the assumption that this more knowledgeable input will assist the
+model in generating better predictions.
+
+\subsection{2.6 Explainable AI: Explaining a Model's
+Decision}\label{explainable-ai-explaining-a-models-decision}
+
+The \textbf{SHAP} {[}16{]} framework (SHapley Additive ExPlanations)
+provides a unified approach for interpreting machine learning
+predictions by assigning importance values to individual features for a
+specific prediction. Derived from cooperative game theory, \emph{SHAP}
+values represent the marginal contribution of each feature to the
+prediction, ensuring that these attributions adhere to desirable
+properties like local accuracy, missingness, and consistency.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Explanation Model:
+\end{enumerate}
+
+\begin{quote}
+\emph{SHAP} represents a model's explanation as a linear function of
+simplified inputs, where each feature's contribution is computed
+relative to its impact on the output.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\item
+  Adapting to Classical Machine Learning Models:
+\end{enumerate}
+
+\begin{quote}
+For linear models, \emph{SHAP} values are derived directly from the
+model coefficients, weighted by the deviation of feature values from the
+dataset mean. For ensemble models (e.g., Random Forest, Gradient
+Boosting), \emph{SHAP} uses game-theoretic approximations to efficiently
+compute contributions.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  Adapting to Seq2Seq Models:
+\end{enumerate}
+
+\begin{quote}
+\emph{SHAP} can be extended beyond tabular settings to sequential
+architectures, including RNNs, LSTMs, and transformers. For
+sequence-to-sequence models, SHAP values can be computed at the token or
+event level, allowing us to quantify how specific time steps influence
+the prediction of future events. In transformer-based architectures,
+SHAP can be applied to the \textbf{input embeddings}, intermediate
+\textbf{hidden states}, or \textbf{attention scores} to reveal:
+\end{quote}
+
+\begin{itemize}
+\item
+  Which events or tokens had the greatest marginal impact on the
+  predicted next event or outcome.
+\item
+  How attention mechanisms redistribute importance across the temporal
+  context.
+\item
+  Whether the model's focus aligns with clinically relevant points in
+  the treatment trajectory.
+\end{itemize}
+
+\begin{quote}
+This token-level or event-level attribution is critical for medical
+applications, where the interpretability requirement extends beyond
+knowing \emph{which variables matter} to understanding \emph{when and in
+what context they matter}.
+\end{quote}
+
+The \textbf{LIME} (Local Interpretable Model-agnostic Explanations)
+framework {[}22{]} provides an intuitive method for interpreting
+predictions made by complex machine learning models. Developed by
+Ribeiro et al., \emph{LIME} is a model-agnostic approach that explains
+individual predictions by approximating the black-box model with a
+locally interpretable surrogate model, such as a linear regression.
+LIME\textquotesingle s core philosophy is to make sense of "why" a model
+produces a specific prediction by isolating the most influential
+features for that decision.
+
+\emph{LIME} works by perturbing the input data around the instance being
+explained and observing the corresponding changes in the
+model\textquotesingle s predictions. These perturbed samples are then
+weighted based on their proximity to the original instance, and a
+simpler, interpretable model (e.g., a linear or decision tree model) is
+fitted to approximate the black-box model\textquotesingle s behavior in
+this localized region. The weights assigned to each feature in the
+surrogate model reveal their importance in driving the
+model\textquotesingle s prediction.
+
+\emph{LIME} is inherently flexible and can be applied to any machine
+learning model, including linear models, tree-based models, neural
+networks, and even ensemble methods. It is especially useful for models
+that are inherently opaque, such as deep learning architectures or
+boosted trees, where understanding feature contributions is challenging.
+By generating explanations for individual instances, \emph{LIME} allows
+practitioners to validate model behavior, identify biases, and ensure
+alignment with domain knowledge.
+
+When predicting the next event based on patient history, both
+\emph{SHAP} and \emph{LIME} methods can highlight the key events or
+intervals that significantly influence the prediction, enhancing
+interpretability. We aim to leverage these insights to identify which
+aspects of the protocol are most critical to treatment outcomes,
+comparing results both with and without the new protocol intervention.
+Ultimately, our goal is to refine the protocol based on practical
+outcomes, integrating the assessed impact of actions taken or omitted
+during treatment.
+
+An intriguing example for the integration of such methods in medical
+informatics is the article \emph{``Feature Importance to Explain
+Multimodal Prediction Models: A Clinical Use Case''} {[}17{]}, which
+developed a multimodal deep learning model to predict 30-day
+postoperative mortality in elderly patients undergoing hip fracture
+surgery. The model combined five data modalities, including
+pre-operative static patient data (e.g., demographics, lab results, and
+comorbidities), hip and chest X-rays, and per-operative data such as
+vital signs and medications recorded during surgery. To process these
+diverse data sources, ResNet50 was used for feature extraction from
+X-rays, bi-directional LSTMs for sequential vital signs, and fully
+connected neural networks for static patient data and medication
+features. The extracted features were concatenated into a unified
+representation, which was fed into a fully connected neural network to
+predict mortality risk.
+
+To enhance clinical interpretability, \emph{Shapley} values were
+employed to explain the model's predictions. Global explanations showed
+that pre-operative static data contributed most significantly,
+accounting for about 70\% of the predictive power, while local
+explanations provided individualized insights into the features that
+influenced specific predictions. This approach demonstrates the
+potential of integrating multimodal data with explainable AI methods to
+support clinical decision-making while maintaining transparency in model
+outputs.
+
+Although their application of \emph{Shapley} values differs from our
+intended use - since they focus on identifying important predictors for
+outcomes, while we aim to take it a step further and to use these
+insights on the temporal patterns to update \emph{GLs} - the goals
+remain closely aligned - identifying key features that contribute to the
+outcome prediction, creating actionable insights.
+
+\section{3 Methods}\label{methods}
+
+This chapter details the systematic approach used to develop predictive
+models that incorporate temporal patterns and guideline adherence. The
+methodology is structured into two main parts: \textbf{Computational
+Methods} and \textbf{Evaluation Methods}.
+
+\begin{itemize}
+\item
+  \textbf{Computational Methods} focuses on data preprocessing, model
+  development, and training approaches.
+\item
+  \textbf{Evaluation Methods} describe how model performance is
+  assessed, including comparison metrics and real-world validation.
+\end{itemize}
+
+By utilizing real-world data, the study aims to assess the effectiveness
+of updated medical guidelines and their impact on patient outcomes.
+Unlike other studies focused on medical outcome predictions, this
+research targets short-term predictions for adult diabetic patients,
+using a diverse dataset from six hospitals, each with unique medical
+teams and practices. Furthermore, it specifically examines the role of
+guideline adherence, as reflected by \emph{QA Scores}, and evaluates the
+influence of new training initiatives on protocol implementation and
+adherence in real-world hospital settings. Distinctively, this research
+introduces a custom transformer-based architecture that has been
+tailored to handle the temporal dynamics and clinical nuances of an
+\emph{EMR}, addressing limitations in existing models and enabling
+improved short-term predictions.
+
+\includegraphics[width=6.26772in,height=3.04167in]{media/image17.png}
+
+\textbf{Figure 3}: Methodology Overview - The figure illustrates the
+research process, from knowledge base update to current protocol to the
+comparison of different models and assessment of GLs importance to
+treatment outcome.
+
+\emph{TIRP = (Frequent) Time Interval Relation Patterns, TPF = Temporal
+Probabilistic ProFiles, VSM = Vector Space Modeling, QATP = Quality
+Assessment Temporal Patterns.}
+
+\subsection{3.1 Computational Methods}\label{computational-methods}
+
+The goal of this study is to predict hospitalization outcomes for
+diabetic inpatients by leveraging temporal and sequential modeling
+approaches. Our predictive models aim to forecast outcomes (e.g.,
+discharge status, complications such as heart attack, stroke, or
+mortality) at specific time points (up to the Nth hospitalization day)
+based on patient data collected up to an earlier time point (Kth day),
+where \textbf{48 hours ≤ 𝐾 \textless{} 𝑁 ≤ 14 days}.
+
+This process involves a few major computational stages:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Temporal Data Preprocessing} -- Learning the OMOP DB model
+  concept index, acquiring medical knowledge (KBTA) and processing the
+  model into a concept based temporal interval dataset.
+\item
+  \textbf{Temporal Data Abstraction} -- Extracting structured,
+  meaningful representations from raw EMR data including events, states
+  and trends.
+\item
+  \textbf{QA Scores Calculation} -- Calculating adherence to clinical
+  guidelines scores using fuzzy logic, based on the \emph{Quality
+  Assessment Temporal Patterns (QATPs)}.
+\item
+  \textbf{Predictive Model Development} -- Building
+  temporal-frequent-patterns-based and transformer-decoder models using
+  machine learning and deep learning techniques.
+\item
+  \textbf{Optimization} -- Fine-tuning models for optimal performance
+  including hyperparameters and loss optimization, augmentation,
+  variance insertion and feature selection.
+\end{enumerate}
+
+The algorithms and systems discussed in this chapter were previously
+covered in the \emph{Related Work} chapter \textbf{{[}Chapter 2{]}}, so
+this section focuses solely on their intended application within this
+research.
+
+\subsubsection{3.1.1 Temporal Data Abstraction and QA Scores
+Calculation}\label{temporal-data-abstraction-and-qa-scores-calculation}
+
+A crucial aspect of this study is the development of a structured
+temporal abstraction framework, which transforms raw electronic medical
+records (EMR) into clinically meaningful states. This process is
+knowledge-driven, leveraging a formally defined \emph{Knowledge Base
+(KB)} that encodes diabetes treatment guidelines. Key stages:
+
+\textbf{Building Database Specific Index}
+
+\begin{itemize}
+\item
+  Identifying relevant concepts for measurements, medications and
+  observations and building a dataset specific index, as the
+  \emph{Kineret} Dataset {[}34{]} is not mapped to any international
+  coding system.
+\item
+  Automating the preprocess from \emph{OMOP} model to temporal dataset
+  input, using the hand crafted index.
+\item
+  Knowledge acquisition regarding discretization thresholds, event
+  relevance durations and definitions for \emph{KBTA} abstractions using
+  medical knowledge and clustering methods (K-MEANS, with KDE
+  distribution plot) to identify density peaks and dips in every
+  feature. The final discretization thresholds are decided using the
+  discovered thresholds combined with the medical knowledge to create
+  reasonable abstractions.
+\end{itemize}
+
+\textbf{Knowledge Base (KB) Development and Acquisition}
+
+\begin{itemize}
+\item
+  We construct a machine-readable \emph{KB} that encodes key elements of
+  diabetes treatment guidelines (\emph{GLs}), specifically tailored to
+  the diabetic population (ages 18+) in the \emph{Kineret Dataset.} This
+  \emph{KB} includes declarative definitions such as ``high blood
+  pressure'' or ``prolonged hyperglycemia,'' allowing automated
+  abstraction of raw medical data into discrete states and written in
+  TAK language. A developed helper automation for this process is
+  described in \textbf{{[}Appendix 2{]}}.
+\item
+  The diabetes \emph{GLs} used in this study are part of a new national
+  protocol for hospital-based diabetes care.
+\end{itemize}
+
+\textbf{Guideline Compliance Encoding}
+
+\begin{itemize}
+\item
+  A \emph{Fuzzy Logic} grading system is applied using QATPs to assess
+  the level of adherence to medical guidelines for each abstracted
+  pattern during treatment. For example, the existence of a recommended
+  insulin dosage up to t hours after a meal can be enforced using
+  pattern abstractions and aggregated as ``insulin adherence score''
+  using \emph{Fuzzy Logic}.
+\item
+  Unlike real-time decision-support systems (e.g., Mobiguide {[}7{]}),
+  our approach does not aim to update procedural knowledge or provide
+  immediate recommendations but rather enables light retrospective
+  scoring and assessment, that is integrated to assess the improvement
+  in adherence but mainly its effects on the outcomes.
+\end{itemize}
+
+\textbf{Temporal Abstraction and Data Transformation}
+
+\begin{itemize}
+\item
+  We utilize the Temporal Mediator to process raw, time-dependent data
+  into structured time-interval-based states.
+\item
+  Each patient's \emph{EMR} is segmented into meaningful intervals,
+  reducing noise and preserving clinically relevant trends while
+  avoiding unnecessary dimensionality.
+\item
+  The output of this stage consists of a sequence of discrete
+  abstractions (analogous to words in text processing), where some
+  abstractions (patterns) are associated with a fuzzy compliance score
+  based on adherence to guidelines.
+\end{itemize}
+
+\subsubsection{3.1.2 Predictive Model
+Development}\label{predictive-model-development}
+
+To predict short-term medical outcomes, we explore two primary modeling
+approaches: \textbf{Frequency-Based Temporal-Patterns Vector-Space
+Modeling (TPF/TIRP+VSM)} which is based on the horizontal support and
+distribution of \emph{Time Interval Relation Patterns (TIRPs} and
+TPFs\emph{)} in a patient's records, and \textbf{Transformer Modeling}
+which uses the \emph{KBTA} output as tokenized input to predict an
+expected events trajectory. Each method requires different data
+representations and preprocessing, which are detailed below.
+
+The predictive models will utilize the diverse set of patient data from
+the \emph{Kineret Dataset}, including:
+
+\begin{itemize}
+\item
+  Patient background (e.g., age, medical history)
+\item
+  Clinical measurements and lab results
+\item
+  Administered medications and dosages
+\item
+  Observations made during hospitalization
+\item
+  Quality-assessment scores derived from staff adherence to clinical
+  guidelines
+\end{itemize}
+
+\paragraph{3.1.2.1 Frequency-Based Temporal-Patterns Vector-Space
+Modeling
+(TPF/TIRP+VSM)}\label{frequency-based-temporal-patterns-vector-space-modeling-tpftirpvsm}
+
+In this approach, abstracted patient states and compliance scores are
+transformed into structured feature vectors suitable for classical
+machine learning models. All three methods described below use
+KarmaLego's TIRP output, computed on the time-abstracted patient states
+generated in Section 3.1.1. These TIRPs represent frequent sequences of
+clinical states (e.g., ``prolonged hyperglycemia'' → ``insulin dose
+increase'' → ``hypoglycemia'').
+
+We will construct three alternative vector-space representations:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Basic TIRP Cardinality Vector} -- For each patient at the
+  \emph{K}th day, count the \textbf{horizontal support} (number of
+  occurrences) of each frequent TIRP in their sequence. This assumes
+  that the hospital stay exceeds \emph{K} days for all patients.
+\item
+  \textbf{Relative-Support TPF} -- For each patient, compute the
+  horizontal support of each frequent TIRP, then normalize it relative
+  to the same TIRP's support in the rest of the cohort using min--max
+  scaling to the range {[}0, 1{]}. This captures whether a pattern is
+  unusually prominent for a specific patient.
+\item
+  \textbf{Duration-Normalized TPF} -- For each frequent TIRP, scale its
+  contribution in the feature vector by the proportion of the total
+  input duration (\emph{K} days) that the pattern spans. This emphasizes
+  patterns that occupy longer portions of the patient's treatment
+  trajectory.
+\end{enumerate}
+
+These summary vectors capture a representation of the visit's context
+and can be fed into models such as K-Nearest Neighbors (KNN), XGBoost,
+or Deep Neural Networks (DNNs). Additionally, guideline compliance
+scores will be incorporated into these representations, by using the
+distribution of ``correct'' or ``incorrect'' treatment patterns in these
+vectors. Feature selection methods can guide us on which patterns are
+more predictive than others. All vector-space approaches will be
+compared to determine which best captures meaningful trends in the
+short-term prediction of diabetes treatment outcomes.
+
+\paragraph{3.1.2.2 Sequential Models}\label{sequential-models}
+
+Unlike TPF/TIRP+VSM approaches, sequential models retain the structured
+state representations and operate directly on the \textbf{temporal
+sequence of states trends and patterns} rather than transforming them
+into fixed feature vectors of pattern distribution. This method is
+motivated by the need to capture \textbf{not only if but also when} an
+event is likely to occur, as well as to output a sequence of outcomes,
+if applicable.
+
+\begin{itemize}
+\item
+  \textbf{Next-State Prediction for Temporal Sequence Modeling}
+
+  \begin{itemize}
+  \item
+    Each state/event sequence will be treated analogously to a word
+    sequence in NLP, where models attempt to predict the next expected
+    state based on past patterns.
+  \item
+    An additional Δt prediction head is added to the model, to assess
+    the timing of the next event. This Δt is crucial for the transformer
+    generative action's positional encoding, but in the evaluation
+    events timing might be assessed using the MEAL events rather than
+    the attempted Δt, depending on the actual learning quality of this
+    head.
+  \item
+    The goal is to develop a sequential prediction model that learns
+    expected event trajectories and timings, distinguishing normal
+    progressions from those leading to complications. At every step (t),
+    the model is trained to predict the next most probable
+    (deterministic) event-token, while respecting constraints on illegal
+    tokens at a specific point in time (For example, glucose cannot be
+    \ul{high} and \ul{medium} at the same time).
+  \item
+    Unlike classification-based approaches, this method can include the
+    timing of outcome predictions rather than merely predicting their
+    occurrence, and is inherently multi-label approach, allowing the
+    same model to predict multiple outcomes for the same hospital visit.
+  \end{itemize}
+\item
+  \textbf{Data Preprocessing for Sequential Models}
+
+  \begin{itemize}
+  \item
+    This approach requires a structured representation of a
+    patient\textquotesingle s temporal intervals. The temporal input
+    dataset for this section (after processed by the Mediator) will have
+    a structure like this example:
+  \end{itemize}
+\end{itemize}
+
+\begin{quote}
+\includegraphics[width=4.49479in,height=0.72967in]{media/image29.png}
+\end{quote}
+
+\begin{itemize}
+\item
+  Such a dataset will include multiple dimensions (for every feature)
+  which cannot fit into a singular input sequential model. To handle the
+  dimensionality while still allowing intervals to have a duration (in
+  the input) every interval with duration (states / trends / patterns)
+  is divided to 2 tokens (``\_Start'', ``\_End''). For example,
+  GLUCOSE\_STATE\_High will be tokenized as GLUCOSE\_STATE\_High\_Start,
+  \ldots, GLUCOSE\_STATE\_High\_End, depending on the relative timing of
+  the interval closing point to other intervals. The correctness of the
+  abstraction process guarantees that no sequence will be corrupted
+  (e.g., GLUCOSE\_STATE\_High\_Start, \ldots,
+  GLUCOSE\_STATE\_High\_Start, \ldots, GLUCOSE\_STATE\_High\_End
+  resulting in a closing token for 2 identical starting tokens).
+\item
+  In addition, in order to derive dependencies in time, for every token
+  we'll calculate the Δt from the Admission token (global dependency).
+  This makes the current shape of the dataset to be like in this
+  example:
+\end{itemize}
+
+\begin{quote}
+\includegraphics[width=3.30729in,height=0.92366in]{media/image7.png}
+\end{quote}
+
+\begin{itemize}
+\item
+  While solving the interval duration representation problem, this
+  method makes 2 tokens of the same concept to be treated differently,
+  which has the potential to damage the informative qualities we aim to
+  achieve from the embedding. To handle that, 4 levels of tokenization
+  were created for every event token:
+
+  \begin{itemize}
+  \item
+    Raw Concept (e.g., GLUCOSE)
+  \item
+    Concept / TAK (e.g., GLUCOSE\_STATE)
+  \item
+    Concept + Value (e.g., GLUCOSE\_STATE\_HIGH)
+  \item
+    Concept + Value + Position (e.g., GLUCOSE\_STATE\_High\_START)
+  \end{itemize}
+\end{itemize}
+
+\begin{quote}
+This method allows information to be carried across different tokens of
+the same event, and even different events of the same raw-concept. For
+example, the transformer will now be informed that
+GLUCOSE\_STATE\_High\_END is the closing token for previously seen
+GLUCOSE\_STATE\_High\_START and that GLUCOSE\_TREND shares at least some
+(learnt) similarity to GLUCOSE\_STATE. A tokenizer (EMRTokenizer) is
+created to handle the encoding and decoding of the new medical-events
+``language''.
+\end{quote}
+
+\begin{itemize}
+\item
+  Finally, a demographic dataset ({[}CTX{]}), holding Age, Gender,
+  number of prior hospitalizations in 6 and 12 months, and past
+  occurrences (before current admission) of the relevant medical
+  complications is created, and scaled using a standard scaler (fitted
+  on train, used on test). This vector will be accompanied by the
+  \emph{Charlson Comorbidity Index (CCI)} that quantifies a patient's
+  overall disease burden by assigning points to comorbid conditions
+  based on their severity and mortality risk, producing a single score
+  that reflects how ill the patient is. This score is considered highly
+  informative.
+\item
+  We aim to compare 3 inputs for the same architecture:
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{A base-line} of token representation is curated by
+  equal-frequency discretization of the raw input data, which means
+  these tokens will not be medical knowledge based and \textbf{will not
+  have a duration}.
+\item
+  \textbf{An Interval based} token representation curated with the
+  described Mediator's temporal abstractions using only events, states
+  and trends (not incorporating treatment adherence patterns).
+\item
+  \textbf{Interval + Patterns based} token representation which will
+  encompass both the abstracted EMR and treatment adherence patterns
+  (\emph{QATP}s) found in the input, which can inform the model of what
+  patterns should receive more attention weight.
+\end{enumerate}
+
+\begin{itemize}
+\item
+  \textbf{Embedding method}
+
+  \begin{itemize}
+  \item
+    Each event is decomposed into four hierarchical levels of token
+    information as described above. These four components are embedded
+    separately using dedicated embedding layers, each mapping the tokens
+    into the same fixed-size embedding space (defined by the final
+    embedding dimension, e.g., 128).
+  \item
+    To incorporate temporal patterns, \textbf{Time2Vec} layer is used
+    for \textbf{absolute timing} (time from admission). This encoder
+    outputs a vector containing a linear component and multiple periodic
+    components (sine functions) as described in the paper {[}19{]}.
+    These embeddings are concatenated and then projected to the same
+    final embedding dimension via a linear layer, ensuring that temporal
+    information is harmonized with the token-level embeddings.
+  \item
+    The final event representation is created by \textbf{concatenating}
+    the four token embeddings (raw concept, concept type, concept-value,
+    concept-value-position) with the projected time embedding. This
+    results in a combined vector of \textbf{5 × embedding dimension}
+    (e.g., 5 × 128 = 640). A final \textbf{linear projection layer} then
+    compresses this vector into the predefined embedding dimension
+    (e.g., 128), ensuring a consistent, compact representation for every
+    event.
+  \item
+    In addition to event embeddings, a dedicated \textbf{{[}CTX{]}
+    token} (learnable) is prepended to every patient's event sequence.
+    This token is combined with a projection of the patient's static
+    context data (age, gender, etc.) and possibly the adherence QA
+    aggregated score to encode global patient characteristics that
+    modulate the interpretation of dynamic events.
+  \item
+    During \,training \textbf{phase\,1}
+    the\,\emph{EMREmbedding}\,network is trained with three
+    self‑supervised losses that act in concert. First, Pytoch's
+    \textbf{Multi‑Label Binary Cross Entropy (BCE) with logits} {[}31{]}
+    objective predicts the \emph{set} of events likely to appear within
+    a short look‑ahead window, so the model learns which events can
+    legitimately follow the current one while remaining tolerant to
+    slight swaps in order. Second, a \textbf{masked‑language‑modeling
+    (MLM)} {[}30{]} task, applied with the classic
+    80\,\%\,→\,{[}MASK{]}, 10\,\%\,→\,random, 10\,\%\,→\,keep strategy
+    as in the original BERT paper, forces the encoder to reconstruct
+    hidden tokens from their bidirectional context, capturing
+    longer‑range dependencies that a strict next‑token loss would miss.
+    Finally, an auxiliary \textbf{Mean Square Error (MSE)} {[}31{]} loss
+    on a time‑prediction head teaches the model to estimate when the
+    next event should occur, giving it temporal intuition. Together,
+    these three signals encourage the embedder to internalise the core
+    clinical co‑occurrence patterns, their approximate timing, and the
+    broader semantic context, all while being robust to the inevitable
+    noise and minor ordering irregularities present in real‑world
+    electronic medical records.
+  \end{itemize}
+\item
+  \textbf{Transformer Method}
+
+  \begin{itemize}
+  \item
+    Foundation \textbf{in GPT-2 Architecture:\\
+    } The transformer model is built upon the GPT-2 architecture by
+    Radford et al. (2019) {[}28{]} and further refined in the
+    \textbf{nanoGPT} implementation by Karpathy {[}29{]}. It uses
+    stacked self-attention and feed-forward layers with residual
+    connections to model event sequences autoregressively.
+  \item
+    \textbf{Replacement of Token/Positional Embeddings:\\
+    } Unlike standard GPT-2, our transformer operates on the
+    \textbf{context-aware event embeddings} produced by the
+    \textbf{EMREmbedding} module. These embeddings already incorporate
+    temporal, semantic, and patient-specific information, removing the
+    need for separate token and positional embeddings. The model
+    receives a trained embedder object as input with the possibility to
+    tune its weights during training.
+  \item
+    \textbf{Model Stack and Residual Scaling:\\
+    } The transformer stack consists of multiple causal self-attention
+    blocks and gated MLPs, each with layer normalization. A residual
+    scaling factor of
+    \includegraphics[width=0.61979in,height=0.37537in]{media/image11.png}
+    is applied to each residual branch to ensure stable gradient flow
+    during deep model training.
+  \item
+    \textbf{Dual Prediction Heads:}
+
+    \begin{itemize}
+    \item
+      The \textbf{next-token prediction head} uses weight tying with the
+      event embedding layer, maintaining parameter efficiency.
+    \item
+      An additional \textbf{Δt prediction head} is trained to predict
+      the timing of the next event (Δt), allowing explicit modeling of
+      temporal intervals alongside event predictions.
+    \end{itemize}
+  \item
+    \textbf{Customized Multi-Hot Focal BCE Loss:\\
+    } The training objective uses a \textbf{Multi-Hot Focal BCE Logits
+    Loss} formulation. Instead of strict next-token prediction, this
+    method predicts a \textbf{set of relevant events} within a future
+    window, while balancing rare tokens in the loss computation,
+    reflecting the real-world noise and flexibility in clinical event
+    timing. The method takes into account only future events within
+    window k that \textbf{are legal} in the current context up to event
+    t (including t). Meaning, the model does not propagate loss over
+    tokens that are not relevant to the context {[}0 → t{]}. This is a
+    method based on complete teacher's forcing where at every step the
+    model receives as context only ground truth tokens, and as targets
+    only tokens that does not violate structural validity to choose
+    from.
+  \item
+    \textbf{Incorporation of Clinical Penalties:\\
+    } The transformer training loss includes \textbf{domain-specific
+    penalty functions} to enforce clinically meaningful predictions:
+
+    \begin{itemize}
+    \item
+      \textbf{Meal order penalty:} Penalizes predictions that violate
+      daily meal cycles (Breakfast → Lunch → Dinner → Night (snack) →
+      Breakfast). Note that the dataset does not offer the received
+      meals information, so a fixed schedule (7:00, 12:00, 18:00, 22:00)
+      is assumed during data preprocessing.
+    \item
+      \textbf{Hallucinated interval penalty:} Penalizes illegalities in
+      the shape of the generated intervals. Terms:
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{quote}
+If token== \textquotesingle GLUCOSE\_TREND\_inc\_START\textquotesingle,
+base(tok) == \textquotesingle GLUCOSE\_TREND\_inc\textquotesingle,
+concept(tok) == \textquotesingle GLUCOSE\_TREND\textquotesingle{}
+\end{quote}
+
+\begin{itemize}
+\item
+  END is illegal if the base is not open yet (You can\textquotesingle t
+  see \textquotesingle GLUCOSE\_TREND\_inc\_END\textquotesingle{} before
+  opening it
+  \textquotesingle GLUCOSE\_TREND\_inc\_START\textquotesingle). Enforced
+  using base(tok).
+\item
+  START is illegal if the base already open (You can\textquotesingle t
+  have \textquotesingle GLUCOSE\_TREND\_inc\_START\textquotesingle{}
+  after \textquotesingle GLUCOSE\_TREND\_inc\_START\textquotesingle{}
+  without seeing
+  \textquotesingle GLUCOSE\_TREND\_inc\_END\textquotesingle). Enforced
+  using base(tok).
+\item
+  START of concept(tok) is illegal if concept(tok) is still open
+  (meaning you can\textquotesingle t have
+  \textquotesingle GLUCOSE\_TREND\_inc\_START\textquotesingle{} after
+  \textquotesingle GLUCOSE\_TREND\_dec\_START\textquotesingle{} without
+  seeing \textquotesingle GLUCOSE\_TREND\_inc\_END\textquotesingle).
+  Enforced using concept(tok).
+\end{itemize}
+
+\begin{itemize}
+\item
+  \textbf{Total Loss Composition:}
+\end{itemize}
+
+\begin{quote}
+The final training loss is a weighted sum of the next-token \textbf{BCE}
+loss, the \textbf{structured penalties} (meal order, interval
+correctness), and the \textbf{Δt MSE} regression loss + a minor penalty
+to encourage time monotonicity. Each component is weighted according to
+its clinical relevance and sparsity, ensuring the model learns not only
+accurate event predictions but also clinically plausible event sequences
+with precise temporal modeling. This training process is referred to as
+\textbf{phase 2}.
+\end{quote}
+
+\begin{itemize}
+\item
+  The model defines a \textbf{warm up} phase in the training (e.g., 10
+  epochs) where no stopping criteria can be triggered and a
+  \textbf{patience} phase (e.g., 5 epochs) to truly decide if a model is
+  not improving. During this warmup phase the weight of the penalties
+  increases gradually to allow the model to first learn the vocab and
+  patterns, and only then to slowly introduce time and structure.
+\item
+  The model also \textbf{masks} non-structural tokens (not ADMISSION,
+  MEALs, PAD etc) randomly in a growing ratio on the input to encourage
+  robustness. This method is called Curriculum by Masking (CBM).
+\item
+  In addition, the data loader oversamples admissions with rare outcomes
+  (e.g., DEATH, \textless5\%). Combined with the weighted loss and the
+  CBM, this method injects variance while balancing the influence of
+  rare medical events, which are common in medicine.
+\end{itemize}
+
+We call this model \emph{Transform-EMR} {[}32{]}, and its current
+(updating) implementation is available on GitHub. Currently, the planned
+architecture is only \textbf{Transformer-based}, due to its appealing
+attention mechanism for this task and its training parallelism over the
+block, but depending on our progress, results and time constraints, we
+might also attempt an \textbf{LSTM} architecture with similar loss and
+targets for benchmarking.
+
+\paragraph{3.1.2.3 Comparison and Research
+Goals}\label{comparison-and-research-goals}
+
+By comparing these approaches, we aim to determine:
+
+\begin{itemize}
+\item
+  Whether \textbf{TPFs combined with guideline compliance scores} as
+  baseline for vector space models (VSMs) provide a superior predictive
+  signal for short-term treatment outcomes. These models benefit from
+  clinically pre-defined feature sets, potentially leveraging
+  well-established patterns of care.
+\item
+  Whether our \textbf{transformer architecture} can outperform VSMs in
+  both \textbf{accuracy and timing of predictions}, particularly in
+  anticipating when an adverse event is likely to occur. To assess the
+  influence of guideline adherence, the transformer will be trained
+  \textbf{with and without} the compliance scores. Additionally, we will
+  explore \textbf{tokenizing guideline patterns directly} within the
+  transformer input, potentially guiding the model to learn more robust
+  clinical causality.
+\item
+  Unlike TPFs/TIRPs, which rely on predefined/ explicitly discovered
+  patterns, the transformer has the capacity to \textbf{discover novel,
+  undefined patterns} that may influence patient survival, thanks to its
+  ability to model complex, hierarchical dependencies through attention
+  mechanisms.
+\end{itemize}
+
+The results will inform which temporal modeling strategy is most
+effective for real-world deployment in clinical decision support.
+
+\subsubsection{3.1.3 Hyperparameter
+Optimization}\label{hyperparameter-optimization}
+
+Optimizing model performance is crucial for ensuring that we maximize a
+predictive algorithm's potential, by adjusting the way it learns the
+data representation. To achieve this, we will employ \textbf{automated
+hyperparameter optimization} using Optuna {[}21{]}, a powerful framework
+for efficiently searching hyperparameter spaces, and a qualitative
+search over diverse predefined hyperparameter space, in places where
+Optuna is infeasible (Deep Sequential Models).
+
+\textbf{Optimization Strategy}
+
+Each of the modeling approaches outlined in \textbf{{[}Chapters
+3.1.2{]}} will require fine-tuning of key hyperparameters to achieve the
+best predictive performance. The optimization process will include:
+
+\textbf{Vector-Space Machine Learning Models}
+
+\begin{itemize}
+\item
+  \textbf{KNN:} Optimization of k-value selection, distance metrics
+  (e.g., Euclidean, Cosine Similarity, iDTW), and weighting functions.
+\item
+  \textbf{XGBoost:} Fine-tuning of tree depth, learning rate, number of
+  estimators, and feature importance thresholds.
+\end{itemize}
+
+\textbf{Sequential Models}
+
+\begin{itemize}
+\item
+  \textbf{LSTMs and Transformers:} Optimization of hidden state size,
+  number of layers, attention heads, learning rate schedules, masking
+  and loss function to balance generalization and efficiency.
+\item
+  \textbf{Training Parameters:} Batch size, block size, learning rate,
+  weight decay, dropout, number of epochs, BCE window (number of tokens
+  per prediction) and penalties weights.
+\end{itemize}
+
+This optimization framework will ensure that each model operates at peak
+efficiency, maximizing predictive accuracy across different
+methodologies. By leveraging adaptive search strategies instead of
+exhaustive grid search, we aim to reduce training time while maintaining
+optimal model performance.
+
+\subsection{3.2 Evaluation Methods}\label{evaluation-methods}
+
+This study aims to address the following \textbf{key questions}:
+
+\begin{itemize}
+\item
+  Can Transformers or other sequential models outperform interval-based
+  temporal frequent pattern methods in medical short-term outcome
+  predictions, as outlined in this study? Can \emph{KBTA} / \emph{TIRP}
+  based tokenization help?
+\item
+  How does adherence to medical guidelines influence the outcomes during
+  hospital stays?
+\item
+  Which components of the standardized protocols are most effective, and
+  where do gaps or inconsistencies in their implementation arise?
+\item
+  How guideline-compliance scores have been influenced by recent
+  interventions aimed at improving clinical care.
+\end{itemize}
+
+The \textbf{hypotheses} underpinning this study are:
+
+\begin{itemize}
+\item
+  Patients treated with higher adherence to standardized diabetes
+  protocols will experience lower short‑term in‑hospital complication
+  rates than patients with lower adherence.
+\item
+  A Transformer‑based model will outperform a frequent interval-based
+  temporal patterns vector-space baseline model in predicting short‑term
+  complications, indicating that it captures clinically relevant
+  patterns not encoded in handcrafted features.
+\item
+  Knowledge-based temporal abstraction before tokenization (states/
+  trends/ patterns) will yield higher predictive performance than
+  discrete equal-frequency tokenization.
+\item
+  Model‑derived feature‑importance ranking will highlight specific
+  protocol components (e.g., timely insulin titration, glucose
+  monitoring frequency) as dominant contributors to reduced
+  complications and will also highlight protocol components that suffer
+  from implementation gaps.
+\item
+  Mean guideline‑compliance scores will increase following the recent
+  clinical interventions.
+\end{itemize}
+
+The study's objectives are as follows:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Knowledge Base Update and Temporal Abstraction:} Develop a
+  comprehensive knowledge base to support the implementation of the
+  updated diabetes care protocol in future studies, as well as to
+  support the QA scores calculation for this study using the existing
+  temporal abstraction algorithms.
+\item
+  \textbf{Medical Outcome Prediction:} Utilize the discrete and
+  abstracted data to predict hospitalization outcomes at specific time
+  points (up to Nth hospitalization day), based on prior data collected
+  up to the Kth day (48 hours ≤ K \textless{} N ≤ 14 days). This
+  prediction task will be conducted using the specified TIRP/ TPF based
+  methods (Section 3.1.2.1) and the transformer based methods (Section
+  3.1.2.2).
+\item
+  \textbf{GL Adherence as Features:} Introduce guideline adherence
+  scores as predictive features and evaluate their influence on the
+  medical outcomes.
+\item
+  \textbf{Protocol Adjustment:} Evaluate the effectiveness of care
+  guidelines, identifying under-implemented areas and components with
+  the strongest connection to specific outcomes. Highlight opportunities
+  for refinement and improve consistency in implementation.
+\item
+  \textbf{Impact of Interventions:} Assess the effect of two
+  interventions across six hospitals - {[}1{]} the introduction of a
+  diabetes GL learning software module for medical teams, and {[}2{]}
+  the introduction of a diabetes quality measure for managing
+  hyperglycemia events - on the compliance scores of the medical staff.
+  This will be achieved by comparing \emph{GL}-based \emph{QA} scores
+  before and after these interventions.
+\end{enumerate}
+
+The dataset, referred to as the ``\emph{Kineret dataset}'' {[}34{]} is
+curated of 6 Israeli government hospitals data: Shamir, Barzilai, Bnei
+Zion, Tzafon (Poria), Galilee (GMC), Hillel Yaffe (HY). The study cohort
+is defined by the following inclusion and exclusion criteria:
+
+\begin{itemize}
+\item
+  \textbf{Age:} Inpatients aged 18 and above.
+\item
+  \textbf{Department Exclusions:} Excludes patients from obstetrics and
+  pediatrics departments.
+\item
+  \textbf{Diabetes Indicators:} Includes patients diagnosed with
+  diabetes or with elevated blood glucose levels (≥180 mg/dL twice or
+  ≥250 mg/dL once during the same hospitalization).
+\item
+  \textbf{Hospital Stay Duration:} Hospitalizations lasting 48 hours to
+  14 days.
+\end{itemize}
+
+The dataset includes patient background information, clinical
+measurements, administered medications, observations, and outcomes such
+as discharge status or complications (e.g., heart attack, stroke, or
+death). Two datasets were collected:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  June 2022 to August 2023, representing the pre-protocol implementation
+  phase.
+\item
+  August 2023 to January 2025, reflecting data after the protocol was
+  updated.
+\end{enumerate}
+
+This dataset is hosted externally on a secure, cloud-based platform to
+ensure data privacy and compliance with the Ministry of Health
+regulations. Deploying the required algorithms - such as the
+\emph{Temporal Mediator}, \emph{KarmaLego} and the \emph{Custom
+Transformer} - presented several engineering challenges. We needed to
+adapt these systems for compatibility with Linux-based containers and
+optimize them for deployment in resource-constrained environments.
+Additionally, building robust data extraction pipelines within the
+remote environment, powered by our custom concept codes index that had
+to be derived from the actual data was crucial for ensuring the seamless
+flow of clinical data into these containers while managing computational
+and memory limitations. These efforts were essential for enabling
+temporal abstraction and pattern mining without compromising performance
+or reliability.
+
+\subsubsection{3.2.1 Evaluation of the
+Knowledge-Base}\label{evaluation-of-the-knowledge-base}
+
+As described in {[}\textbf{Section 3.1.1}{]}, The first steps of the
+project are focused on the acquisition informative abstractions and the
+medical guidelines in machine readable manner, to be fed into the
+Temporal Mediator, creating the temporal abstractions which are then
+used as features and for the calculation of the \emph{Quality Assessment
+Score} per action based on the \emph{Fuzzy Logic}. Given that creating a
+treatment quality assessment system (like in the \emph{Picard} project)
+is not a part of this study's goals the Quality-Assessment Knowledge
+implementation (\textbf{Task No.1 in Section 3.2}) will be evaluated
+heuristically, and Technical / Functional Evaluations {[}2{]} will not
+be needed.
+
+As described, when creating the abstractions parameters, a few methods
+were combined with public medical knowledge (Internet + medical
+professional assistance):
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  Calculation of 1D K-Means for every concept (e.g., administered Bolus
+  Insulin Dosage) in order to identify 2-5 meaningful clusters, taking
+  the middle point between their centroids as discretization thresholds.
+\item
+  Visualization using a KDE density histogram, showing peaks and dips in
+  administered dosage frequency in the cohort.
+\item
+  Qualitatively combining these found thresholds with medical knowledge
+  to decide on the final threshold for every concept.
+\end{enumerate}
+
+\includegraphics[width=6.26772in,height=2.625in]{media/image19.png}
+
+\textbf{Figure 4:} An example of Bolus Insulin density plot, showing 3
+main density peaks. The red lines are dips markers (local minimum) and
+the purple lines represent the final thresholds found for this concept.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{3}
+\item
+  In addition to the state discretization thresholds, relevance
+  durations were also needed (e.g., the duration after admission a
+  medication is considered in the blood stream) and trend limits (what
+  is considered a medically significant increase/decrease in a dosage or
+  measurement). A qualitative literature search was done in order to
+  decide on these.
+\end{enumerate}
+
+After these rules were decided, the resulting temporal abstractions were
+also evaluated but in an empirical manner, mostly to validate that they
+were created properly relative to the real data distribution. Meaning,
+the medical knowledge can instruct us on the clinically approved normal
+ranges for measurements, but if their real world ranges vary
+significantly from these recommendations (for example, high density on
+out-of-range values or ``starved'' discrete values) - adjustments need
+to be made. These were evaluated after abstracting the data, and
+included:
+
+\begin{itemize}
+\item
+  Checking the avg. duration of each concept state/ trend.
+\item
+  Checking the ratio of temporal abstractions with duration compared to
+  events (to confirm concepts were abstracted properly).
+\item
+  Checking that every pre-defined discrete state is represented after
+  abstraction and was not excluded due to wrong pre-defined
+  discretization criterias.
+\end{itemize}
+
+As these evaluations are not a main part of this study and mainly used
+for internal validation, they are shown in \textbf{{[}Appendix 1{]}}.
+
+\subsubsection{3.2.2 Evaluation of the Predictive
+Models}\label{evaluation-of-the-predictive-models}
+
+Building on the predictive modeling approaches outlined in
+{[}\textbf{Section 3.1.2{]}}, this section focuses on assessing model
+performance to ensure reliability and clinical applicability. The
+evaluation process is designed to validate the predictive ability of the
+models while considering the complexity and evolving nature of the
+prediction task. Our full prediction targets list is:
+
+\begin{itemize}
+\item
+  Release
+\item
+  Death (up to 30 days from release).
+\item
+  Complication: Ketoacidosis, Kidney disorder, Coma, Eye disorder,
+  Hypoglycemia or Hyperglycemia (mild / severe), Cardiovascular
+  disorder, Infection, Neurovascular complication.
+\item
+  As a byproduct of our method we'll also try to predict the visit's
+  total duration.
+\end{itemize}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5936}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.3193}}@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Target} & \textbf{Vertical Support Cohort} \\
+Release & 96.22\% \\
+Death & 3.84\% \\
+Hyperglycemia (glucose \textgreater{} 250 mg/dL) & 69.60\% \\
+Severe Hypoglycemia (glucose \textless= 54 mg/dL) & 5.64\% \\
+Ketoacidosis & 2.54\% \\
+Kidney disorder & 12.69\% \\
+Coma & 1.04\% \\
+Eye disorder & 1.94\% \\
+Cardiovascular disorder & 10.99\% \\
+Infection & 5.77\% \\
+Neurovascular complication & 5.45\% \\
+\end{longtable}
+}
+
+\textbf{Table 1}: The distribution of the prediction targets within the
+cohort. While terminal targets (release / death) can only appear once,
+complications can appear multiple times in a single hospital visit. The
+ratio shows the number of patients with at least 1 occurrence (vertical
+support) of this target in their full visit trajectory.
+
+The models are programmed to predict only one terminal outcome per
+hospital visit (release/ death) but can predict multiple complications
+to happen between the admission and that terminal outcome. There are 3
+evaluation levels we employed:
+
+\begin{itemize}
+\item
+  Were we able to predict \textbf{\ul{a}} future complication and
+  outcome? (Easy)
+\item
+  Were we able to predict \textbf{\ul{the}} future complications and
+  outcome? (Medium)
+\item
+  Were we able to predict \textbf{\ul{the}} future complications and
+  outcome \textbf{\ul{at the}} correct time? (Hard, only possible for
+  the generative model)
+\end{itemize}
+
+In the temporal frequency vector-space models prediction is
+straight-forward (binary multi-label vector as output). For the
+generative model we will create such a vector. Iterating over the
+generated events, we will collect all outcomes and terminal outcomes
+generated by the model (per patient) and will mark them in a binary
+multi-label vector, depending on them meeting the criteria (for example,
+max deviation of 24 hours from the real event time).
+
+To ensure the reliability and accuracy of the models (\textbf{Task No.2
+in Section 3.2}) and to assess the impact of adherence scores on
+predictive performance (\textbf{Task No.3 in Section 3.2}), each model
+will be evaluated using a range of performance metrics and validation
+methods. These evaluations will determine the effectiveness and
+generalizability of the models while also providing insights into how
+guideline adherence contributes to prediction quality.
+
+\begin{itemize}
+\item
+  \textbf{Precision}: Measures the proportion of true positive
+  predictions among all positive predictions made by the model.
+\item
+  \textbf{Recall / Sensitivity}: Evaluates the model\textquotesingle s
+  ability to identify all relevant instances within the data.
+  Specifically, it measures the proportion of actual positive instances
+  that the model correctly identifies as positive.
+\item
+  \textbf{F1 Score}: The harmonic mean of precision and recall,
+  providing a balanced measure of both. Particularly useful with
+  imbalanced datasets, as it ensures that both false positives and false
+  negatives are considered.
+\item
+  \textbf{Specificity}: Measures the proportion of true negative
+  instances correctly identified by the model. It reflects the model's
+  ability to avoid false positives and is especially important when the
+  cost of a false alarm is high.
+\end{itemize}
+
+These metrics will be calculated for micro and macro averages. In the
+micro average, individual class contributions are weighted by their
+frequency, treating each prediction as equally important. The macro
+average, on the other hand, calculates the metric independently for each
+class and then averages the results, treating each class equally
+regardless of size. This differentiation is irrelevant for the
+\emph{Accuracy} measurement.
+
+The models will be evaluated using a \textbf{holdout test set}
+consisting of 1000 patients. The test set is relatively small due to
+computational resources restrictions in the sequential token-by-token
+inference of a transformer model. This approach is chosen because deep
+learning models are typically \textbf{less suited for K-fold
+cross-validation}, a technique that partitions the data into multiple
+subsets (folds) for repeated evaluation. Instead, a single test set
+provides a practical and efficient way to assess model performance on
+previously unseen data, while avoiding the computational burden of
+multiple training cycles inherent in K-fold cross-validation.
+
+In addition, comparison tests will be conducted to explore the impact of
+different model and data configurations as described in \textbf{Sections
+3.1.2.1} and \textbf{3.1.2.2}. This will help assess whether the
+inclusion of QA data - reflecting adherence to updated guidelines -
+improves the model's predictive power, and which modeling technique
+works best for this prediction task.
+
+Finally, the study will benchmark its results against existing research
+in the field of medical outcome prediction for diabetes treatment. By
+comparing our findings with those of similar studies, we aim to validate
+the effectiveness of our model and understand how it performs relative
+to established approaches. However, we acknowledge that our dataset is
+not publicly available (unlike datasets such as MIMIC), which may limit
+the comparability of our results and introduce variability due to the
+dataset's uncontrolled quality. If needed to further validate our novel
+methods, we will also evaluate it on the MIMIC dataset.
+
+These evaluation and comparison strategies will help identify the most
+effective model and setup for predicting treatment outcomes, enabling
+clinical decision-makers to adopt the most reliable and interpretable
+model for diabetes care.
+
+\subsubsection{3.2.3 Feature Importance Analysis: Explainability and
+Protocol
+Refinement}\label{feature-importance-analysis-explainability-and-protocol-refinement}
+
+Explainability is a critical requirement for medical informatics models,
+as healthcare professionals must trust and understand predictions to
+make informed decisions. To achieve this, feature importance analysis
+will be conducted using \emph{SHAP} to identify the most influential
+\emph{Quality Assessment Temporal Patterns} (\emph{QATPs}) associated
+with patient outcomes. These patterns will help uncover key predictors
+of complications or recovery, enhancing the interpretability of the
+models.
+
+Insights from \emph{SHAP} analysis will also guide protocol refinement
+by highlighting the \emph{QATP}s most strongly correlated with clinical
+outcomes. This ensures that the most impactful aspects of care are
+prioritized in the updated protocol, ultimately improving clinical
+decision-making and patient care (\textbf{Task No.4 in Section 3.2}).
+The results will be validated by clinical experts to ensure their
+alignment with established medical knowledge and their relevance to
+real-world practice.
+
+\subsubsection{3.2.4 Adherence Assessment Before and After
+Interventions}\label{adherence-assessment-before-and-after-interventions}
+
+In addition to feature importance analysis, this study will assess the
+impact of two major interventions (\textbf{Task No.5 in Section 3.2}),
+introduced by Dr. Irit Hochberg to the nursing teams, on guideline
+adherence (\emph{GLs}) across six hospitals:
+
+\begin{itemize}
+\item
+  The introduction of a diabetes GL learning software module for medical
+  teams.
+\item
+  The implementation of a diabetes quality measure for managing
+  hyperglycemia events.
+\end{itemize}
+
+To evaluate the effectiveness of these interventions, statistical
+comparisons of \emph{GL}-based \emph{QA} scores will be conducted
+between two distinct datasets:
+
+\begin{itemize}
+\item
+  Pre-intervention phase: June 2022 to August 2023.
+\item
+  Post-intervention phase: August 2023 to January 2025.
+\end{itemize}
+
+This analysis will identify \emph{GLs} with significant implementation
+challenges and evaluate how the interventions influenced adherence
+patterns over time. Poorly adopted \emph{GLs} will be flagged for
+further investigation, while their potential impact on patient outcomes
+will also be assessed.
+
+By combining these insights, the study aims to pinpoint barriers to
+guideline adoption and provide actionable recommendations for improving
+protocol compliance. These findings, when integrated with the feature
+importance analysis, will support the development of a diabetes care
+protocol that is not only effective but also practical and widely
+adoptable in hospital settings.
+
+\section{4 Initial Results and
+Schedule}\label{initial-results-and-schedule}
+
+\subsection{4.1 Initial Results}\label{initial-results}
+
+This chapter documents what has been achieved to date and establishes
+clear baselines for the remaining work. All metrics and curves below are
+computed on the hold‑out validation cohort unless stated otherwise.
+
+\begin{itemize}
+\item
+  \textbf{Knowledge Base (KB) Construction:\\
+  } A comprehensive Knowledge Base for temporal abstractions has been
+  created, encoding core clinical concepts and transformations (e.g.,
+  states, gradients) in a structured, domain-consistent manner. The
+  initial quality of these abstractions has been empirically tested
+  using visualization tools and aggregation methods, as described in
+  \textbf{{[}Chapter 3.2.1{]}} and shown in \textbf{{[}Appendix 1{]}},
+  yielding promising preliminary plots and descriptive analyses.
+\item
+  \textbf{Embedder's Training:}
+\end{itemize}
+
+\begin{quote}
+The embedder jointly optimises three auxiliary objectives
+\,\textbf{BCE,\,\,MLM} and \,\textbf{Δt‑MSE}. Training completes in
+\textasciitilde60 epochs with a smooth, monotonic loss decline down to a
+total weighted loss \textasciitilde{} 0.1. This is a positive indication
+for the ability of this architecture to represent the variance in the
+data.
+
+\includegraphics[width=4.31771in,height=2.91254in]{media/image5.png}
+
+BCE Loss = 0.0199,
+
+MLM Cross Entropy Loss = 0.806,
+
+Δt MSE \textless{} 1e-4
+\end{quote}
+
+\begin{itemize}
+\item
+  \textbf{Transformer's Training:\\
+  } An initial Transformer-based model has been trained on the
+  structured event sequences, incorporating patient-specific context,
+  multi-level event embeddings, and temporal features. The model showed
+  a promising loss decrease during training:
+\end{itemize}
+
+\begin{quote}
+\includegraphics[width=5.59573in,height=3.6095in]{media/image21.png}
+
+This architecture remains experimental and requires further refinement
+in how penalties are gradually increased during training. At present,
+penalties rise during the warm-up phase (first five epochs) to prevent
+them from dominating the loss too early. Under the current
+configuration, this has led to underrepresentation of complication
+logits, indicating that additional iterations are needed to ensure these
+outputs receive sufficient emphasis during training. Early stopping was
+triggered prematurely, suggesting that the current schedule does not yet
+balance learning across all targets.
+
+Focal BCE Loss = 0.0006,
+
+Structural Penalties =0.0241,
+
+Δt MSE = 0.0014
+\end{quote}
+
+\begin{itemize}
+\item
+  \textbf{Transformer's Classification Evaluation:\\
+  } As described, the model was evaluated on 3 increasingly difficult
+  tasks. While the first set of evaluation results has shown relatively
+  low predictive performance, this phase has confirmed the viability of
+  the architecture in handling complex, time-dependent event data and
+  the practical challenges of working with real-world clinical data.
+\item
+  \textbf{Evaluation Framework and Levels of Analysis:\\
+  } The initial Transformer evaluation was performed at three levels:
+
+  \begin{itemize}
+  \item
+    \textbf{3-class multilabel outcome prediction} (e.g., release,
+    complication, death)
+  \end{itemize}
+\end{itemize}
+
+\begin{quote}
+\includegraphics[width=2.89583in,height=1.17708in]{media/image10.png}
+
+\includegraphics[width=5.55729in,height=0.44792in]{media/image20.png}
+
+These results are still low and poorly represent the balance between the
+3 classes.
+\end{quote}
+
+\begin{itemize}
+\item
+  \textbf{Multilabel prediction of specific clinical events}
+\end{itemize}
+
+\begin{quote}
+Will be re-calculated after the model is fixed.
+\end{quote}
+
+\begin{itemize}
+\item
+  \textbf{Time-aware evaluation} of outcome timing relative to the
+  admission trajectory (with 48 hours forgiveness window).
+\end{itemize}
+
+\begin{quote}
+Will be re-calculated after the model is fixed.
+
+These frameworks establish a baseline and highlight key limitations to
+guide subsequent refinements.
+\end{quote}
+
+After finalizing the architecture, the next steps involve expanding the
+knowledge base to include \textbf{patterns} and \textbf{pattern-level
+adherence scores (based on QATPs)} and to assess the contribution of
+guideline compliance signals to prediction accuracy.
+
+\subsection{4.2 Planned Evaluation
+Methods}\label{planned-evaluation-methods}
+
+For the upcoming stages, we plan to evaluate the following aspects:
+
+\begin{itemize}
+\item
+  \textbf{Expansion of the Knowledge Base (KB) and Pattern-Level
+  Adherence:\\
+  } The next steps involve expanding the knowledge base to include
+  \textbf{temporal patterns} and their associated \textbf{pattern-level
+  adherence (QA fuzzy scores)}. We will assess the contribution of these
+  guideline compliance signals to overall prediction accuracy.
+\item
+  \textbf{Evaluation of Temporal Abstractions:\\
+  } Using plots and descriptive statistics, we will evaluate the
+  \textbf{quality, consistency, and clinical validity} of the
+  abstractions - particularly for the patterns - across multiple patient
+  scenarios.
+\item
+  \textbf{Comparative Evaluation:\\
+  } We will compare the \textbf{Transformer-based architecture} with the
+  \textbf{baseline TIRP/ TPF approaches} using predefined temporal
+  features on evaluation levels 1 and 2 as described above. Furthermore,
+  we will explicitly evaluate the impact of including \textbf{QA scores
+  and guideline compliance signals} in the Transformer's training -
+  comparing models with and without these features.
+\item
+  \textbf{Explainability Analysis:\\
+  } We will conduct a SHAP-based feature importance analysis to identify
+  which temporal patterns and QA scores contribute most to the
+  prediction of clinical outcomes. This will help interpret the model's
+  behavior and highlight critical protocol steps.
+\item
+  \textbf{Adherence Evaluation:\\
+  } We will use standard statistical tests (T-Test) to evaluate the
+  adherence level before and after the interventions, as described in
+  \textbf{{[}Chapter 3.2.4{]}}. We will also try to identify guide-lines
+  that were not well assimilated in the hospitals.
+\end{itemize}
+
+This comprehensive evaluation will ensure both the technical rigor and
+the clinical relevance of our predictive models.
+
+\subsection{4.3 Proposed Schedule}\label{proposed-schedule}
+
+The following milestones outline the planned timeline for the next
+phases of the research:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Milestone} & \textbf{Planned Completion} \\
+\textbf{Data and Model Optimization}:
+
+Finalize data cleaning and optimize the current dataset, addressing
+inconsistencies and non informative records, and applying for more data
+in case of need. Refine the Transformer model's architecture and
+training setup based on initial performance insights. Finally, train and
+evaluate the Transformer model \textbf{without} QA scores and
+pattern-level features, establishing a baseline for performance. & July-
+August 2025 \\
+\textbf{Pattern and QATP Knowledge Base Development}:
+
+Develop and integrate the knowledge base for temporal patterns and
+pattern-level adherence into the data pipeline. Validate the generated
+abstractions for clinical plausibility. & August- September 2025 \\
+\textbf{Experiments: Transformer with QATPs and Adherence Scores}:
+
+Train and evaluate the Transformer model \textbf{with} pattern-level
+features and QA scores to assess their impact on predictive performance
+and adherence insights. & September-
+
+October 2025 \\
+\textbf{Development and Evaluation of TPFs/TIRPs+VSM Models}:
+
+Develop VSM-based predictive models using temporal pattern distributions
+(TPF) and compare them to the Transformer models on eval levels 1 and 2
+(3-class and multilabel outcome predictions). & November 2025 \\
+\textbf{Adherence Evaluation Pre- and Post-Interventions}:
+
+Conduct adherence analysis (using statistical tests such as T-Test) to
+assess the effect of guideline-focused interventions and highlight
+under-assimilated guidelines. & December 2025 \\
+\textbf{Explainability and Feature Importance Analysis}:
+
+Perform SHAP-based explainability analysis to highlight which features
+and QA scores contribute most to predictions and identify protocol steps
+with the strongest influence. & January 2026 \\
+\textbf{Integration of Results and Chapter Drafting}:
+
+Summarize findings across all experiments and write the results chapters
+(initial results, evaluation, adherence impact). & February -- March
+2026 \\
+\textbf{Final Thesis Writing and Revisions}:
+
+Prepare the final thesis document, incorporating revisions and final
+edits based on feedback. & April 2026 \\
+\textbf{Thesis Submission and Defense}:
+
+Submit the final thesis and prepare for the defense. & May -- June
+2026 \\
+\end{longtable}
+}
+
+\section{References}\label{references}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \hl{B. Ben Shahar, Y. Shahar, S. Jaffe, O. Cohen, E. Shalom, M.
+  Selivanova, E. Rimon, A. Goldstein. "Supporting the Episodic
+  Application of Clinical Guidelines over Significant Time Periods."
+  \emph{Digital Health and Informatics Innovations for Sustainable
+  Health Care Systems}. IOS Press, 2024. 1873-1877.‏}
+\item
+  \hl{E. Shalom, A. Goldstein, R. Weiss, M. Selivanova, N.M. Cohen, Y.
+  Shahar. "Implementation and evaluation of a system for assessment of
+  the quality of long-term management of patients at a geriatric
+  hospital." \emph{Journal of Biomedical Informatics} 156 (2024):
+  104686.‏}
+\item
+  \hl{Miksch, Silvia, Yuval Shahar, and Peter Johnson. "Asbru: a
+  task-specific, intention-based, and time-oriented language for
+  representing skeletal plans." \emph{Proceedings of the 7th workshop on
+  knowledge engineering: methods \& languages (KEML-97)}. Milton Keynes,
+  UK, The Open University, Milton Keynes, UK, 1997.‏}
+\item
+  \hl{Shahar, Yuval, and Mark A. Musen. "Knowledge-based temporal
+  abstraction in clinical domains." \emph{Artificial intelligence in
+  medicine} 8.3 (1996): 267-298.‏}
+\item
+  \hl{E. Shalom, Y. Shahar, Y. Parmet, E. Lunenfeld. "A
+  multiple-scenario assessment of the effect of a continuous-care,
+  guideline-based decision support system on clinicians' compliance to
+  clinical guidelines." \emph{International journal of medical
+  informatics} 84.4 (2015): 248-262.‏}
+\item
+  \hl{Shalom, Erez, Yuval Shahar, and Eitan Lunenfeld. "An architecture
+  for a continuous, user-driven, and data-driven application of clinical
+  guidelines and its evaluation." \emph{Journal of biomedical
+  informatics} 59 (2016): 130-148.‏}
+\item
+  \hl{Peleg, Mor, Yuval Shahar, and Silvana Quaglini. "MobiGuide:
+  guiding clinicians and chronic patients anytime, anywhere."
+  \emph{Communications of the ACM} 65.4 (2022): 74-79.‏}
+\item
+  \hl{Chakravarty, Shubha, and Yuval Shahar. "CAPSUL: A constraint-based
+  specification of repeating patterns in time-oriented data." Annals of
+  mathematics and artificial intelligence 30 (2000): 3-22.‏}
+\item
+  \hl{Moskovitch, Robert, and Yuval Shahar. "Classification of
+  multivariate time series via temporal abstraction and time intervals
+  mining." Knowledge and Information Systems 45 (2015): 35-74.‏}
+\item
+  \hl{E.Sheetrit, N. Nissim, D. Klimov, Y. Shahar‏. "Temporal
+  probabilistic profiles for sepsis prediction in the ICU." Proceedings
+  of the 25th ACM SIGKDD International Conference on Knowledge Discovery
+  \& Data Mining. 2019.‏}
+\item
+  \hl{Shknevsky, Alexander, Yuval Shahar, and Robert Moskovitch. "The
+  semantic adjacency criterion in time intervals mining." Big Data and
+  Cognitive Computing 7.4 (2023): 173.‏}
+\item
+  \hl{Raymond, Michal Weisman, and Yuval Shahar. "Provision of Decision
+  Support Through Continuous Prediction of Recurring Clinical Actions."
+  ICIMTH. 2023.‏}
+\item
+  \hl{Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion
+  Jones, Aidan N Gomez, Łukasz Kaiser, Illia Polosukhin. "Attention is
+  all you need." Advances in neural information processing systems 30
+  (2017).‏‏}
+\item
+  \hl{Pawel Renc, Yugang Jia, Anthony E. Samir, Jaroslaw Was, Quanzheng
+  Li, David W. Bates \& Arkadiusz Sitek. "Zero shot health trajectory
+  prediction using transformer." NPJ Digital Medicine 7.1 (2024): 256.‏}
+\item
+  \hl{Z. Yang, A. Mitra, W. Liu, D. Berlowitz, H. Yu‏. "TransformEHR:
+  transformer-based encoder-decoder generative model to enhance
+  prediction of disease outcomes using electronic health records."
+  Nature communications 14.1 (2023): 7857.‏}
+\item
+  \hl{Lundberg, Scott M., and Su-In Lee. "A unified approach to
+  interpreting model predictions." Advances in neural information
+  processing systems 30 (2017).‏}
+\item
+  \hl{van de Beld, J. J., Pathak, S., Geerdink, J., Hegeman, J. H., \&
+  Seifert, C. (2024, July). Feature importance to explain multimodal
+  prediction models. A clinical use case. In World Conference on
+  Explainable Artificial Intelligence (pp. 84-101). Cham: Springer
+  Nature Switzerland.‏}
+\item
+  \hl{Lion, Matan, and Yuval Shahar. "Implementation and evaluation of a
+  multivariate abstraction-based, interval-based dynamic time-warping
+  method as a similarity measure for longitudinal medical records."
+  Journal of Biomedical Informatics 123 (2021): 103919.‏}
+\item
+  \hl{Seyed Mehran Kazemi, Rishab Goel, Sepehr Eghbali, Janahan Ramanan,
+  Jaspreet Sahota, Sanjay Thakur, Stella Wu, Cathal Smyth, Pascal
+  Poupart, Marcus Brubaker. "Time2vec: Learning a vector representation
+  of time." arXiv preprint arXiv:1907.05321 (2019)‏}
+\item
+  \hl{Shapiro, Michael, and Yuval Shahar. "Treatment Prediction in the
+  ICU Using a Partitioned, Sequential, Deep Time Series Analysis."
+  MEDINFO 2023 - The Future Is Accessible. IOS Press, 2024. 710-714.}
+\item
+  \hl{Akiba, T., Sano, S., Yanase, T., Ohta, T., \& Koyama, M. (2019,
+  July). Optuna: A next-generation hyperparameter optimization
+  framework. In Proceedings of the 25th ACM SIGKDD international
+  conference on knowledge discovery \& data mining (pp. 2623-2631).‏}
+\item
+  \hl{Ribeiro, Marco Tulio, Sameer Singh, and Carlos Guestrin. "" Why
+  should I trust you?" Explaining the predictions of any classifier."
+  Proceedings of the 22nd ACM SIGKDD international conference on
+  knowledge discovery and data mining. 2016.}
+\item
+  \hl{Shahar, Yuval, Silvia Miksch, and Peter Johnson. "The Asgaard
+  project: a task-specific framework for the application and critiquing
+  of time-oriented clinical guidelines." Artificial intelligence in
+  medicine 14.1-2 (1998): 29-51.‏}
+\item
+  \hl{Shahar, Yuval. "A framework for knowledge-based temporal
+  abstraction." Artificial intelligence 90.1-2 (1997): 79-133.‏}
+\item
+  \hl{IDF Atlas 10th Edition 2021.; 2021. https://diabetesatlas.org/}
+\item
+  \hl{Israel National Center for Disease Control Diabetes Registry
+  Report 2012-2022.}
+\end{enumerate}
+
+\begin{quote}
+\href{https://www.gov.il/BlobFolder/generalpage/diabetes-2012-2022/he/files_publications_units_ICDC_diabetes-2012-2022.pdf}{\hl{\ul{https://www.gov.il/BlobFolder/generalpage/diabetes-2012-2022/he/files\_publications\_units\_ICDC\_diabetes-2012-2022.pdf}}}
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{26}
+\item
+  \hl{Summary of Cost of Diabetes in Israel 2018. National Health System
+  and Health Policy Institution; 2018.
+  \mbox{\href{https://www.btl.gov.il/Mediniyut/BakashatNetunim/dohot/Documents/Cost_of_Diabetes.pdf}{\ul{https://www.btl.gov.il/Mediniyut/BakashatNetunim/dohot/Documents/Cost\_of\_Diabetes.pdf}}}}
+\item
+  \hl{A. Radford, J. Wu, R. Child, D. Luan, D. Amodei, I. Sutskever.
+  "Language models are unsupervised multitask learners." OpenAI blog 1.8
+  (2019): 9.‏}
+\item
+  \hl{Karpathy, A. (2023). nanoGPT: The simplest, fastest repository for
+  training/finetuning medium-sized GPTs. GitHub.
+  \mbox{\href{https://github.com/karpathy/nanoGPT}{\ul{https://github.com/karpathy/nanoGPT}}}}
+\item
+  \hl{Devlin, Jacob, et al. "Bert: Pre-training of deep bidirectional
+  transformers for language understanding." Proceedings of the 2019
+  conference of the North American chapter of the association for
+  computational linguistics: human language technologies, volume 1 (long
+  and short papers). 2019.‏}
+\item
+  \hl{Paszke, Adam, et al. "Pytorch: An imperative style,
+  high-performance deep learning library." Advances in neural
+  information processing systems 32 (2019).‏}
+\item
+  \hl{Oded, S. (2025). ``Transform-EMR''. GitHub.
+  \mbox{\href{https://github.com/shaharoded/Transform-EMR}{\ul{https://github.com/shaharoded/Transform-EMR}}}}
+\item
+  \hl{Oded, S. (2025). ``TAKAutomator''. GitHub.
+  \mbox{\href{https://github.com/shaharoded/TAKAutomator}{\ul{https://github.com/shaharoded/TAKAutomator}}}}
+\item
+  \hl{Rappoport, Nadav, et al. "Kineret: Israel's Largest Hospital
+  Network Transformed into the OMOP common data model for collaborative
+  research." PloS one 20.10 (2025): e0334848.‏}
+\end{enumerate}
+
+\section{Appendices}\label{appendices}
+
+\subsection{Appendix 1: Abstractions Quality
+Assessment}\label{appendix-1-abstractions-quality-assessment}
+
+\hl{As described in \textbf{{[}Chapter 4.1{]}}, a comprehensive
+knowledge base for temporal abstractions was developed, encoding core
+clinical concepts and transformations (e.g., states, gradients) in a
+structured, domain-consistent manner. The initial quality of these
+abstractions was assessed empirically using visualization tools and
+aggregation methods to verify that the Mediator applies the intended
+discrete thresholds and constructs intervals from raw records.}
+
+\textbf{States thresholds verification:}
+
+Plots were generated showing the occurrence distribution of every
+discrete value for each abstracted measure. The goal was to confirm that
+all defined thresholds are being used and that no concept shows an
+implausible concentration of values (e.g., all cases in a single
+category) or complete absence of certain categories. The results confirm
+that thresholds are well-aligned with the data and produce a balanced
+distribution across discrete states.
+
+\includegraphics[width=6.27083in,height=2.89276in]{media/image28.png}
+
+\includegraphics[width=6.27083in,height=2.88021in]{media/image16.png}
+
+\includegraphics[width=6.26772in,height=3.16667in]{media/image8.png}\includegraphics[width=6.26772in,height=3.20833in]{media/image26.png}
+
+\includegraphics[width=6.27083in,height=3.03646in]{media/image2.png}
+
+\includegraphics[width=6.26772in,height=3.33333in]{media/image9.png}
+
+\includegraphics[width=6.26772in,height=3.25in]{media/image27.png}
+
+\includegraphics[width=6.27083in,height=2.81771in]{media/image6.png}
+
+\textbf{\hl{Trends parameters verification:}}
+
+\hl{Trend abstractions require the definition of both a minimum
+significant change and a time window in which that change must occur. If
+increase or decrease states are absent from the data, it suggests the
+parameters were misconfigured or unused. This QA step checked for the
+presence of both increase and decrease trends across all measures. The
+findings confirm that trend parameters were applied correctly, and the
+abstractions capture meaningful temporal changes.}
+
+\includegraphics[width=6.26772in,height=3.375in]{media/image14.png}
+
+\includegraphics[width=6.26772in,height=3.33333in]{media/image23.png}
+
+\includegraphics[width=6.26772in,height=3.31944in]{media/image3.png}
+
+\includegraphics[width=6.27083in,height=3.11775in]{media/image25.png}
+
+\includegraphics[width=6.27083in,height=3.03646in]{media/image22.png}
+\hl{}
+
+\textbf{\hl{Intervals creation verification:}}
+
+\hl{This check evaluated whether the relevance duration for each measure
+or medication is appropriate given its appearance frequency in the EMR.
+The Mediator's objective is to merge raw timestamped records into
+clinically meaningful intervals. If the process results only in discrete
+points without interval formation, temporal continuity is lost. For each
+concept, the average duration of abstracted intervals and the ratio of
+abstracted to raw records were calculated. In most cases, horizontal
+support decreased substantially after abstraction, indicating successful
+interval creation. Concepts with little or no change generally appeared
+only once per patient, making longer interval abstraction impossible.}
+
+\includegraphics[width=6.26772in,height=3.44444in]{media/image18.png}
+
+\includegraphics[width=6.26772in,height=3.63889in]{media/image15.png}
+
+\includegraphics[width=6.26772in,height=3.36111in]{media/image13.png}
+
+\includegraphics[width=6.26772in,height=0.97222in]{media/image4.png}
+
+\subsection{}\label{section-1}
+
+\subsection{Appendix 2: Automated TAK Generation
+Tool}\label{appendix-2-automated-tak-generation-tool}
+
+\hl{As described in \textbf{{[}Chapter 3.1.1{]}}, the Mediator depends
+on a comprehensive library of TAK (Temporal Abstraction Knowledge) XML
+files, each encoding a discrete clinical abstraction such as a
+\emph{state}, \emph{trend}, \emph{context}, or \emph{event}. While these
+files follow a strict XML schema, they must also conform to business
+logic parameters defined in the project's Knowledge Base (KB)
+spreadsheet. Maintaining and updating hundreds of such files manually is
+error-prone, especially when thresholds, labels, or logic rules need to
+be adjusted globally.}
+
+\hl{To address this challenge, the \textbf{TAKAutomator} {[}33{]} tool
+was developed. This Python-based framework automates the creation and
+curation of TAK files from a structured Excel specification, ensuring
+both structural and semantic consistency. The tool allows the Knowledge
+Base to be treated as a \emph{single source of truth}, from which all
+TAK files can be generated and re-generated at any time.}
+
+\textbf{Method}
+
+\hl{The TAKAutomator operates in three main stages:}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \hl{\textbf{Excel Parsing\\
+  } The tool ingests a preformatted Excel workbook containing
+  definitions for all TAK entities. Each sheet represents a TAK type
+  (e.g., \emph{states}, \emph{trends}, \emph{contexts}) and includes
+  IDs, parameter thresholds, labels, mappings, and any other required
+  metadata. The first step when running the program is an automated
+  validation of the business logic represented in this excel:}
+
+  \begin{itemize}
+  \item
+    \hl{Dependencies on existing raw concepts.}
+  \item
+    \hl{Proper range coverage in states.}
+  \item
+    \hl{Non conflicting values between entities.}
+  \end{itemize}
+\item
+  \hl{\textbf{Template Rendering\\
+  } For each row in the Excel file, TAKAutomator retrieves the
+  appropriate XML template, substitutes placeholders with the
+  corresponding Excel values, uses LLM for more complex generations
+  (treating this as a \emph{Retrieval-Augmented Generation (RAG)} task)
+  and generates a TAK file. This step ensures consistent formatting and
+  eliminates manual XML editing.}
+\item
+  \hl{\textbf{Validation Loop\\
+  } Every generated TAK file is passed through a Validation module,
+  which checks:}
+
+  \begin{itemize}
+  \item
+    \hl{Structural validity against the XML schema.}
+  \item
+    \hl{Compliance with business logic rules from the Excel KB.}
+  \item
+    \hl{Presence and correctness of thresholds, allowed values, and
+    mappings.\\
+    The process can be iterated to automatically correct fixable
+    issues.\\
+    }
+  \end{itemize}
+\end{enumerate}
+
+\textbf{Contribution}
+
+\hl{The TAKAutomator has significantly accelerated the curation and
+maintenance of the \emph{Mediator}'s Knowledge Base. Using it, a
+repository of \textbf{200+ TAK files} was created and is continuously
+updated in sync with the Excel definitions. Global changes---such as
+updating state thresholds or adjusting trend definitions-can now be
+propagated to the entire library with a single command, eliminating
+repetitive manual edits.}
+
+\hl{This automation ensures:}
+
+\begin{itemize}
+\item
+  \hl{\textbf{Consistency} between the Knowledge Base and the TAK
+  files.}
+\item
+  \hl{\textbf{Scalability}, as new abstractions can be added with
+  minimal overhead.}
+\item
+  \hl{\textbf{Auditability}, since changes to the Excel KB automatically
+  produce a new validated TAK set.}
+\item
+  \hl{\textbf{Explainability}, by enabling medical experts-without
+  programming expertise-to independently update and refine the KB.
+  Through the structured Excel interface, they can define states,
+  trends, and thresholds in clinically meaningful terms, which are then
+  automatically translated into validated TAK files for use by the
+  \emph{Mediator}.}
+\end{itemize}
+
+\hl{By integrating TAKAutomator into the Mediator pipeline, the lab has
+gained a sustainable and error-resistant process for managing temporal
+abstraction definitions-transforming what was once a manual,
+high-friction task into a streamlined and reproducible workflow.}
+
+\end{document}

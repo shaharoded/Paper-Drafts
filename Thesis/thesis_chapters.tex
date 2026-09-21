@@ -1,0 +1,61 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CHAPTERS AND APPENDICES (EDIT THIS FILE)
+%
+% Customize your thesis structure here.
+% You can reorder, remove, or add \thesischapter lines.
+%
+% Chapter format:
+% \thesischapter{<English title>}{<label>}{<Hebrew title for Hebrew TOC>}{<path/to/chapter_file>}
+%
+% Appendix format:
+% \thesisappendix{<English title>}{<label>}{<Hebrew title for Hebrew TOC>}{<path/to/appendix_file>}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INCREMENTAL BUILD
+%
+% Add a star to skip a chapter's body:  \thesischapter*{...}
+% Remove it to build that chapter again.
+%
+% Headings, numbering and chapter labels stay correct either way, and every
+% skipped chapter is marked with a red banner in the PDF.
+%
+% Suggested batches if the whole thesis will not compile in one pass --
+% star everything except:
+%   pass 1:  Introduction, Preliminaries, Related Work
+%   pass 2:  Method
+%   pass 3:  Evaluation, Discussion
+%   pass 4:  the four appendices
+%
+% Remove every star for the final build.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\thesischapter{Introduction}{chapter:intro}{מבוא}{content/introduction/introduction}
+\thesischapter{Background and Related Work}{chapter:background}{רקע וסקירת ספרות}{content/background/background}
+\thesischapter{Computational Methods}{chapter:comp_methods}{שיטות חישוביות}{content/method/computational_methods}
+\thesischapter{Evaluation Methods}{chapter:eval_methods}{שיטות הערכה}{content/method/evaluation_methods}
+\thesischapter{Results}{chapter:results}{תוצאות}{content/evaluation/evaluation}
+\thesischapter{Summary, Discussion and Conclusions}{chapter:summary}{סיכום, דיון ומסקנות}{content/summary/summary}
+
+% Example additional chapter:
+% \thesischapter{Experiments}{chapter:experiments}{ניסויים}{content/experiments/experiments}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDICES (OPTIONAL)
+%
+% If you do not need appendices, remove or comment out this whole block.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{appendices}
+
+\thesisappendix{Outcome Definitions}{appendix:outcomes}{הגדרות תוצאים}{content/appendices/appendix_outcomes}
+\thesisappendix{Knowledge-Base Acquisition and Validation}{appendix:kb}{רכישת בסיס הידע ותיקופו}{content/appendices/appendix_kb}
+\thesisappendix{Architectural Ablation Trail}{appendix:ablations}{ניסויי אבלציה ארכיטקטוניים}{content/appendices/appendix_ablations}
+\thesisappendix{Calibration, Trajectories, and Implementation}{appendix:calibration}{כיול, מסלולים ופרטי מימוש}{content/appendices/appendix_calibration}
+\thesisappendix{Kineret Benchmark Detail}{appendix:kineret}{פרטי מדד ההשוואה על קינרת}{content/appendices/appendix_kineret}
+\thesisappendix{Future Work}{appendix:future_work}{כיווני מחקר עתידיים}{content/appendices/appendix_future_work}
+
+% Example additional appendix:
+% \thesisappendix{Extended Proofs}{appendix:proofs}{הוכחות מורחבות}{content/appendices/extended_proofs}
+
+\end{appendices}

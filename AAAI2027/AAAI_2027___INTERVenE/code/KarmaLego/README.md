@@ -1,0 +1,721 @@
+# KarmaLego
+
+**Implementation of the KarmaLego time-interval pattern mining pipeline with end-to-end data ingestion, pattern discovery, and patient-level application.**
+
+This implementation follows the original KarmaLego methodology described in the accompanying bibliography. Full attribution and repository links will be restored in the public release after review.
+
+This implementation is designed to be used as a temporal analysis and feature extraction tool in the associated research project.
+
+Latest MIMIC-IV multi-label prediction results are summarized in [RESULTS.md](RESULTS.md).
+
+## Benchmark Prediction Results
+
+The current MIMIC-IV benchmark uses KarmaLego patterns as sparse features for a six-outcome multi-label prediction task. For each admission, temporal features are built from the first 48 hours and labels are future outcome events after that 48-hour window. The benchmark model is intentionally simple: one-vs-rest logistic regression with balanced class weights, used as a comparator rather than the paper's primary model.
+
+The pipeline discovered 207,439 deduplicated shared TIRPs across outcome-specific runs. After filtering to minimum vertical support >= 0.20, 29,757 shared patterns remained, producing 35,982 cached TIRP feature columns over 57,078 patients. Variance filtering then selected 15,928 model columns, almost all of them TIRP count features.
+
+Across three held-out split seeds, the benchmark reached:
+
+| Metric | Mean +/- SD |
+|---|---:|
+| Micro PR-AUC | 0.609 +/- 0.002 |
+| Macro PR-AUC | 0.495 +/- 0.005 |
+| Micro ROC-AUC | 0.852 +/- 0.001 |
+| Macro ROC-AUC | 0.810 +/- 0.002 |
+| Micro F1 at 0.5 | 0.573 +/- 0.002 |
+| Macro F1 at 0.5 | 0.486 +/- 0.004 |
+
+The strongest PR-AUC results were for hyperglycemia, hyperosmolality, and kidney complications. Rarer outcomes such as hypoglycemia and cardiovascular disorder had lower PR-AUC but still meaningful ROC-AUC, which is expected under strong class imbalance. Linear SHAP-style attribution shows that the model mainly relies on clinically plausible temporal count patterns, including glucose, sodium, urea, creatinine, potassium, infection-WBC, platelet, and admission-context patterns, with age/admission type/hypertension contributing for death, cardiovascular, and kidney outcomes.
+
+## How KarmaLego Works
+
+KarmaLego mines **frequent time-interval relation patterns (TIRPs)** by combining two key stages:
+
+### 1. Temporal Relation Encoding
+
+KarmaLego first scans each patient's timeline to identify pairwise **Allen relations** (e.g., before, overlaps, meets) between intervals:
+
+<p align="center">
+  <img src="images/temporal_relations.png" alt="Temporal Relations Matrix" width="60%">
+</p>
+
+Each cell in the matrix shows the temporal relation between intervals (e.g., `A^1 o B^1` = A^1 overlaps B^1). These relations become the building blocks of complex temporal patterns.
+
+---
+
+### 2. Tree-Based Pattern Extension (Lego Phase)
+
+Patterns are built incrementally by traversing a **tree of symbol and relation extensions**, starting from frequent 1-intervals (K=1) and growing to longer TIRPs (K=2,3,...). Only frequent patterns are expanded (Apriori pruning), and relation consistency is ensured using transitivity rules.
+
+Practical flow in this implementation. The pipeline enumerates singletons and all frequent pairs (k=2) in the Karma stage. The Lego stage then skips extending singletons and starts from k>=2, extending patterns to length k+1. This avoids regenerating pairs (and their support checks) a second time. CSAC (see below) is also applied, which anchors each extension on the actual parent embeddings inside each entity, ensuring only consistent child embeddings are considered.
+
+<p align="center">
+  <img src="images/karmalego_tree.png" alt="KarmaLego Pattern Extension Tree" width="80%" height="80%">
+</p>
+
+This structure enables efficient discovery of high-order, temporally consistent patterns without exhaustively searching all combinations.
+
+
+---
+
+## Temporal Relations
+
+KarmaLego supports four levels of temporal relation granularity: 2, 3, 5, and 7 relations. Each level coarsens the full 7-relation Allen algebra for performance. Relations are defined between interval pairs (A, B) using start and end times.
+
+### 2 Relations (Ultra-coarse)
+
+| Relation | Explanation |
+|----------|-------------|
+| 'p' | Proceed: merges before/meet/overlap (A < B, A m B, A o B) |
+| 'c' | Contain: merges contain/started-by/finished-by/equal (A c B, A s B, A f B, A = B) |
+
+### 3 Relations (Minimal)
+
+| Relation | Explanation |
+|----------|-------------|
+| '<' | A ends before B starts (A < B) |
+| 'o' | A overlaps B: A starts before B, A ends during B, B ends after A (A o B) |
+| 'c' | A contains B: A starts before B and ends after B (A c B) |
+
+### 5 Relations (Intermediate)
+
+| Relation | Explanation |
+|----------|-------------|
+| '<' | A ends before B starts (A < B) |
+| 'o' | A overlaps B: A starts before B, A ends during B, B ends after A (A o B) |
+| 'c' | A contains B: A starts before B and ends after B (A c B) |
+| 'f' | A is finished-by B: A starts before B, A and B end at the same time (A f B) |
+| 's' | A is started-by B: A and B start at the same time, A ends after B (A s B) |
+
+### 7 Relations (Full Allen)
+
+| Relation | Explanation |
+|----------|-------------|
+| '<' | A ends before B starts (A < B) |
+| 'm' | A meets B: A ends exactly when B starts (A m B) |
+| 'o' | A overlaps B: A starts before B, A ends during B, B ends after A (A o B) |
+| 'c' | A contains B: A starts before B and ends after B (A c B) |
+| 'f' | A is finished-by B: A starts before B, A and B end at the same time (A f B) |
+| 's' | A is started-by B: A and B start at the same time, A ends after B (A s B) |
+| '=' | A equals B: A and B have identical start and end times (A = B) |
+
+---
+
+## Repository Overview
+
+This repository provides:
+- A **clean, efficient implementation** of KarmaLego (Karma + Lego) for discovering frequent Time Interval Relation Patterns (TIRPs).
+- Support for **pandas / Dask-backed ingestion** of clinical-style interval data.
+- Symbol encoding, pattern mining, and per-patient pattern application (apply modes: counts and cohort-normalized features).
+- Utilities for managing temporal relations, pattern equality/deduplication, and tree-based extension.
+
+The design goals are: **clarity, performance, testability, and reproducibility**.
+
+---
+
+## KarmaLego Performance Optimizations (SAC + CSAC)
+This implementation incorporates several core performance techniques from the KarmaLego framework:
+
+1. **Apriori pruning:**
+Patterns are extended only if all their (k-1)-subpatterns are frequent, cutting unpromising branches early.
+
+2. **Temporal relation transitivity (+ memoization):**
+Allen relation composition reduces relation search at extension time; the `compose_relation()` function is memoized to eliminate repeated small-table lookups.
+
+3. **SAC (Subset of Active Candidates):**
+Support checks for a child TIRP are restricted to the entities that supported its parent, avoiding scans of unrelated entities at deeper levels.
+
+4. **CSAC (Consistent SAC) - two enforced constraints:**
+
+   **4a. Embedding-level consistency:**  
+   The exact parent embeddings (index tuples) per entity are tracked. Each child embedding at level k+1 must directly extend a valid parent embedding at level k - no independent full-search is re-run for k>1 patterns. This is the "consistent" part: embeddings grow incrementally and only along verified paths.
+
+   **4b. Adjacency constraint (same-concept interposer check):**  
+   For any pair of positions `(i, j)` in an embedding where the relation is an ordering type (e.g. `<`, `m`, or `p` depending on the relation alphabet), no other occurrence of the **same concept** is permitted to exist between positions `i` and `j` in the entity. This is the core SAC definition from the paper.  
+   This is enforced at **two levels**:
+   - **Karma (k=2):** Candidate `(i, j)` pairs are filtered before being stored in any embedding map.
+   - **Lego extension (k>2):** After relation matching, all new ordering pairs introduced by the extension are checked for interposers before the extended embedding is accepted.
+
+   The ordering relation set is **relation-table-aware** via `get_sac_relations()`:  
+   `{'<','m'}` for 7R * `{'<'}` for 5R and 3R * `{'p'}` for 2R.
+
+   - **Accuracy:** identical to a full exhaustive search with the same constraint applied; CSAC is pruning + constraint enforcement, not an approximation.
+   - **Speed:** large savings in dense timelines by skipping impossible extensions and non-adjacent embeddings early.
+
+5. **Skip duplicate pair generation:**
+Pairs (k=2) are produced once in Karma and not re-generated in Lego. This eliminates ~x2 duplication for pairs and can reduce Lego runtime dramatically.
+
+6. **Level-2 index for O(1) last-pair lookup during Lego extension:**
+
+   After Karma finishes, a *level-2 index* is built from the frequent k=2 TIRP embeddings:
+
+   ```
+   (sym_A, sym_B, rel) -> { eid -> { pos_A -> [pos_B, ...] } }
+   ```
+
+   During Lego extension of a k-length TIRP to k+1, the bottleneck step is finding all positions of the new symbol that have the *correct relation to the last parent position* (sym[-2] -> sym[-1], same entity). Without the index this requires a bisect scan over all positions of that symbol, followed by a `pairwise_rels` look-up per candidate.  
+   With the index, the lookup is:
+
+   ```python
+   candidates = level2_index[(sym_A, sym_B, rel)][eid].get(parent_last_pos, ())
+   ```
+
+   - a dict look-up that returns only pre-verified candidates in **O(1)**, with no failed bisect steps.
+
+   **Interaction with CSAC:**  
+   The k=2 embeddings stored in the index were already CSAC-filtered during Karma (the adjacency / interposer check was applied before each embedding was stored). Therefore, for any candidate retrieved from the index, the last pair's relation *and* CSAC constraint are already guaranteed. Only the relations from earlier parent positions to the new position still need to be verified. This saves one extra relation look-up *and* one CSAC adjacency scan per candidate, compounding across all entities at every Lego extension step.
+
+   > **Fallback:** `is_above_vertical_support` with `parent_embeddings_map` set always requires a `level2_index` (asserted at entry). If an entity has no index entry for a given `(sym_A, sym_B, rel)` key - meaning Karma found no CSAC-valid pair for it - the entity is skipped immediately via `continue` rather than scanning. Any candidate a bisect scan could produce would fail the same relation or CSAC check that excluded it from the index, so the skip is safe and avoids entering the parent-embedding loop entirely.
+
+7. **Two-phase Karma to avoid upfront O(m^2) pairwise materialisation:**
+
+   On large datasets (e.g. >=1 000 intervals/entity with `max_distance=None`), computing pairwise temporal relations for *all* symbol pairs before any frequency filtering produces an O(m^2) dict.  At ~1 250 intervals/patient this reaches ~156 M entries (~12-15 GB) - infeasible before a single TIRP has been evaluated.
+
+   `run_karma` therefore splits into three internal phases:
+
+   - **Phase A - Singleton discovery:** Iterates all distinct symbols, computes vertical support from `symbol_index`, and produces `frequent_symbols`. `pairwise_rels` starts empty; no pair relations are computed yet.
+   - **Phase B - Lazy pairwise precomputation:** Filters each entity's `symbol_index` to frequent symbols only, then computes `pairwise_rels` by iterating only the sorted positions of surviving-symbol intervals.  Both the inner and outer loops are restricted to frequent-symbol positions, so the result is proportional to `|frequent_symbols|^2 x n_entities` rather than `m^2`.  The `max_distance` early-break remains effective because positions are lexicographically sorted.
+   - **Phase C - k=2 TIRP construction:** Consumes the now-populated `pairwise_rels` to build frequent length-2 TIRPs (with CSAC filtering) and attach them to the singleton tree.
+
+   The three phases are encapsulated in a single `Karma.run_karma(entity_list, precomputed)` call; sub-phase timings are logged at DEBUG level.  `discover_patterns` sees only one unified Karma timing.
+
+   **Why not single-pass?** A single pass is feasible on small datasets (few symbols, small `max_distance`), but breaks down when the unfiltered pairwise dict exceeds available RAM.  The two-phase split is strictly better for production-scale data; on small benchmarks overhead is negligible.
+
+8. **Precomputed per-entity views (reused everywhere):**
+Lexicographic sorting and symbol->positions maps are built once and reused in support checks and extension, avoiding repeat work.
+
+9. **Integer time arithmetic:**
+Timestamps are held as `int64`; relation checks use pure integer math. If source data were datetimes, they are converted to ns; if they were numeric, they remain your unit.
+
+10. **Depth-first (DFS) Lego traversal for lower peak memory:**
+
+    The Lego extension phase uses recursive DFS rather than a BFS queue. Under BFS, all k=n patterns with their `embeddings_map` dicts live in memory simultaneously before any k=n+1 work begins; on datasets with wide pattern trees this can become several times the working set size of a single depth level.
+
+    With DFS, a pattern's `embeddings_map` is freed immediately after its children have consumed it (each child calls `is_above_vertical_support`, which reads from `parent_embeddings_map`, then clears it). At any moment, only the embeddings along **one active root-to-leaf path** are retained - plus the k=2 embeddings of siblings not yet visited. Peak memory scales with depth x branching-factor-per-node rather than total nodes per level.
+
+    A secondary benefit is reduced Python GC pressure: fewer large dicts stay alive simultaneously, so garbage collection cycles are less frequent and cheaper. On large runs this has a measurable wall-clock effect even before any memory limit is approached.
+
+11. **Post-singleton symbol_index eviction (infrequent symbol removal):**
+
+    After Phase A of `run_karma` identifies `frequent_symbols`, Phase B immediately filters each entity's `symbol_index` and `symbol_items` to retain only the surviving symbols:
+
+    ```python
+    entry["symbol_index"] = {sym: pos for sym, pos in entry["symbol_index"].items()
+                              if sym in frequent_symbols}
+    entry["symbol_items"] = tuple(entry["symbol_index"].items())
+    ```
+
+    This is an O(n\_entities x n\_symbols) one-time pass performed inside `run_karma` before any pairwise or Lego work begins.  After it, `symbol_items` - the iterable consumed by `all_extensions`'s inner loop - never contains an infrequent symbol, so the per-iteration frequency guard is eliminated entirely.  The savings compound across every DFS node at every depth level.
+
+    Note: `pairwise_rels` is *not* filtered here because it was never computed for infrequent symbols to begin with (Phase B computes it fresh, restricted to frequent-symbol positions only - see item 7).
+
+These optimizations ensure that KarmaLego runs efficiently on large temporal datasets and scales well as pattern complexity increases.
+
+**Performance Notes:**
+- The core KarmaLego algorithm operates on in-memory Python lists (`entity_list`) and is not accelerated by Dask.
+- The current Lego phase runs sequentially. Attempts to parallelize it (e.g., with Dask or multiprocessing) introduced overhead that slowed performance.
+- Dask can still be useful during ingestion and preprocessing (e.g., using `dd.read_csv()` for large CSVs).
+- Fine-grained parallelism is not recommended due to fast per-node checks and high task management overhead. If the support task increases significantly, perhaps a patient-level parallelism of a TIRP will become useful.
+- Better scaling can be achieved by:
+  - Splitting the dataset into concept clusters or patient cohorts and running in parallel across jobs.
+  - Using `min_ver_supp` and `max_k` to control pattern explosion.
+  - Persisting symbol maps to ensure consistent encoding across runs.
+- No k=1->k=2 in Lego: pairs are already created in Karma; Lego starts from k>=2. This removes structural duplicates and their support checks.
+- DFS memory hygiene: each node's `embeddings_map` is released immediately after all its extensions have been checked for support, before recursing into children. Only the embeddings along the current active path remain live at any point, keeping peak RAM proportional to pattern depth rather than pattern breadth.
+
+---
+
+## Repository Structure
+
+```
+KarmaLego/
++-- core/
+|   +-- __init__.py                             # package marker
+|   +-- karmalego.py                            # algorithmic core: TreeNode, TIRP, KarmaLego/Karma/Lego pipeline
+|   +-- io.py                                   # ingestion / preprocessing / mapping / decoding helpers
+|   +-- relation_table.py                       # temporal relation transition tables and definitions
+|   +-- utils.py                                # low-level helpers
++-- data/
+|   +-- input/
+|   |   +-- synthetic_diabetes_temporal_data.csv # example input dataset
+|   +-- output/
+|       +-- discovered_patterns.csv              # discovered pattern table
+|       +-- patient_pattern_vectors.ALL.csv      # generated patient feature vectors
+|       +-- symbol_map.json                      # saved symbol encoding (concept:value -> int)
+|       +-- inverse_symbol_map.json              # reverse mapping for human-readable decoding
++-- unittests/
+|   +-- test_treenode.py                        # TreeNode behavior
+|   +-- test_tirp.py                            # TIRP equality, support, relation semantics
+|   +-- test_karmalego.py                       # core pipeline / small synthetic pattern discovery
++-- main.py                                     # example end-to-end driver / demo script
++-- ml_pipeline.ipynb                           # example end-to-end driver / demo script (better for VMs)
++-- pyproject.toml                              # editable installation manifest
++-- pytest.ini                                  # pytest configuration
++-- requirements.txt                            # pinned dependencies (pandas, dask, tqdm, pytest, numpy, etc.)
++-- README.md                                   # human-readable version of this document
++-- .gitignore                                  # ignored files for git
+```
+
+---
+
+## Installation
+
+Recommended Python version: **3.8+**
+
+Use a virtual environment:
+
+```bash
+python -m venv .venv
+# Windows:
+.\.venv\Scripts\activate
+
+pip install -e .
+pip install -r requirements.txt pytest
+```
+
+The `-e .` makes the local package importable as `core.karmalego` during development.
+
+---
+
+## Expected Data Format
+
+Input must be a table (CSV or DataFrame) with these columns:
+
+- `PatientId` : identifier per entity (patient)
+- `ConceptName` : event or concept (e.g., lab test name)
+- `StartDateTime` : interval start (e.g., `"08/01/2023 00:00"` in `DD/MM/YYYY HH:MM`)
+- `EndDateTime` : interval end (same format)
+- `Value` : discrete value or category (e.g., `'High'`, `'Normal'`)
+
+You have full flexibility to affect the input and output shapes and formats in the `io.py` module, as long as you maintain this general structure.
+
+Example row:
+```
+PatientId,ConceptName,StartDateTime,EndDateTime,Value
+p1,HbA1c,08/01/2023 0:00,08/01/2023 0:15,High
+```
+
+---
+
+## End-to-End Demo (main.py)
+
+The provided `main.py` demonstrates the full pipeline:
+
+1. **Load the CSV** (switch to Dask if scaling).
+2. **Validate schema** and required fields.
+3. **Build or load symbol mappings** (`ConceptName:Value` -> integer codes).
+4. **Preprocess**: parse dates, apply mapping.
+5. **Convert to entity_list** (list of per-patient interval sequences).
+6. **Discover patterns** using KarmaLego.
+7. **Decode patterns** back to human-readable symbol strings.
+8. **Apply patterns** to each patient using the apply modes (see below): `tirp-count`, `tpf-dist`, `tpf-duration`.
+9. **Persist outputs:** `data/output/discovered_patterns.csv` and a single wide CSV with five feature columns per pattern.
+
+Example invocation:
+
+```bash
+python main.py
+```
+
+Useful flags:
+
+```bash
+# Use another CSV and run regular sequential discovery/apply
+python main.py --input-data-path data/input/temporal_data.csv
+
+# Recompute patterns with batch-mode parallel discovery and parallel apply
+python main.py --input-data-path data/input/temporal_data.csv --n-workers 4 --force-discover
+
+# Discover patterns only
+python main.py --no-apply-patterns --force-discover
+
+# Apply existing patterns only
+python main.py --no-discover-patterns --apply-patterns
+```
+
+When `--n-workers 1` is used, discovery runs through regular `KarmaLego`.
+When `--n-workers > 1` is used, discovery runs through
+`ParallelRunner.parallel_batches()`. The same worker count is used for the
+patient-level apply phase.
+
+This produces:
+- `data/output/discovered_patterns.csv` - flat table of frequent TIRPs with support and decoded symbols.
+- `data/output/patient_pattern_vectors.ALL.csv` - one row per (PatientId, Pattern) with 5 columns:
+    tirp_count_unique_last, tirp_count_all, tpf_dist_unique_last, tpf_dist_all, tpf_duration
+
+You can pivot `data/output/patient_pattern_vectors.ALL.csv` to a wide feature matrix for modeling.
+
+---
+
+## Key Concepts / Parameters
+
+- `epsilon` : temporal tolerance for equality/meet decisions (same unit as your preprocessed timestamps). If source columns were datetimes, they are converted to ns, so you may pass a numeric ns value or a `pd.Timedelta`.
+- `max_distance` : maximum gap between intervals to still consider them related (e.g., 1 hour -> `pd.Timedelta(hours=1)`), same unit rule as above.
+- `min_ver_supp` : minimum vertical support threshold (fraction of patients that must exhibit a pattern for it to be retained).
+
+### Apply Modes
+
+- `tirp-count`  
+  Horizontal support per patient. Counting strategy:
+  - **unique_last (default):** count **one** occurrence per **distinct last-symbol index** among valid embeddings (e.g., in `A...B...A...B...C`, `A<B<C` counts **1**).
+  - **all:** count **every embedding**.
+
+- `tpf-dist`  
+  Min-max normalize the `tirp-count` values across the cohort **per pattern** into **[0,1]**.
+
+- `tpf-duration`  
+  For each patient and pattern, take the **union of the pattern's windows**-each window is the full span from the **start of the first** interval to the **end of the last** interval in the pattern-so overlapping/touching windows are **merged** and **not** double-counted (gaps inside a window are included). The per-patient total duration (duration where this pattern was active) is then **min-max normalized across patients (per pattern)** to **[0,1]**, creating a relative score.  
+  *Example:* if `A<B` occurs with windows of 10h and 5h that **don't overlap**, duration = `10 + 5 = 15`; if the second starts 2h before the first ends, duration = `10 + 5 - 2 = 13`.
+
+>> Note that all of these apply modes are stable modes, meaning that a change in the number of used patterns will not change their value for a patient. This is important for ML implementations, where feature interdependence is risky. 
+>> Also note that while hospitalizations change in length, a classification feature vector will only be created from patterns emerging from the first K hours, creating "equal denominator" for all patients.
+--- 
+
+## Support Semantics (Horizontal vs Vertical)
+- **Horizontal support (per entity):** number of embeddings (index-tuples) of the TIRP found in a given entity.  
+  **Discovery** counts **all** valid embeddings (standard KarmaLego).  
+  **Apply** offers a strategy: **unique_last** (one per distinct last index; default) or **all** (every embedding).  
+  *Example:* In `A...B...A...B...C`, the pattern `A...B...C` has 3 embeddings; discovery counts 3 `(A_0,B_1,C_4)`, `(A_0,B_3,C_4)`, `(A_2,B_3,C_4)`, while `tirp-count` with `unique_last` counts 1.
+
+- **Vertical support (dataset level):** fraction of entities that have at least one embedding of the TIRP.
+
+If you prefer "non-overlapping" or "one-per-window" counts for downstream modeling, compute that in the apply phase without changing discovery (a toggle can be added there).
+
+---
+
+## Programmatic Usage
+
+### Discover Patterns
+
+```python
+from core.karmalego import KarmaLego
+
+# Prepare entity list, examples in io.py module (may vary between datasources)
+# Full running example in main.py
+
+kl = KarmaLego(epsilon=pd.Timedelta(seconds=2),
+               max_distance=pd.Timedelta(hours=4),
+               min_ver_supp=0.03,
+               num_relations=7)
+
+df_patterns = kl.discover_patterns(entity_list, min_length=1, max_length=None)  # returns DataFrame
+```
+
+### Parallel Discover Patterns Across Different Cohorts
+
+```python
+from core.parallel_runner import ParallelRunner, run_parallel_jobs
+
+# 1. Define your jobs
+# Each job is a dict with 'name', 'data' (entity_list), and 'params'
+jobs = [
+    {
+        'name': 'cohort_A',
+        'data': entity_list_A,
+        'params': {
+            'epsilon': pd.Timedelta(minutes=1),
+            'max_distance': pd.Timedelta(hours=1),
+            'min_ver_supp': 0.5,
+            'min_length': 2
+        }
+    },
+    {
+        'name': 'cohort_B',
+        'data': entity_list_B,
+        'params': {
+            'epsilon': pd.Timedelta(minutes=1),
+            'max_distance': pd.Timedelta(hours=1),
+            'min_ver_supp': 0.4,
+            'min_length': 2
+        }
+    }
+]
+
+# 2. Run in parallel (uses multiprocessing)
+# Returns a single DataFrame with a 'job_name' column identifying the source job
+df_all = run_parallel_jobs(jobs, num_workers=4)
+```
+
+### Batch-Mode Candidate Discovery
+
+For large cohorts, `ParallelRunner.parallel_batches()` can split patients into
+batches, discover candidates per batch, union those candidates, and then
+recompute exact support on the full cohort. The final DataFrame is filtered by
+the global `min_ver_supp`; batch-only false positives are dropped.
+
+```python
+from core.parallel_runner import ParallelRunner
+
+runner = ParallelRunner(max_workers=4)
+df_patterns = runner.parallel_batches(
+    entity_list,
+    params={
+        "epsilon": pd.Timedelta(minutes=1),
+        "max_distance": pd.Timedelta(hours=1),
+        "min_ver_supp": 0.03,
+        "min_length": 2,
+        "max_length": 4,
+    },
+    batch_size=1000,
+)
+```
+
+Batch size matters. Batch discovery uses the same fractional MVS as the full
+run, so the absolute threshold inside each batch is:
+
+```text
+ceil(min_ver_supp * batch_size)
+```
+
+If this value is 1 or 2, many patient-specific patterns become batch-frequent,
+the candidate union can explode, and finalization may become slower than a
+regular single run. Choose a batch size where the absolute threshold is at least
+5-10 patients. Examples:
+
+- `min_ver_supp=0.50`: use `batch_size >= 10-20`
+- `min_ver_supp=0.10`: use `batch_size >= 50-100`
+- `min_ver_supp=0.03`: use `batch_size >= 167-334`
+
+For small cohorts, prefer `--n-workers 1` and regular `KarmaLego` discovery.
+For large cohorts, start with `--batch-size 1000` and a conservative
+`--max-length`, then inspect the `parallel_batches summary` log:
+`batch_patterns` and `unique_candidates` should not be orders of magnitude
+larger than the expected final pattern count.
+
+The finalization phase is also parallelized by candidate chunks. This speeds up
+large candidate unions, but each finalization worker needs access to the full
+entity list, so avoid using more workers than your RAM can support.
+
+### Apply to Patients
+
+```python
+# Build all 5 feature columns in one CSV
+# Keys are (tuple(symbols), tuple(relations)) - stable, cheaper than repr, and correct
+rep_to_str = {(tuple(t.symbols), tuple(t.relations)): s for t, s in zip(df_patterns["tirp_obj"], df_patterns["tirp_str"])}
+pattern_keys = [(tuple(t.symbols), tuple(t.relations)) for t in df_patterns["tirp_obj"]]
+
+vec_count_ul = kl.apply_patterns_to_entities(entity_list, df_patterns, patient_ids,
+                                             mode="tirp-count", count_strategy="unique_last",
+                                             n_jobs=1)
+vec_count_all = kl.apply_patterns_to_entities(entity_list, df_patterns, patient_ids,
+                                              mode="tirp-count", count_strategy="all")
+vec_tpf_dist_ul = kl.apply_patterns_to_entities(entity_list, df_patterns, patient_ids,
+                                                mode="tpf-dist", count_strategy="unique_last")
+vec_tpf_dist_all = kl.apply_patterns_to_entities(entity_list, df_patterns, patient_ids,
+                                                 mode="tpf-dist", count_strategy="all")
+vec_tpf_duration = kl.apply_patterns_to_entities(entity_list, df_patterns, patient_ids,
+                                                 mode="tpf-duration", count_strategy="unique_last")
+
+rows = []
+for pid in patient_ids:
+    for rep in pattern_keys:
+        rows.append({
+            "PatientId": pid,
+            "Pattern": rep_to_str.get(rep, rep),
+            "tirp_count_unique_last": vec_count_ul.get(pid, {}).get(rep, 0.0),
+            "tirp_count_all":         vec_count_all.get(pid, {}).get(rep, 0.0),
+            "tpf_dist_unique_last":   vec_tpf_dist_ul.get(pid, {}).get(rep, 0.0),
+            "tpf_dist_all":           vec_tpf_dist_all.get(pid, {}).get(rep, 0.0),
+            "tpf_duration":           vec_tpf_duration.get(pid, {}).get(rep, 0.0),
+        })
+
+import pandas as pd
+pd.DataFrame(rows).to_csv("data/output/patient_pattern_vectors.ALL.csv", index=False)
+```
+`apply_patterns_to_entities(..., n_jobs=N)` enables patient-level process
+parallelism for the apply phase. The progress bar is owned by the parent process
+and advances per patient; use `show_progress=False` to disable it.
+---
+
+## Unit-Testing
+
+Run the full test suite:
+
+```bash
+python -m pytest unittests -q -s
+```
+
+Run a single test file:
+
+```bash
+python -m pytest unittests/test_tirp.py -q -s
+```
+
+The `-s` flag shows pattern printouts and progress bars for debugging.
+
+---
+
+## Outputs
+
+### Patterns DataFrame (`data/output/discovered_patterns.csv`)
+Contains:
+- `symbols` (tuple of encoded ints)
+- `relations` (tuple of temporal relation codes)
+- `k` (pattern length)
+- `vertical_support`
+- `support_count`
+- `entity_indices_supporting`
+- `indices_of_last_symbol_in_entities`
+- `tirp_obj` (internal object; drop before sharing)
+- `symbols_readable` (if decoded)
+
+### Patient Pattern Vectors (`data/output/patient_pattern_vectors.ALL.csv`)
+
+Wide long format: one row per (PatientId, Pattern) with the following columns:
+
+- `tirp_count_unique_last` - horizontal support per patient using **unique_last** counting.
+- `tirp_count_all` - horizontal support per patient counting **all** embeddings.
+- `tpf_dist_unique_last` - min-max of `tirp_count_unique_last` across patients, per pattern.
+- `tpf_dist_all` - min-max of `tirp_count_all` across patients, per pattern.
+- `tpf_duration` - **union** of embedding spans per patient (no overlap double-counting), then min-max across patients, per pattern.
+
+>> Note: `tpf-*` values are normalized **per pattern** to [0,1] across the cohort.  
+>> Example for singletons: if `A` spans are `[1,2,1]` across patients, they normalize to `[0.0, 1.0, 0.0]`.
+
+---
+
+## Tips for Scaling
+
+- Replace `pandas.read_csv` with `dask.dataframe.read_csv` for large inputs; the ingestion helpers in `io.py` support Dask.
+- Persist precomputed symbol maps to keep encoding stable across runs.
+- Use categorical dtype for symbol column after mapping to reduce memory pressure.
+- Tune `min_ver_supp` to control pattern explosion vs sensitivity.
+- If memory is tight on extremely dense data, consider limiting `max_k` or post-processing horizontal support to non-overlapping counts; CSAC itself preserves correctness but can retain many embeddings per entity for highly frequent TIRPs.
+
+### Parallelism and RAM
+
+`--n-workers` controls both batch-mode discovery and patient-level apply. More
+workers can improve wall time, but process-based parallelism duplicates working
+data across processes, especially on Windows where workers are spawned rather
+than forked.
+
+Practical starting points:
+
+- Small cohort or exploratory run: `--n-workers 1`
+- Workstation with 16-32 GB RAM: start with `--n-workers 2`
+- Workstation/server with 64+ GB RAM: start with `--n-workers 4`
+- Increase beyond 4 only after checking RAM usage and candidate counts.
+
+For batch discovery, `--batch-size` is usually more important than worker count.
+The batch absolute support threshold is:
+
+```text
+ceil(min_ver_supp * batch_size)
+```
+
+Keep this value at least `5-10`. If it is `1-2`, batch discovery will emit many
+patient-specific false-positive candidates, and finalization can dominate the
+run. Example starting points:
+
+```bash
+# conservative large-cohort start
+python main.py --n-workers 4 --batch-size 1000 --max-length 3 --force-discover
+
+# lower-RAM machine
+python main.py --n-workers 2 --batch-size 1000 --max-length 3 --force-discover
+```
+
+Finalization is parallelized by candidate chunks, but each finalization worker
+needs access to the full `entity_list`. If the `Finalizing candidate chunks`
+phase is fast but RAM spikes, reduce `--n-workers`. If it is slow and RAM is
+stable, increasing workers may help.
+
+Apply-mode parallelism also gives each worker the pattern list and patient data
+needed for its patient chunk. For very large pattern sets, apply can become
+memory-heavy too. If apply slows down or RAM pressure is high, prefer
+`--n-workers 1-2` for apply-scale runs, or run discovery first and apply later
+with a smaller worker count.
+
+Use the `parallel_batches summary` log as a health check:
+
+- `min_abs_supports` should generally be `>= 5`
+- `batch_patterns` should not be wildly imbalanced across batches
+- `unique_candidates` should not be orders of magnitude larger than the final
+  number of patterns
+
+If those checks look bad, increase `--batch-size`, lower `--n-workers`, raise
+`--min-ver-supp`, or reduce `--max-length`.
+
+### Memory Limitations & Capacity Planning
+
+This implementation is **entirely in-memory**. The raw data (`entity_list`), the pattern tree, and the CSAC embedding maps (which store valid index-tuples for every active pattern) all reside in RAM.
+
+Memory usage is driven by:
+1. **Dataset Size:** Number of records (intervals) and number of patients.
+2. **Temporal Entity Count:** Number of unique `ConceptName:Value` pairs (not just unique `ConceptName`). Each distinct value (e.g., `"HbA1c:High"` vs `"HbA1c:Normal"`) is a separate temporal entity.
+3. **Number of Relations:** Coarser relation sets (2, 3) produce fewer patterns; finer sets (5, 7) explode combinatorially.
+4. **Pattern Density:** How many frequent patterns exist and how many embeddings they have per patient.
+5. **CSAC Overhead:** Storing exact embedding tuples for active candidates is memory-intensive for dense data.
+
+**Worst-Case Memory Estimation Table**
+
+*These estimates assume **all possible patterns up to k=5 are frequent** (worst case) and **dense embeddings** per patient. Real workloads with `min_ver_supp > 0` will use significantly less memory.*
+
+| Temporal Entities | Relations | Patterns (<=k=5) | Patients | Est. RAM (Worst) | Recommendation |
+|-------------------|-----------|-----------------|----------|------------------|----------------|
+| **20**            | 2         | ~67k            | 10k      | 8 GB             | Workstation OK. |
+| **20**            | 3         | ~130k           | 10k      | 12 GB            | Workstation OK. |
+| **20**            | 5         | ~320k           | 10k      | 24 GB            | High-RAM Workstation. |
+| **20**            | 7         | ~540k           | 10k      | 40 GB            | Server / Split. |
+| **50**            | 2         | ~2.6M           | 10k      | 64 GB            | Server / Split. |
+| **50**            | 3         | ~6.4M           | 10k      | 128 GB           | **Split Cohort.** |
+| **50**            | 5         | ~22M            | 10k      | 256 GB+          | **Must Split.** |
+| **50**            | 7         | ~48M            | 10k      | 512 GB+          | **Must Split.** |
+| **100**           | 2         | ~81M            | 10k      | 512 GB+          | **Must Split.** |
+| **100**           | 3         | ~242M           | 10k      | 1+ TB            | **Must Split.** |
+| **100**           | 5         | ~1.1B           | 10k      | 4+ TB            | **Must Split.** |
+| **100**           | 7         | ~2.8B           | 10k      | 8+ TB            | **Must Split.** |
+
+>> **Important:** These are **theoretical worst-case** numbers assuming zero Apriori pruning. In practice, `min_ver_supp` will eliminate the vast majority of candidate patterns, reducing memory by 10-100x. Use this table to understand upper bounds, not typical usage.
+
+**Pattern Count Formula (Worst Case):**
+For N temporal entities and R relations, patterns up to length k:
+$$\text{Patterns} = \sum_{i=1}^{k} \binom{N}{i} \times R^{i-1}$$
+
+For k=5, this grows as O(N^5 x R^4), which is why entity count and relation granularity are critical levers.
+
+**Mitigation Strategy:**
+If your data exceeds these limits, **do not run as a single job**.
+1. **Split the cohort:** Divide patients into chunks where each chunk handles different temporal entities (a subset of concepts per chunk).
+2. **Run in parallel:** Use the `run_parallel_jobs` utility to process chunks independently.
+3. **Merge results:** Concatenate the resulting pattern DataFrames.
+
+For patient-based splitting, use `ParallelRunner.parallel_batches()` rather than
+manual concatenation. It treats batch discovery as candidate generation and then
+recomputes exact global support before returning final patterns.
+
+---
+
+## Credits
+
+- Batch multiprocessing candidate discovery and finalization were added based on an implementation idea contributed by a collaborator (credited by name in the camera-ready version).
+
+---
+
+## Packaging for a Remote VM
+
+To upload this project to an external machine, create a self-contained zip that includes all source code and configuration but excludes unit-tests, cached bytecode, and data files (which should be uploaded separately or already present on the VM).
+
+**PowerShell (Windows) - run from the `KarmaLego\` root:**
+
+```powershell
+Compress-Archive -Force -Path `
+    "core",`
+    "main.ipynb",`
+    "pyproject.toml",`
+    "requirements.txt",`
+    "README.md",`
+    "LICENSE" `
+    -DestinationPath "karmalego-deploy.zip"
+```
+
+**On the VM, install with:**
+
+```bash
+unzip karmalego-deploy.zip
+cd KarmaLego
+pip install -e .
+```
+
+`pip install -e .` registers `core` as a package in the environment (using the dependencies declared in `pyproject.toml`) so `from core.karmalego import ...` works from any working directory, including from inside Jupyter.  
+The first notebook cell runs this automatically - you only need to run it once after upload.

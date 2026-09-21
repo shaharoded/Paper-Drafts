@@ -1,0 +1,70 @@
+% Sections 6.1-6.3 of Chapter 6. The chapter opening, and the Contributions,
+% Limitations and Conclusions sections, live in content/summary/summary.tex.
+\section{The Methodological Study}
+\label{sec:disc-methodological}
+
+\subsection{Where the Predictive Gain Comes From}
+
+Two results have to be read together, and doing so gives a sharper conclusion than either alone.
+
+INTERVenE-Enc outperforms every baseline on the shared benchmark, including KarmaLego+TPF, which consumes the identical interval stream. That comparison is the one that isolates modeling from representation, and it is the largest gap in the table. Yet replacing the KBTA vocabulary with a non-semantic $\sigma$-bin discretization leaves discrimination essentially unchanged.
+
+The natural reading is that the predictive gain comes from the transformer operating over persistent intervals, not from the intervals carrying clinical names. Collapsing every interval to a one-second point event confirms the other half: performance falls sharply, so the architecture depends on duration and on state concurrency rather than acting as a point-event detector. What the model exploits is that a symbol \emph{holds} over a span and that spans \emph{overlap} --- structure a discretization supplies whether or not a clinician chose its boundaries.
+
+This is a negative result for the claim a knowledge-based thesis might most want to make. Clinical knowledge does not buy predictive accuracy here. It is worth stating plainly rather than softening, because the alternative claim it leaves standing is the more useful one: the interpretability is obtained at essentially no accuracy cost. Interpretability bought by sacrificing performance is rarely adopted; interpretability that is free is a different proposition.
+
+The representation helps most where the target is itself an abstraction. Severe dysglycemia outcomes are defined by threshold-crossing states and their durations, so the input injects the clinical definition directly. The gain also extends to death and to length of stay, which no single KBTA threshold defines --- there the model appears to combine abstracted states such as hypoalbuminemia, organ-stress trends, and acid--base shifts into a composite signal of deterioration, consistent with the attribution results.
+
+\subsection{What the Explanations Do and Do Not Show}
+
+Because every input token is a named clinical concept, attribution resolves to clinical vocabulary by construction rather than by subsequent interpretation. The death drivers are clinically coherent, and one detail is more informative than the overall coherence: the model assigns opposite signs to an elevated enzyme level and to a decreasing enzyme trend. A method keyed to how often a concept appears could not make that distinction, so the attribution is tracking clinical direction rather than clinical activity.
+
+Two limits are structural and were carried into the reporting. Gradient attribution measures local sensitivity, not causal necessity. And it describes the fitted function, not the patient --- it identifies what drove a prediction, which is a claim about a model. Neither limit is specific to sparse transcoders; both apply to saliency, integrated gradients, and SHAP alike. What the KBTA vocabulary changes is not the epistemic status of the attribution but its legibility: the same claim, expressed in concepts a clinician can evaluate.
+
+\subsection{Two Variants, Two Niches}
+
+The variants are complementary rather than redundant. INTERVenE-Enc is the production predictor: strongest single-pass accuracy, and low enough latency to score a full test cohort in seconds. INTERVenE-Ar is the inspection tool: it generates the abstraction trajectory itself, so its explanation is its output, and only it localizes \emph{when} and after \emph{which} events risk rises.
+
+The roughly $77\times$ latency difference follows directly from generation and is not an implementation shortcoming. It does mean the decoder's value is diagnostic rather than operational, and its weaker performance on death --- where a rollout must stay coherent over many steps before a sparse terminal token appears --- marks the limit of the generative readout rather than of the representation.
+
+\section{The Clinical Study}
+\label{sec:disc-clinical}
+
+\subsection{Principal Findings}
+
+Adherence improved after the national recommendations were introduced, and higher adherence was consistently associated with lower mortality and reduced hyperglycemic complications. But adherence was not uniform, and the pattern of non-uniformity is the finding.
+
+The split follows the \emph{kind} of action a recommendation requires, not its clinical weight. Recommendations satisfied by a single discrete action --- ordering a test, discontinuing a medication on admission --- are near-universally implemented. Those requiring repeated insulin decisions across a stay are not, several with a median of zero, meaning the expected action was absent altogether in most eligible admissions. The improvement following implementation was significant but modest, its $P$ value reflecting the number of admissions rather than the size of the shift, and it came with substantial inter-hospital heterogeneity these data do not explain.
+
+The clearest outcome signal is for $30$-day mortality. The propensity-weighted estimate is the primary one, being the only estimate whose exposure window is guaranteed to precede the outcome. Two descriptive estimates agree in direction --- whole-admission adherence adjusted for baseline characteristics, and a graded fall in mortality across the adherence range. A graded association is harder to explain by case mix alone, though it shares the timing concern noted below. Because the three use different exposure definitions, they corroborate direction rather than magnitude.
+
+The glycemic findings show a favorable risk profile rather than an unambiguous benefit. Greater adherence bought a large reduction in hyperglycemic burden --- roughly ninefold larger on the log-odds scale than the accompanying rise in hypoglycemia --- at the cost of a small increase in mild hypoglycemia and no detectable increase in severe hypoglycemia. That is precisely the balance inpatient insulin recommendations are designed to strike. Since non-significance is not evidence of absence, the severe-hypoglycemia result shows no signal of harm at this sample size rather than establishing that none exists.
+
+\subsection{Implications}
+
+The most actionable pattern is a convergence. The recommendations with the largest implementation gaps --- insulin following hyperglycemia, and both components of routine basal dosing --- are also among those most consistently associated with outcomes after balancing measured baseline characteristics. The components where practice departs most from the guideline are therefore not peripheral ones.
+
+This identifies them as natural targets for decision support, and for a specific reason: they are repeated decisions distributed across a hospitalization, which is exactly the kind of task where a prompt at the point of care can plausibly help, and unlike the admission recommendations they are nowhere near ceiling. A reminder to order creatinine would change almost nothing, because creatinine is already ordered.
+
+This should not be read as an attribution of fault. A low adherence score records that the action the guideline expects is absent from the record --- not that the decision was wrong. A patient not eating, an imminent procedure, a deliberate decision to tolerate higher glucose in a frail patient: each is frequently the correct reason for a departure, and none is recoverable from records collected for clinical rather than research purposes. The measure is a population-level statistic, and so is the inter-hospital variation. What this work offers is a measurement instrument --- an automated, component-level, transferable way to ask which recommendations were followed and which track outcomes --- not a decision-support system.
+
+Nothing restricts the approach to recommendations a guideline already contains. Because each is declared externally as a pattern rather than implemented in analysis code, a practice merely \emph{suspected} to matter costs no more to evaluate than the patterns scored here. That inverts the usual question: one could ask which candidate practices earn a place in a guideline, and --- more uncomfortably --- which current recommendations track no outcome at all. Such candidates would be hypotheses for prospective evaluation, and a wide search would need more conservative multiplicity correction than was applied here.
+
+\section{What the Two Studies Say Together}
+\label{sec:disc-joint}
+
+The two studies share a representation rather than an experiment, and each supplies something the other cannot.
+
+The methodological study establishes that a transformer over KBTA intervals is competitive with the established alternatives and that its explanations resolve to clinical concepts --- but on a public benchmark, with a knowledge base built for it, and with no notion of whether care followed a guideline. The clinical study establishes that guideline adherence can be measured automatically at national scale, that it improved unevenly, and that the least-implemented recommendations are among those most associated with outcomes --- but analyzes adherence statistically, as an exposure, without asking whether a model can use it.
+
+What joins them is that adherence is computed over the same intervals the model reads. The Kineret experiment of Section~\ref{sec:evalm-kineret-task} closes that loop, and it is the one place where the thesis's two halves become a single question: does a measured quality-of-care signal carry predictive information beyond the clinical record it was derived from?
+
+That experiment has now been run as a closing addition (Section~\ref{sec:eval-kineret-models}), with every arm at the MIMIC-IV configuration and no tuning. Two results follow.
+
+The architecture transfers, and the knowledge base carries more predictive weight here than on MIMIC-IV. Substituting $\sigma$-bins costs $0.073$ AUPRC on Kineret but was within noise on MIMIC-IV. The knowledge base was authored on Kineret and transferred to MIMIC-IV, so the asymmetry is unsurprising: it is better matched to the cohort it was built for, where it also instantiates more fully --- eighteen of its concepts have no counterpart in the MIMIC-IV extract (Section~\ref{sec:method-preprocessing}). The MIMIC-IV finding therefore bounds what clinical knowledge contributes when ported to a new source, not what it contributes generally.
+
+Neither cohort licenses the stronger claim that data-driven abstraction cannot work. The knowledge base is a hand-curated artifact and the $\sigma$-bins a fully automated one, so the contrast is between two abstraction methods at very different levels of effort, not between knowledge and data as such. A discretization tuned to the cohort, rather than applied off the shelf, was never tested.
+
+The adherence signal does not improve the aggregate metrics, which was the likely outcome given that adherence is computed from the intervals the model already reads. Attribution shows the model does use it: compliance patterns rank among the top drivers for seven of eight outcomes. The signal is visible to the model but redundant with what it already has --- a statement about representation, not about whether following the guideline matters clinically, which Section~\ref{sec:eval-clinical} addresses separately.
+
+A single caution applies to whatever those results show. Adherence is derived from the same record the model reads, so a predictive lift would demonstrate that the aggregation makes an existing signal easier to use, not that new information was introduced. That is a real and useful finding --- feature construction routinely earns its keep that way --- but it is a claim about representation, not about the clinical value of following the guideline. The latter question is what the propensity-weighted analysis addresses, and the two should not be conflated.

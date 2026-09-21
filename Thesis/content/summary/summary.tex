@@ -1,0 +1,154 @@
+% Chapter 6 merges the former Discussion and Conclusions chapters, in the
+% order the structure guide prescribes: Summary, Contributions, Limitations,
+% Conclusions. Future Work moved to Appendix F.
+This chapter summarizes what the thesis found, states what it contributes, sets
+out the limitations that qualify those contributions, and closes with the
+conclusions. Sections~\ref{sec:disc-methodological}--\ref{sec:disc-joint} are
+the summary and discussion: the methodological study, the clinical study, and
+what the two say together.
+
+\input{content/discussion/discussion}
+
+\section{Contributions}
+\label{sec:contributions}
+
+\subsection{To Computer Science}
+
+\textbf{A transformer architecture over temporal abstraction intervals.}
+INTERVenE takes symbolic intervals as its native input rather than raw
+measurements: each interval becomes a START and an END token embedded through a
+four-level concept hierarchy, with elapsed time entering through Time2Vec and
+temporal rotary embeddings and static context through AdaLN-Zero. Two variants
+were developed and compared --- a bidirectional encoder for single-pass risk and
+time-to-event prediction, and an autoregressive decoder that generates
+abstraction trajectories with per-step risk curves. The encoder outperforms the
+established neural and symbolic alternatives on a shared benchmark, and leads
+every comparator on both cohorts it was evaluated on.
+
+\textbf{Evidence about what interval representations contribute.} Holding the
+architecture fixed and varying only the input isolates two separable effects:
+collapsing intervals to point events degrades performance sharply, while
+replacing clinically named intervals with an automatically derived $\sigma$-bin
+discretization does not. On MIMIC-IV the gain therefore belongs to persistence
+and concurrency rather than to clinical naming --- a result that bounds what a
+knowledge base buys a predictor, and that makes the architecture applicable to
+interval-structured data outside medicine. The Kineret repetition qualifies it:
+there the substitution cost accuracy, so the equivalence is demonstrated for a
+source the knowledge base was ported to, not for one it was authored on.
+
+\textbf{Attribution that resolves to named concepts.} Sparse transcoders attach
+through a gradient-decoupled hook whose injected term is numerically zero, so
+the forward pass is bit-exact and the logits explained are the deployed model's
+own. Because the vocabulary consists of named concepts, the explanations are
+clinical statements rather than feature indices.
+
+\textbf{A released software stack.} A reimplementation of the Temporal Mediator
+that performs abstraction and adherence scoring in one pass over a TAK
+repository; a KarmaLego interval-mining pipeline with a Temporal Probabilistic
+Profile representation; and INTERVenE with its attribution pipeline. All are
+pure Python and deployable in ordinary environments, including the regulated
+hospital platform this work ran inside.
+
+\subsection{To Medicine and Medical Informatics}
+
+\textbf{A single-schema knowledge base for inpatient diabetes care.} The $174$
+TAK units encode the clinical semantics of inpatient care and the fourteen
+recommendations of the Israeli national position paper as quality-assessment
+patterns. Declarative and quality-assessment knowledge live in one
+representation executed by one engine in a single pass, rather than being split
+across a declarative formalism and a procedural one. Because it names clinical
+concepts rather than dataset columns, it transfers to any EHR within the same
+clinical scope once a concept index is supplied.
+
+\textbf{An automated, component-level measure of guideline adherence.}
+Compliance becomes a continuous quantity per recommendation and per admission,
+comparable across hospitals and over time without chart review. Applied at
+national scale across six hospitals, it shows that adherence levels differ by
+the kind of action a recommendation requires rather than by its clinical weight.
+
+\textbf{Evidence on which recommendations matter.} Under propensity weighting,
+above-median adherence carries substantially lower odds of $30$-day mortality
+and of hyperglycemia against a small rise in hypoglycemia. The recommendations
+that were least adhered to are among those most strongly associated with
+outcomes --- the thesis's most actionable finding, and a direct target for
+decision support.
+
+\textbf{Guideline adherence treated as an explanatory variable.} Procedural
+quality-of-care knowledge is brought to bear on patient outcomes alongside the
+declarative knowledge such analyses normally rely on, both statistically as an
+exposure and as model input.
+
+\section{Limitations}
+\label{sec:limitations}
+
+\subsection{The Representation}
+
+The central limitation is intrinsic to the representation. The KBTA layer is only as expressive as the knowledge base behind it: a concept with no abstraction rule is simply absent from the model input. Extending INTERVenE to a new disease, population, or care setting therefore requires authoring a new knowledge base rather than retraining on new labels --- an expert-driven process, and substantially more laborious than adapting an end-to-end model.
+
+A related limit is granularity. Rule-based abstraction deliberately collapses clinically equivalent values, so glucose of $250$ and of $600$\,mg/dL both map to severe hyperglycemia. The $\sigma$-bin ablation shows this costs little predictively, which is a reassurance about the architecture rather than about the knowledge base.
+
+Beyond the representation, the methodological study evaluates one MIMIC-IV cohort. External validation, subgroup fairness across demographics and care settings, and attribution stability across random initializations all remain open. Reported intervals are patient-level bootstraps, not multi-seed variance: full training takes roughly $8$--$12$ hours for the encoder and over $24$ for the decoder on a single device, which put multi-seed sweeps out of reach. The intervals therefore describe sampling uncertainty for the model that was trained, not the variability of the procedure that produced it.
+
+\subsection{The Clinical Study}
+
+The design is observational and none of the estimates is a causal effect. Weighting balances measured covariates only; unmeasured factors cannot be excluded, and two matter especially --- real-time illness severity, and decisions to limit or de-escalate treatment.
+
+The mortality analyses divide by exposure definition, and the division is worth being explicit about. The component-level and propensity-weighted models score adherence over a fixed early-admission window, so exposure strictly precedes outcome. The adjusted estimate instead averages adherence over the whole admission and is descriptive: because $30$-day mortality is predominantly an end-of-admission event, and guideline-concordant management is frequently de-escalated in patients on a deteriorating trajectory, that average incorporates the period immediately preceding death, where adherence may reflect the course of care rather than determine it. Dichotomizing at the median, as weighting requires, additionally discards dose-response information and costs power.
+
+Adherence and outcomes were ascertained during the same hospitalization, and detecting a glycemic event depends on glucose being measured. Routine monitoring was therefore excluded from the glycemic models, but residual detection effects may remain for other monitoring recommendations --- visibly so for admission monitoring, which appears associated with \emph{higher} recorded hyperglycemia and is reported as an ascertainment artifact rather than as harm.
+
+The pre--post comparison is uncontrolled, so secular trends in inpatient care cannot be separated from the implementation itself. The non-mortality models do not account for the competing risk of death, which biases those endpoints conservatively. The findings come from adult inpatients in Israeli general hospitals under a single national guideline, so both the adherence levels and the components that proved most consequential may differ elsewhere. Finally, the data are assembled from admissions rather than from a longitudinal record: ascertaining eligibility and glycemic outcomes from measurements rather than diagnosis codes limits the damage, but the comorbidity score and the proportion of hyperglycemic admissions carrying a documented diagnosis are both likely understated.
+
+\subsection{Limits Common to Both}
+
+Two further limits cut across the thesis. The knowledge base is portable in
+principle because it names clinical concepts rather than dataset columns, but
+landing it on a new source still costs a concept index: Kineret carried no
+mapping to an international coding system at the time of this work, so roughly
+$1{,}500$ local codes were resolved onto the vocabulary by hand. That labor is
+site-specific and must be repeated at the next network, and where local codes
+could not be identified it degraded the representation itself --- the
+comorbidity burden entering the static vector is a \emph{modified} Charlson
+index because the source supports nothing stricter.
+
+And adherence measures the record, not the decision. Bedside reasoning is
+largely invisible to the measure and always will be, since it is not the kind of
+thing an electronic record captures. Adherence is also expected to decline as a
+patient approaches death, when guideline-concordant management is deliberately
+de-escalated, which is why the mortality analyses that carry weight score
+adherence over a fixed early window rather than over the whole admission.
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+This thesis set out to measure adherence to the national inpatient diabetes
+guideline automatically, to determine whether it changed after the national
+implementation effort, to establish which recommendations are associated with
+patient outcomes, and to shape short-horizon complication prediction as a
+next-token problem over acquired medical knowledge rather than as feature-based
+classification over raw measurements.
+
+All four rest on one representation, and that is the thesis's organizing claim.
+A single knowledge base and a single engine turn an OMOP record into named
+abstraction intervals and, in the same pass, score how far recorded care
+departed from the guideline's specifications. Prediction and measurement then
+read one stream.
+
+What the results support is narrower than that framing and more useful.
+Knowledge-based abstraction is what makes a model's reasoning legible and what
+makes guideline adherence measurable at national scale, while the predictive
+strength belongs to the architecture --- INTERVenE-Enc leads every comparator on
+both cohorts it was evaluated on. On MIMIC-IV that strength survived
+substituting automatically derived intervals for the curated ones, so the
+architecture is not dependent on hand-authored definitions; on the cohort the
+knowledge base was written for, the same substitution cost real accuracy, and
+the two results bound each other rather than settling the question. That the measured adherence signal adds no predictive
+information beyond the record it is derived from is not a failure of the
+measurement but what one should expect of a summary; whether following the
+guideline matters clinically is a separate question, which the
+propensity-weighted analysis answers affirmatively.
+
+What stands is the clinical finding: the recommendations hardest to follow are
+among those most worth following, and they share a structure --- repeated
+decisions distributed across a hospitalization --- that makes them the natural
+target for support at the point of care.

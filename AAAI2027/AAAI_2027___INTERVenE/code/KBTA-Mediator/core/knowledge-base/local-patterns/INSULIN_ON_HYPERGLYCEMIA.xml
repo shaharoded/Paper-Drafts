@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pattern name="INSULIN_ON_HYPERGLYCEMIA_PATTERN" concept-type="local-pattern">
+    <categories>RoutineTreatment</categories>
+    <description>Captures if reactive INSULIN (BOLUS/IV) was performed within proximity to a meal, assuming glucose was high at the time</description>
+    <!-- Attributes must be 1D. Can reference all tak types for complex cases. -->
+    <derived-from>
+        <attribute name="MEAL_CONTEXT" tak="context" ref="A1"/>
+        <attribute name="HIGH_GLUCOSE_CONTEXT" tak="context" ref="C1"/>
+        <attribute name="REACTIVE_INSULIN_BITZUA_CONTEXT" tak="context" ref="E1"/>
+    </derived-from>
+
+    <!-- Rules always share "OR" relationship. To create more complex patterns, reference a pattern in a different pattern TAK -->
+    <abstraction-rules>
+        <rule>
+            <!-- Context will be relevant here only if the high glucose context is true before the insulin event-->
+            <context>
+                <attribute ref="C1">
+                    <allowed-value equal="True"/>
+                </attribute>
+            </context>
+            <!-- Relation between 2 KBTA objects -->
+            <!-- max-distance is not the recommended distance, but the max acceptable one -->
+            <temporal-relation how='overlap' existence-compliance='true'>
+                <anchor>
+                    <attribute ref="A1">
+                        <allowed-value equal="Breakfast"/>
+                        <allowed-value equal="Lunch"/>
+                        <allowed-value equal="Dinner"/>
+                        <allowed-value equal="Night-Snack"/>
+                        <allowed-value equal="True"/>
+                    </attribute>
+                </anchor>
+                <event select='first'>
+                    <attribute ref="E1">
+                        <allowed-value equal="Long"/>
+                        <allowed-value equal="Short"/>
+                    </attribute>
+                </event>
+            </temporal-relation>
+        </rule>
+    </abstraction-rules>
+</pattern>

@@ -1,0 +1,95 @@
+# INTERVenE Source Code
+
+This archive accompanies an anonymized submission currently under double-blind review.
+
+It contains the complete implementation used in the experiments reported in the paper, including the INTERVenE models, symbolic temporal abstraction pipeline (KBTA-Mediator), and baseline implementations (GRU-D, STRATS, KARMALEGO).
+
+---
+
+## Repository Structure
+
+```
+code/
+│
+├── INTERVenE/
+│   ├── encoder/
+│   └── decoder/
+│
+├── KBTA-Mediator/
+│
+├── KarmaLego/
+│
+└── baselines/
+```
+
+### INTERVenE
+
+Contains the proposed models introduced in the paper.
+
+- **encoder/** — INTERVenE-Enc implementation
+- **decoder/** — INTERVenE-Ar implementation
+
+Each submodule is fully self-contained and can be installed and executed independently. Dependencies, configuration files, and training scripts are local to each submodule.
+
+### Mediator
+
+Knowledge-based Temporal Abstraction (KBTA) engine used to convert raw clinical events into symbolic temporal intervals, including the diabetes knowledge base that handles the full abstraction.
+
+### KarmaLego
+
+Symbolic temporal pattern mining baseline used in the experimental comparison + ML pipeline from mining to prediction.
+
+### baselines
+
+Implementations of the remaining NN baseline models evaluated in the paper.
+
+---
+
+# Installation
+
+Each repository behaves as an independent Python module.
+
+Please refer to the README contained within each subdirectory for installation instructions, required dependencies, documentation and API.
+
+No shared installation step is required between repositories.
+
+---
+
+# Data
+
+Experiments were performed using the MIMIC-IV database.
+
+The dataset is not redistributed with this submission due to licensing restrictions.
+
+Users must obtain access through the official MIMIC-IV credentialing process and construct the cohort described in the paper.
+
+raw mimic -> MIMIC-Dataset-ETL -> KBTA-Mediator -> KarmaLego+INTERVenE
+                    |
+                other NN baselines     
+
+---
+
+# Reproducing the Paper
+
+The archive contains all code required to reproduce the experiments reported in the manuscript.
+
+Specifically it includes:
+
+- INTERVenE encoder and decoder implementations
+- Knowledge-based temporal abstraction pipeline
+- Baseline implementations
+- Training scripts
+- Evaluation scripts
+- Configuration files
+
+The exact experimental protocol, hyperparameters, and preprocessing pipeline are described in the paper and supplementary material. Final hyperparameters are hardcoded in configuration files attached.
+
+---
+
+# Anonymity
+
+This archive has been prepared for anonymous peer review.
+
+Repository metadata and identifying information have been removed for the review process.
+
+Complete project history and public repository links will be restored upon publication.

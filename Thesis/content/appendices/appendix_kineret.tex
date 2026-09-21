@@ -1,0 +1,48 @@
+
+This appendix holds the supporting detail for Section~\ref{sec:eval-kineret-models}. The benchmark was run once at the configuration deployed on MIMIC-IV, with no search over this cohort, so nothing here is a tuned result.
+
+\section{Configuration}
+\label{app:kineret-config}
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Study configuration, as recorded by the run.}
+\label{tab:kineret-config}
+\small
+\begin{tabular}{ll}
+\toprule
+Setting & Value \\
+\midrule
+Training context windows   & $K = 1 \ldots 13$ days (one sample per admission per $K$) \\
+Evaluation window          & $K = 4$ days \\
+Label window               & $(96, 336]$ hours from admission \\
+Study period               & 2022-08-01 to 2025-12-31, full horizon required \\
+Split                      & $70/15/15$, grouped by patient, seed $2023$ \\
+Training samples           & $179{,}141$ \\
+Validation / test          & $4{,}600$ / $4{,}686$ admissions \\
+Support threshold          & $1\%$ training prevalence at the evaluation window \\
+Event source               & Mediator, $24$\,h reconciliation tolerance \\
+QA aggregation             & mean compliance per pattern over $[0, 4\times24]$ hours \\
+$\sigma$-bin collapse      & $24$\,h; knowledge-base events withheld from that arm \\
+\midrule
+Embedding dimension        & $128$ \\
+Attention heads / layers   & $2$ / $4$ \\
+Time2Vec dimension         & $32$ \\
+Dropout                    & $0.1$ \\
+Static context dimension   & $56$ (QA arm) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Target Support}
+\label{app:kineret-support}
+
+Ten complications were carried as candidates. Eight clear the $1\%$ training-prevalence threshold at $K = 4$ and keep a prediction head; hyperosmolality ($0.50\%$) and ketoacidosis ($0.75\%$) do not and are dropped. Support falls as $K$ rises, because the label window shortens and admissions whose complication precedes the cutoff are excluded.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{kineret_target_support.png}
+\caption{Positive counts and prevalence per candidate target across the context-window grid, with the $1\%$ threshold marked.}
+\label{fig:kineret-support}
+\end{figure}

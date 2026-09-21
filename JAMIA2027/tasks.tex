@@ -1,0 +1,38 @@
+% =====================================================================
+% DRAFT-ONLY: pre-submission task list.
+%
+% Rendered only while \showtaskstrue is set in main.tex. It carries no
+% manuscript content and is excluded from the 4,000-word count.
+% Flipping the switch to \showtasksfalse removes this box and every
+% inline [TODO] marker at once.
+% =====================================================================
+\ifshowtasks
+\begin{center}
+\fcolorbox{red}{red!4}{%
+\begin{minipage}{0.94\textwidth}
+\vspace{2pt}
+\textcolor{red}{\textbf{DRAFT --- OPEN TASKS BEFORE SUBMISSION}}
+\vspace{4pt}
+\hrule
+\vspace{6pt}
+\footnotesize
+\begin{enumerate}\setlength{\itemsep}{5pt}\setlength{\parskip}{0pt}
+
+\item \textbf{Funding statement.} Name the funding body and grant number,
+or state that the work received no specific grant. Oxford registers
+funders through the Crossref Funding Data Registry, so the funder name
+must match its canonical form there. \emph{(Section: Funding.)}
+
+\item \textbf{Export the curated concept indices from the closed
+environment.} The manuscript now states that the indices are provided as
+supplementary material (Methods, Appendix~S1, and the Data Availability
+statement all say so). That claim is not yet true --- the files must be
+exported from the hospital VM and attached before submission, or all
+three statements must be walked back.
+
+\end{enumerate}
+\vspace{4pt}
+\end{minipage}}
+\end{center}
+\vspace{6pt}
+\fi

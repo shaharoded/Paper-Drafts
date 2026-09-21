@@ -1,0 +1,344 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Study cohort}
+
+The cohort comprised 48,354 admissions among 29,577 unique adult patients
+across six Israeli general hospitals, with center-specific sample sizes ranging
+from 4,478 to 11,024 admissions (Table~\ref{tab:cohort}). Only 21.5\% of
+admissions meeting a hyperglycemia criterion carried a documented diabetes
+diagnosis, indicating that a substantial proportion of the cohort represented
+clinically significant inpatient hyperglycemia without a recorded diagnosis.
+
+\subsection{Adherence and its change following national implementation}
+\label{sec:adherence-results}
+
+Adherence varied sharply across recommendations, and the split followed the
+kind of action required rather than its clinical weight
+(Table~\ref{tab:adherence}). Single discrete actions on admission were
+near-universal: SGLT2 discontinuation was complete (1.00) and creatinine
+measurement almost so (0.98). Recommendations calling for repeated insulin
+decisions across the stay were not: insulin following hyperglycemia scored 0.15, the
+two routine basal dosing components 0.21 and 0.23, and bolus reduction after
+hypoglycemia 0.28---all with a median of zero, meaning the expected action
+was absent altogether in most eligible admissions. Monitoring and admission
+medication management fell between these extremes (0.54--0.88). Adherence was
+largely independent of whether diabetes had been formally documented (0.669 vs
+0.661 among admissions with hyperglycemia in the first 48 hours), a difference
+reaching significance only by virtue of the sample size.
+
+Overall adherence rose from 0.682 before the guideline to 0.703 after
+($P<.001$; Figure~\ref{fig:adherence-trend}), with monthly scores trending
+upward across the period. The absolute change is small, and its significance
+reflects the number of admissions rather than the size of the shift.
+Component-level changes were uneven (Table~\ref{tab:adherence}). Glucose
+monitoring improved most---on admission from 0.78 to 0.93---and discontinuation
+of high-hypoglycemia-risk antidiabetic agents on admission rose from 0.62 to
+0.75. Gains in the insulin-management components were significant but marginal
+($+$0.01 to $+$0.03), leaving them close to their already low baselines, while
+dose reduction after hypoglycemia did not change and SGLT2 discontinuation was
+already complete in both periods. Center-level trajectories ranged from
+improvement through no measurable change to modest decreases, so the pooled
+increase conceals substantial inter-hospital heterogeneity.
+
+\subsection{Adherence and clinical outcomes}
+
+Higher adherence was associated with lower 30-day mortality
+(Figure~\ref{fig:adherence-mortality}). Survivors had a higher mean adherence
+score than those who died (0.693 vs 0.652, $P<.001$), and mortality fell across
+adherence strata from 11\% to roughly 3\%. On the continuous score, each
+0.1-point increase carried 16.8\% lower odds of death (OR, 0.832; 95\% CI,
+0.811--0.853), so the association is graded rather than threshold-like, and
+adjusting for age, sex, comorbidity burden and hospital left it intact
+(adjusted OR, 0.757; 95\% CI, 0.727--0.788, per 1-SD increase). Adherence to the insulin-management
+recommendations showed negligible correlation with subsequent hypoglycemic
+burden, for both hypoglycemia ($r=0.052$) and severe hypoglycemia ($r=0.056$;
+$n=40{,}719$).
+
+\subsection{Outcome-associated recommendations}
+
+Between 9 and 34 predictors were retained per outcome, but the number
+surviving all three window definitions ranged from none to 32, tracking event
+frequency: mortality yielded the most robust predictors and the rarer
+complications few or none (Supplementary Table~S2). For mortality, the model
+recovered well-established clinical predictors---age, red cell distribution
+width, body mass index (BMI), dementia, cardiovascular comorbidity---which
+gives the approach face validity, and several adherence components ranked among
+the strongest retained predictors (Figure~\ref{fig:death-importance}). Across
+all outcome models (Figure~\ref{fig:recurring-guidelines}), insulin following
+hyperglycemia and admission glucose monitoring recurred most broadly, while
+basal-dose components appeared in fewer, more outcome-specific models.
+Direction was not uniform---the same component could carry opposite signs for
+different endpoints.
+
+\subsection{Propensity-weighted evaluation}
+
+The overall-adherence analyses achieved satisfactory covariate balance (maximum
+post-weighting SMD $<$0.08). Relative to the low-adherence group, above-median
+adherence carried 44\% lower odds of 30-day mortality (OR, 0.557; 95\% CI,
+0.514--0.603), 82\% lower odds of hyperglycemia (OR, 0.175) and 52\% lower odds
+of severe hyperglycemia (OR, 0.485), all adjusted $P<.001$, against 20\% higher
+odds of hypoglycemia (OR, 1.204; 95\% CI, 1.090--1.331;
+Table~\ref{tab:iptw-overall}). Nothing survived correction for the remaining
+five outcomes. The asymmetry between those two directions is the substantive
+result: the reduction in hyperglycemic burden is roughly ninefold larger on the
+log-odds scale than the accompanying increase in hypoglycemia, and the increase
+in \emph{severe} hypoglycemia did not reach significance (OR, 1.129; adjusted
+$P=.096$).
+
+Only a subset of the recurrent component-level predictors remained significant
+after weighting, indicating that several predictive associations were largely
+explained by differences in baseline patient characteristics. A further six
+significant associations were set aside because weighting failed to achieve
+acceptable balance (maximum SMD, 0.90--2.46). All six concerned BMI or
+creatinine measurement on admission, for which adherence is near-universal, so
+that dichotomizing at the median produces groups too dissimilar to balance;
+those coefficients were numerically degenerate and are reported as
+non-estimable.
+
+Eight associations were both significant and adequately balanced
+(Table~\ref{tab:iptw-patterns}). Above-median adherence to routine basal
+insulin dosing, routine glucose monitoring and insulin administration following
+hyperglycemia each remained associated with lower 30-day mortality. For
+glycemic outcomes, insulin following hyperglycemia (78\% lower odds; OR, 0.220)
+and routine basal insulin dosing (60\% lower odds; OR, 0.402) were associated
+with substantially lower odds of subsequent severe hyperglycemia, while insulin
+following hyperglycemia also carried 28\% higher odds of hypoglycemia (OR,
+1.283)---the same trade-off seen at the level of overall adherence. Adherence to glucose monitoring on
+admission was associated with a higher recorded incidence of hyperglycemia and
+severe hyperglycemia; since these outcomes are ascertained from glucose
+measurements, more frequent early measurement mechanically increases the chance
+of recording an event, so both associations likely reflect ascertainment rather
+than harm.
+
+These are the same components that showed the largest implementation gaps:
+insulin following hyperglycemia (mean adherence, 0.15) and routine basal
+insulin dosing (0.21--0.23) are simultaneously the least-implemented
+recommendations assessed and, after weighting, among those most strongly
+associated with mortality and with severe hyperglycemia.
+
+% =====================================================================
+% Table 1
+% =====================================================================
+\begin{table}[t]
+\centering
+\caption{Characteristics of the multicenter study cohort.}
+\label{tab:cohort}
+\small
+\begin{tabularx}{\textwidth}{
+>{\raggedright\arraybackslash}X
+>{\raggedleft\arraybackslash}p{0.34\textwidth}
+}
+\toprule
+Characteristic & Value \\
+\midrule
+Hospitals & 6 \\
+Admissions & 48,354 \\
+Unique patients & 29,577 \\
+Age, mean (median), y & 71.9 (73.3) \\
+Male sex & 54.3\% \\
+Length of stay, median, d & 5.55 \\
+30-day mortality & 9.58\% \\
+\midrule
+Documented diabetes diagnosis & 35.3\% \\
+Recurrent hyperglycemia & 74.7\% \\
+Extreme glucose ($\geq$250 mg/dL) & 60.2\% \\
+Hyperglycemia among admissions with diabetes & 50.3\% \\
+Diabetes diagnosis among admissions with hyperglycemia & 21.5\% \\
+\midrule
+Pre-intervention cohort &
+\makecell[r]{21,605 admissions\\17,002 patients} \\
+Post-intervention cohort &
+\makecell[r]{16,182 admissions\\11,201 patients} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+% Table 2 -- merged overall adherence + pre/post change
+% =====================================================================
+\begin{table}[t]
+\centering
+\caption{Adherence to each assessed inpatient diabetes guideline
+recommendation over the whole study period, and its change following
+national implementation. Scores range from 0 (nonadherence) to 1 (complete
+adherence). $\Delta$ is the absolute difference in mean adherence between the
+post- and pre-intervention periods, with unadjusted 95\% CIs; $P$ values were
+adjusted across component-level comparisons using the Benjamini--Hochberg
+false discovery rate procedure.}
+\label{tab:adherence}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{
+>{\raggedright\arraybackslash}X
+rrrrlr
+}
+\toprule
+Recommendation & Mean & Median & Before & After & $\Delta$ (95\% CI) & $P$ \\
+\midrule
+Admission glucose monitoring
+  & 0.85 & 1.00 & 0.78 & 0.93 & $+$0.15 (0.145 to 0.154) & $<.001$ \\
+Routine glucose monitoring
+  & 0.88 & 0.98 & 0.83 & 0.94 & $+$0.11 (0.105 to 0.113) & $<.001$ \\
+Glucose monitoring during corticosteroid therapy
+  & 0.54 & 0.50 & 0.51 & 0.58 & $+$0.07 (0.062 to 0.087) & $<.001$ \\
+BMI measurement on admission
+  & 0.87 & 1.00 & 0.86 & 0.89 & $+$0.03 (0.015 to 0.029) & $<.001$ \\
+Creatinine measurement on admission
+  & 0.98 & 1.00 & 0.98 & 0.99 & $+$0.01 (0.008 to 0.014) & $<.001$ \\
+Antidiabetic discontinuation on admission
+  & 0.66 & 0.86 & 0.62 & 0.75 & $+$0.13 (0.075 to 0.192) & $<.001$ \\
+SGLT2 discontinuation on admission
+  & 1.00 & 1.00 & 1.00 & 1.00 & 0.00 (--) & -- \\
+Basal insulin continuation on admission
+  & 0.66 & 1.00 & 0.63 & 0.67 & $+$0.04 (0.002 to 0.089) & .054 \\
+Insulin administration after hyperglycemia
+  & 0.15 & 0.00 & 0.14 & 0.15 & $+$0.01 (0.009 to 0.020) & $<.001$ \\
+Antidiabetic discontinuation after hypoglycemia
+  & 0.89 & 1.00 & 0.91 & 0.89 & $-$0.02 ($-$0.197 to 0.158) & .818 \\
+Basal dose reduction after hypoglycemia
+  & 0.87 & 1.00 & 0.87 & 0.88 & $+$0.01 ($-$0.015 to 0.034) & .497 \\
+Bolus dose reduction after hypoglycemia
+  & 0.28 & 0.00 & 0.33 & 0.26 & $-$0.07 ($-$0.158 to 0.029) & .210 \\
+Routine basal dosage (frequency)
+  & 0.23 & 0.00 & 0.21 & 0.24 & $+$0.03 (0.027 to 0.043) & $<.001$ \\
+Routine basal dosage (dose)
+  & 0.21 & 0.00 & 0.19 & 0.22 & $+$0.03 (0.021 to 0.036) & $<.001$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =====================================================================
+% Table 3 -- IPTW, overall adherence
+% =====================================================================
+\begin{table}[t]
+\centering
+\caption{Inverse probability of treatment weighting analysis of overall
+guideline adherence. Adherence was dichotomized at the median of each
+outcome's eligible population, so $\beta$ is the log-odds ratio comparing the
+above-median with the at-or-below-median group and OR $=\exp(\beta)$.
+Confidence intervals are unadjusted; $P$ values were adjusted across outcomes
+using the Benjamini--Hochberg false discovery rate procedure. Balance was
+assessed by the maximum standardized mean difference (SMD) after weighting.
+AKI, acute kidney injury; MI, myocardial infarction.}
+\label{tab:iptw-overall}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrlrr}
+\toprule
+Outcome & $\beta$ & OR & 95\% CI (OR) & Max SMD & $P$ \\
+\midrule
+Hyperglycemia        & $-1.742$ & 0.175 & 0.154 to 0.199 & 0.019 & $<.001$ \\
+Severe hyperglycemia & $-0.724$ & 0.485 & 0.450 to 0.523 & 0.012 & $<.001$ \\
+30-day mortality     & $-0.586$ & 0.557 & 0.514 to 0.603 & 0.020 & $<.001$ \\
+Hypoglycemia         & $0.186$  & 1.204 & 1.090 to 1.331 & 0.034 & $<.001$ \\
+Severe hypoglycemia  & $0.121$  & 1.129 & 1.001 to 1.274 & 0.030 & .096 \\
+Hyperosmolarity      & $0.106$  & 1.112 & 0.652 to 1.896 & 0.020 & .800 \\
+Ketoacidosis         & $0.116$  & 1.123 & 0.561 to 2.246 & 0.021 & .800 \\
+Inpatient MI         & $0.055$  & 1.057 & 0.732 to 1.523 & 0.020 & .800 \\
+Infection            & $-0.025$ & 0.975 & 0.809 to 1.175 & 0.020 & .800 \\
+Inpatient AKI        & $0.018$  & 1.018 & 0.888 to 1.168 & 0.022 & .800 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+% Table 4 -- IPTW, individual recommendations
+% =====================================================================
+\begin{table}[t]
+\centering
+\caption{Inverse probability of treatment weighting analysis of individual
+guideline recommendations. Rows are the component--outcome pairs that were
+both statistically significant after false discovery rate correction and
+adequately balanced after weighting (maximum standardized mean difference
+$<$0.10). A further six significant associations, all concerning BMI or
+creatinine measurement on admission, failed the balance criterion (maximum
+standardized mean difference, 0.90--2.46) and are not reported.
+$^{\dagger}$Likely to reflect ascertainment rather than harm: the outcome is
+detected from glucose measurements, so more frequent early measurement
+increases the opportunity to record an event.}
+\label{tab:iptw-patterns}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llrrlr}
+\toprule
+Outcome & Recommendation & $\beta$ & OR & 95\% CI (OR) & $P$ \\
+\midrule
+30-day mortality & Routine basal dosage
+  & $-0.291$ & 0.748 & 0.691 to 0.809 & $<.001$ \\
+30-day mortality & Routine glucose monitoring
+  & $-0.139$ & 0.870 & 0.809 to 0.937 & $<.001$ \\
+30-day mortality & Insulin after hyperglycemia
+  & $-0.098$ & 0.907 & 0.842 to 0.977 & .011 \\
+\midrule
+Severe hyperglycemia & Insulin after hyperglycemia
+  & $-1.514$ & 0.220 & 0.202 to 0.239 & $<.001$ \\
+Severe hyperglycemia & Routine basal dosage
+  & $-0.912$ & 0.402 & 0.372 to 0.434 & $<.001$ \\
+Severe hyperglycemia & Admission glucose monitoring$^{\dagger}$
+  & $0.752$ & 2.121 & 1.974 to 2.280 & $<.001$ \\
+\midrule
+Hyperglycemia & Admission glucose monitoring$^{\dagger}$
+  & $0.980$ & 2.664 & 2.389 to 2.971 & $<.001$ \\
+\midrule
+Hypoglycemia & Insulin after hyperglycemia
+  & $0.249$ & 1.283 & 1.163 to 1.416 & $<.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =====================================================================
+% Figures
+% =====================================================================
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/adherence_trend.png}
+\caption{Changes in overall guideline adherence across the study period.
+\textbf{Left:} mean overall adherence during the predefined pre-intervention
+(August 2022--July 2023) and post-intervention (August 2024--December 2025)
+periods. \textbf{Right:} monthly mean overall adherence with 95\% CIs.
+Vertical dotted lines delimit the transition period excluded from the primary
+pre--post comparison; the dashed line indicates the overall temporal trend.}
+\label{fig:adherence-trend}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/adherence_mortality.png}
+\caption{Association between overall guideline adherence and 30-day
+mortality. \textbf{Left:} mean overall adherence among patients who survived
+and those who died within 30 days. \textbf{Right:} observed 30-day mortality
+across strata of overall adherence, with the number of admissions shown
+within each bar; strata containing fewer than 30 admissions are not shown.
+The trend statistic is from logistic regression on the continuous adherence
+score, not on the binned values, and is expressed as the odds ratio per
+0.1-point increase.}
+\label{fig:adherence-mortality}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/death_feature_importance.png}
+\caption{Retained feature profile for 30-day mortality. The left panel shows
+retained guideline-adherence (quality-assessment) features and the right
+panel retained baseline clinical variables. Bar direction indicates the sign
+of the regression coefficient, and bar magnitude the relative contribution
+after false discovery rate correction and correlation pruning. Features
+marked with an asterisk persisted across all three observation-window
+definitions.}
+\label{fig:death-importance}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/recurring_guideline_components.png}
+\caption{Recurring guideline-adherence components identified by the
+bias-reduced regression models across clinical outcomes. Rows correspond to
+guideline recommendations and columns to clinical outcomes. Colored cells
+indicate statistically significant associations after false discovery rate
+correction (red, positive coefficient; blue, negative coefficient). Stars
+denote associations that remained significant with a consistent direction
+across all three observation-window definitions (24, 48, and 72 hours). Blank
+cells indicate no statistically significant association.}
+\label{fig:recurring-guidelines}
+\end{figure}

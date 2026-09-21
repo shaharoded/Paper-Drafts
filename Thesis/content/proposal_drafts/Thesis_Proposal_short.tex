@@ -1,0 +1,330 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\ifLuaTeX
+  \usepackage{luacolor}
+  \usepackage[soul]{lua-ul}
+\else
+  \usepackage{soul}
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\ifPDFTeX
+  \TeXXeTstate=1
+  \newcommand{\RL}[1]{\beginR #1\endR}
+  \newcommand{\LR}[1]{\beginL #1\endL}
+  \newenvironment{RTL}{\beginR}{\endR}
+  \newenvironment{LTR}{\beginL}{\endL}
+\fi
+\ifluatex
+  \newcommand{\RL}[1]{\bgroup\textdir TRT#1\egroup}
+  \newcommand{\LR}[1]{\bgroup\textdir TLT#1\egroup}
+  \newenvironment{RTL}{\textdir TRT\pardir TRT\bodydir TRT}{}
+  \newenvironment{LTR}{\textdir TLT\pardir TLT\bodydir TLT}{}
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\includegraphics[width=4.8394in,height=2.01563in]{media/image1.png}\LR{}
+
+\LR{}
+
+\LR{}
+
+\LR{}
+
+Thesis Proposal
+
+Predicting Clinical Outcomes and Assessing the Effects of Diabetes Care
+Guidelines Compliance in Hospitals Using Time-Dependent Machine Learning
+and Deep Learning Methods
+
+August 2025
+
+\textbf{Submitted by:}
+
+Shahar Oded
+
+Department of Information Systems Engineering
+
+Ben-Gurion University of the Negev
+
+E-Mail:
+\href{mailto:odedshah@post.bgu.ac.il}{\ul{odedshah@post.bgu.ac.il}}
+
+\textbf{Supervised by:}
+
+Prof. Yuval Shahar
+
+Department of Information Systems Engineering
+
+Ben-Gurion University of the Negev
+
+E-Mail: \href{mailto:yshahar@bgu.ac.il}{\ul{yshahar@bgu.ac.il}}
+
+Dr. Irit Hochberg
+
+Institute of Endocrinology, Diabetes and Metabolism
+
+Rambam Medical Center
+
+E-Mail:
+\href{mailto:i_hochberg@rambam.health.gov.il}{\ul{i\_hochberg@rambam.health.gov.il}}
+
+\section{Abstract}\label{abstract}
+
+Diabetes affects over\,7\,\% of Israelis yet consumes nearly a third of
+hospital spending, mainly through complications triggered by in‑hospital
+dysglycemia. Although new insulin protocols and quality indicators
+exist, adherence is uneven and its impact unclear. We present an
+explainable framework that predicts short‑term complications
+(≤\,14\,days) from early EMR data. Raw, time-stamped patient data
+recorded in the first K days, 2 ≤\,K\,\textless14, of each admission,
+are converted into clinically meaningful interval-based abstractions,
+and then into temporal patterns composed of frequent combinations of
+such intervals. The patterns are exploited as predictive features.
+Quality Assessment (QA) scores, on a {[}0, 1{]} scale, which assess the
+compliance of the attending medical staff to established clinical
+guidelines, are computed for each patient, relevant period, and
+guideline component. These scores are used as features as well. QA
+scores are also used to assess the effect of several interventions
+intended to increase compliance to the guidelines. Patient demographics
+are used as additional features. Two approaches are compared:\,(i) a
+temporal pattern vector representation baseline, where Temporal
+Probabilistic Profiles (TPF) turn symbolic patterns into fixed‑length
+pattern distribution vectors; and\,(ii) a decoder‑only Transformer that
+reads the same tokens with inter‑event gaps encoded by Time2Vec to learn
+temporal rhythms. SHapley values reveal the most influential patterns,
+highlighting critical protocol steps. We will also track adherence
+before and after two national interventions - a diabetes e‑learning
+module and a persistent‑hyperglycemia indicator - to situate the
+predictions. The study aims to yield scalable risk‑stratification tools
+and actionable guidance for improving inpatient diabetes care.
+
+\section{References}\label{references}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \hl{B. Ben Shahar, Y. Shahar, S. Jaffe, O. Cohen, E. Shalom, M.
+  Selivanova, E. Rimon, A. Goldstein. "Supporting the Episodic
+  Application of Clinical Guidelines over Significant Time Periods."
+  \emph{Digital Health and Informatics Innovations for Sustainable
+  Health Care Systems}. IOS Press, 2024. 1873-1877.‏}
+\item
+  \hl{E. Shalom, A. Goldstein, R. Weiss, M. Selivanova, N.M. Cohen, Y.
+  Shahar. "Implementation and evaluation of a system for assessment of
+  the quality of long-term management of patients at a geriatric
+  hospital." \emph{Journal of Biomedical Informatics} 156 (2024):
+  104686.‏}
+\item
+  \hl{Miksch, Silvia, Yuval Shahar, and Peter Johnson. "Asbru: a
+  task-specific, intention-based, and time-oriented language for
+  representing skeletal plans." \emph{Proceedings of the 7th workshop on
+  knowledge engineering: methods \& languages (KEML-97)}. Milton Keynes,
+  UK, The Open University, Milton Keynes, UK, 1997.‏}
+\item
+  \hl{Shahar, Yuval, and Mark A. Musen. "Knowledge-based temporal
+  abstraction in clinical domains." \emph{Artificial intelligence in
+  medicine} 8.3 (1996): 267-298.‏}
+\item
+  \hl{E. Shalom, Y. Shahar, Y. Parmet, E. Lunenfeld. "A
+  multiple-scenario assessment of the effect of a continuous-care,
+  guideline-based decision support system on clinicians' compliance to
+  clinical guidelines." \emph{International journal of medical
+  informatics} 84.4 (2015): 248-262.‏}
+\item
+  \hl{Shalom, Erez, Yuval Shahar, and Eitan Lunenfeld. "An architecture
+  for a continuous, user-driven, and data-driven application of clinical
+  guidelines and its evaluation." \emph{Journal of biomedical
+  informatics} 59 (2016): 130-148.‏}
+\item
+  \hl{Peleg, Mor, Yuval Shahar, and Silvana Quaglini. "MobiGuide:
+  guiding clinicians and chronic patients anytime, anywhere."
+  \emph{Communications of the ACM} 65.4 (2022): 74-79.‏}
+\item
+  \hl{Chakravarty, Shubha, and Yuval Shahar. "CAPSUL: A constraint-based
+  specification of repeating patterns in time-oriented data." Annals of
+  mathematics and artificial intelligence 30 (2000): 3-22.‏}
+\item
+  \hl{Moskovitch, Robert, and Yuval Shahar. "Classification of
+  multivariate time series via temporal abstraction and time intervals
+  mining." Knowledge and Information Systems 45 (2015): 35-74.‏}
+\item
+  \hl{E.Sheetrit, N. Nissim, D. Klimov, Y. Shahar‏. "Temporal
+  probabilistic profiles for sepsis prediction in the ICU." Proceedings
+  of the 25th ACM SIGKDD International Conference on Knowledge Discovery
+  \& Data Mining. 2019.‏}
+\item
+  \hl{Shknevsky, Alexander, Yuval Shahar, and Robert Moskovitch. "The
+  semantic adjacency criterion in time intervals mining." Big Data and
+  Cognitive Computing 7.4 (2023): 173.‏}
+\item
+  \hl{Raymond, Michal Weisman, and Yuval Shahar. "Provision of Decision
+  Support Through Continuous Prediction of Recurring Clinical Actions."
+  ICIMTH. 2023.‏}
+\item
+  \hl{Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion
+  Jones, Aidan N Gomez, Łukasz Kaiser, Illia Polosukhin. "Attention is
+  all you need." Advances in neural information processing systems 30
+  (2017).‏‏}
+\item
+  \hl{Pawel Renc, Yugang Jia, Anthony E. Samir, Jaroslaw Was, Quanzheng
+  Li, David W. Bates \& Arkadiusz Sitek. "Zero shot health trajectory
+  prediction using transformer." NPJ Digital Medicine 7.1 (2024): 256.‏}
+\item
+  \hl{Z. Yang, A. Mitra, W. Liu, D. Berlowitz, H. Yu‏. "TransformEHR:
+  transformer-based encoder-decoder generative model to enhance
+  prediction of disease outcomes using electronic health records."
+  Nature communications 14.1 (2023): 7857.‏}
+\item
+  \hl{Lundberg, Scott M., and Su-In Lee. "A unified approach to
+  interpreting model predictions." Advances in neural information
+  processing systems 30 (2017).‏}
+\item
+  \hl{van de Beld, J. J., Pathak, S., Geerdink, J., Hegeman, J. H., \&
+  Seifert, C. (2024, July). Feature importance to explain multimodal
+  prediction models. A clinical use case. In World Conference on
+  Explainable Artificial Intelligence (pp. 84-101). Cham: Springer
+  Nature Switzerland.‏}
+\item
+  \hl{Lion, Matan, and Yuval Shahar. "Implementation and evaluation of a
+  multivariate abstraction-based, interval-based dynamic time-warping
+  method as a similarity measure for longitudinal medical records."
+  Journal of Biomedical Informatics 123 (2021): 103919.‏}
+\item
+  \hl{Seyed Mehran Kazemi, Rishab Goel, Sepehr Eghbali, Janahan Ramanan,
+  Jaspreet Sahota, Sanjay Thakur, Stella Wu, Cathal Smyth, Pascal
+  Poupart, Marcus Brubaker. "Time2vec: Learning a vector representation
+  of time." arXiv preprint arXiv:1907.05321 (2019)‏}
+\item
+  \hl{Shapiro, Michael, and Yuval Shahar. "Treatment Prediction in the
+  ICU Using a Partitioned, Sequential, Deep Time Series Analysis."
+  MEDINFO 2023 - The Future Is Accessible. IOS Press, 2024. 710-714.}
+\item
+  \hl{Akiba, T., Sano, S., Yanase, T., Ohta, T., \& Koyama, M. (2019,
+  July). Optuna: A next-generation hyperparameter optimization
+  framework. In Proceedings of the 25th ACM SIGKDD international
+  conference on knowledge discovery \& data mining (pp. 2623-2631).‏}
+\item
+  \hl{Ribeiro, Marco Tulio, Sameer Singh, and Carlos Guestrin. "" Why
+  should I trust you?" Explaining the predictions of any classifier."
+  Proceedings of the 22nd ACM SIGKDD international conference on
+  knowledge discovery and data mining. 2016.}
+\item
+  \hl{Shahar, Yuval, Silvia Miksch, and Peter Johnson. "The Asgaard
+  project: a task-specific framework for the application and critiquing
+  of time-oriented clinical guidelines." Artificial intelligence in
+  medicine 14.1-2 (1998): 29-51.‏}
+\item
+  \hl{Shahar, Yuval. "A framework for knowledge-based temporal
+  abstraction." Artificial intelligence 90.1-2 (1997): 79-133.‏}
+\item
+  \hl{IDF Atlas 10th Edition 2021.; 2021. https://diabetesatlas.org/}
+\item
+  \hl{Israel National Center for Disease Control Diabetes Registry
+  Report 2012-2022.}
+\end{enumerate}
+
+\begin{quote}
+\href{https://www.gov.il/BlobFolder/generalpage/diabetes-2012-2022/he/files_publications_units_ICDC_diabetes-2012-2022.pdf}{\hl{\ul{https://www.gov.il/BlobFolder/generalpage/diabetes-2012-2022/he/files\_publications\_units\_ICDC\_diabetes-2012-2022.pdf}}}
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{26}
+\item
+  \hl{Summary of Cost of Diabetes in Israel 2018. National Health System
+  and Health Policy Institution; 2018.
+  \mbox{\href{https://www.btl.gov.il/Mediniyut/BakashatNetunim/dohot/Documents/Cost_of_Diabetes.pdf}{\ul{https://www.btl.gov.il/Mediniyut/BakashatNetunim/dohot/Documents/Cost\_of\_Diabetes.pdf}}}}
+\item
+  \hl{A. Radford, J. Wu, R. Child, D. Luan, D. Amodei, I. Sutskever.
+  "Language models are unsupervised multitask learners." OpenAI blog 1.8
+  (2019): 9.‏}
+\item
+  \hl{Karpathy, A. (2023). nanoGPT: The simplest, fastest repository for
+  training/finetuning medium-sized GPTs. GitHub.
+  \mbox{\href{https://github.com/karpathy/nanoGPT}{\ul{https://github.com/karpathy/nanoGPT}}}}
+\item
+  \hl{Devlin, Jacob, et al. "Bert: Pre-training of deep bidirectional
+  transformers for language understanding." Proceedings of the 2019
+  conference of the North American chapter of the association for
+  computational linguistics: human language technologies, volume 1 (long
+  and short papers). 2019.‏}
+\item
+  \hl{Paszke, Adam, et al. "Pytorch: An imperative style,
+  high-performance deep learning library." Advances in neural
+  information processing systems 32 (2019).‏}
+\item
+  \hl{Oded, S. (2025). ``Transform-EMR''. GitHub.
+  \mbox{\href{https://github.com/shaharoded/Transform-EMR}{\ul{https://github.com/shaharoded/Transform-EMR}}}}
+\item
+  \hl{Oded, S. (2025). ``TAKAutomator''. GitHub.
+  \mbox{\href{https://github.com/shaharoded/TAKAutomator}{\ul{https://github.com/shaharoded/TAKAutomator}}}}
+\end{enumerate}
+
+\end{document}

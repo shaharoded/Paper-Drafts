@@ -1,0 +1,65 @@
+p1    /Highlight  rect=[196, 372, 481, 411]
+p1    /Text       rect=[534, 400, 558, 424]
+      NOTE: I wonder if it is not preferable to say more specifically  "Using Temporal-Abstraction-Interval Based Transformers".
+p1    /Highlight  rect=[184, 396, 225, 411]
+p2    /Highlight  rect=[184, 418, 481, 457]
+p5    /Highlight  rect=[184, 607, 481, 652]
+p5    /Highlight  rect=[332, 247, 403, 260]
+p5    /Text       rect=[517, 238, 541, 262]
+      NOTE: "..... and its management is governed by..."
+p5    /Highlight  rect=[238, 175, 279, 188]
+p5    /Text       rect=[527, 163, 551, 187]
+      NOTE: ".....a transformer-based model reasoning over....."
+p5    /Highlight  rect=[282, 175, 356, 188]
+p6    /Highlight  rect=[103, 697, 133, 710]
+p6    /Text       rect=[510, 694, 534, 718]
+      NOTE: both objectives
+p6    /Highlight  rect=[209, 625, 330, 638]
+p6    /Text       rect=[502, 620, 526, 644]
+      NOTE: A temporal-abstraction engine
+p6    /Highlight  rect=[347, 577, 489, 590]
+p6    /Text       rect=[506, 571, 530, 595]
+      NOTE: from the guideline's specifications
+p6    /Highlight  rect=[320, 577, 344, 590]
+p6    /Highlight  rect=[136, 357, 217, 370]
+p6    /Text       rect=[509, 349, 533, 373]
+      NOTE: What about using the one-pass computed compliance score, at each point of the patient's record, by the transformer? / Obviously,  computing the adherence scores is  useful by itself to hospital management and other health-care managers/ / But does it also add anything to the transformer's accuracy when used as a special data token? /  / It is a point that you later mention explicitly, but it can also be considered a kind of a special ablation experiment. /  So you can refer to the fact that experiments tested also the importance of including the adherence information in the input.
+p6    /Highlight  rect=[234, 233, 329, 245]
+p6    /Text       rect=[504, 224, 528, 248]
+      NOTE: I think you mean to say "adherence levels differ"
+p6    /Highlight  rect=[215, 161, 362, 174]
+p6    /Text       rect=[495, 152, 519, 176]
+      NOTE: ....and are most often entirely absent.
+p6    /Highlight  rect=[103, 137, 254, 150]
+p6    /Text       rect=[511, 120, 535, 144]
+      NOTE: ....after implementation of a national quality measure.....
+p7    /Highlight  rect=[417, 673, 459, 686]
+p7    /Text       rect=[503, 662, 527, 686]
+      NOTE: but also
+p7    /Highlight  rect=[306, 625, 403, 638]
+p7    /Text       rect=[506, 616, 530, 640]
+      NOTE: you mean to say, "the recommendations that were least adhered to...... / Right? / That is a VERY important point.
+p7    /Highlight  rect=[402, 625, 492, 638]
+p7    /Highlight  rect=[103, 501, 492, 561]
+p7    /Text       rect=[491, 487, 515, 511]
+      NOTE: Were there differences? / You want in an Abstract to describe ALL of the key results. /  No secrets, no surprises.   / ALL of the key information.
+p27   /Highlight  rect=[102, 515, 265, 541]
+p27   /Text       rect=[313, 515, 337, 539]
+      NOTE: Chapter 2 should be called "Background" - it contains  the Background and Related work
+p53   /Highlight  rect=[102, 515, 273, 541]
+p53   /Text       rect=[373, 524, 397, 548]
+      NOTE: Part of the Background
+p67   /Highlight  rect=[102, 515, 199, 541]
+p67   /Text       rect=[250, 519, 274, 543]
+      NOTE: This is really Chapter 3  - Computational Methods [following 1. Introduction and 2. Background]. / It is separate from Chapter 4 - Evaluation Methods.
+p91   /Highlight  rect=[102, 196, 318, 214]
+p91   /Text       rect=[398, 200, 422, 224]
+      NOTE: It is best to separate this out as the Evaluation Methods chapter [Chapter 5]. This is the first time you describe any DATA and any EXPERIMENTS.
+p111  /Highlight  rect=[102, 515, 234, 541]
+p111  /Text       rect=[341, 519, 365, 543]
+      NOTE: The data and evaluation studies part is a part of the Evaluation Methods chapter 4. / The Results are a part of the Results chapter. [Chapter 5].
+p132  /Highlight  rect=[102, 515, 231, 541]
+p132  /Text       rect=[291, 507, 315, 531]
+      NOTE: Actually "Summary, Discussion and Conclusions." Chapter 6.  /  / Furthermore - make sure you have a section in the end of the Summary [before the Limitations part] which is called CONTRIBUTIONS .  It is a key section that helps referees of the thesis and of the paper understand what did you add to computer science and to the medical domain.
+p143  /Square     rect=[36, 276, 559, 375]
+p179  /Highlight  rect=[103, 342, 384, 402]

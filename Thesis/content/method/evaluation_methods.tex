@@ -1,0 +1,270 @@
+% Chapter 4 (Evaluation Methods). Split out of the former Method chapter,
+% whose computational half is now Chapter 3.
+\label{sec:method-evaluation}
+This chapter introduces the data and states the questions the thesis sets out to
+answer, together with the experiments and measures used to answer them. It is
+the first point at which any dataset or experiment is described; the
+computational machinery under test was given in
+Chapter~\ref{chapter:comp_methods}, and the answers themselves are reported in
+Chapter~\ref{chapter:results}, in the order the questions are numbered here.
+
+One prerequisite is settled before the questions are put. The knowledge base
+had to produce non-degenerate abstractions on the data it is applied to; that
+validation was part of building it rather than an experiment on it
+(Section~\ref{sec:evalm-kb}), and what it produced is the knowledge base given
+in Appendix~\ref{appendix:kb}.
+
+The thesis is then organized around six research questions. They are numbered
+here and answered in this order in Chapter~\ref{chapter:results}.
+
+\begin{description}
+  \item[RQ1 --- Prediction.] Does a transformer operating natively on
+    abstraction intervals predict short-horizon complications better than the
+    established neural and symbolic alternatives?
+    (Section~\ref{sec:evalm-models})
+    \begin{description}
+      \item[RQ1a] How do the two variants compare in aggregate discrimination?
+      \item[RQ1b] How does performance vary by outcome and by event rate?
+      \item[RQ1c] Are the predicted probabilities calibrated?
+    \end{description}
+  \item[RQ2 --- Representation.] What does the interval representation itself
+    contribute --- the clinical naming of the intervals, or their persistence
+    over time? (Section~\ref{sec:evalm-ablations})
+  \item[RQ3 --- Explanation.] Do the model's explanations resolve to named
+    clinical concepts, and are the concepts they surface clinically coherent?
+    (Section~\ref{sec:evalm-xai})
+  \item[RQ4 --- Measurement.] How well is the national inpatient diabetes
+    guideline followed, component by component, and did adherence change after
+    the national implementation effort? (Section~\ref{sec:evalm-adherence})
+  \item[RQ5 --- Influence.] Which recommendations remain associated with
+    patient outcomes once measured baseline characteristics are balanced?
+    (Sections~\ref{sec:evalm-mortality} and~\ref{sec:evalm-influence})
+  \item[RQ6 --- Transfer and adherence as input.] Does the architecture
+    transfer to an independently curated cohort, and does the measured
+    adherence profile add predictive information beyond the record it was
+    derived from when supplied to the model as input?
+    (Section~\ref{sec:evalm-kineret-task})
+\end{description}
+
+RQ6 is the point at which the two studies meet, and its second half is an
+ablation in the strict sense: the seven-arm ladder of
+Section~\ref{sec:evalm-kineret-task} runs each input representation with and
+without the admission's adherence profile, holding cohort, labels, split, and
+head layout fixed, so the adherence signal's contribution to predictive
+accuracy is isolated exactly as the interval representation's is in RQ2.
+
+\section{Cohorts}
+
+\subsection{MIMIC-IV}
+\label{sec:evalm-mimic-cohort}
+
+The methodological cohort comprises $57{,}078$ adult diabetes-related admissions, chosen because they carry dense physiological measurement, are covered by a mature knowledge base, and admit six complications with lab-derived onset times. Admissions are split at the patient level into $39{,}954$ training, $8{,}562$ validation, and $8{,}562$ held-out test, so a patient's earlier admission cannot inform the prediction of a later one.
+
+Six binary outcomes are predicted over hours $48$--$336$: death, kidney complication, hyperglycemia, severe hyperglycemia, hypoglycemia, and severe hypoglycemia. An outcome occurring within the observation window is excluded from the positive label, so models predict future events rather than detect ones already seen. A continuous length-of-stay target is trained jointly as an auxiliary regression objective. Clinical thresholds are given in Appendix~\ref{appendix:outcomes}.
+
+Every model receives the same static context vector and the same patient split; they differ only in their temporal representation. GRU-D and both STraTS configurations consume the raw event stream, while KarmaLego+TPF and both INTERVenE variants consume the derived interval stream.
+
+\subsection{Kineret}
+\label{sec:evalm-kineret-cohort}
+
+The clinical cohort spans six Israeli general hospitals. An admission was eligible if it was an inpatient visit with at least one measurement recorded between 18:00 and 07:00, taken as evidence of a genuine overnight stay; its length of stay was between $48$ hours and $14$ days; the patient was at least $18$ years old at admission; the admission did not take place in an excluded department; the visit identifier was not associated with more than one patient identifier, treated as a data-integrity failure; the patient did not die within $48$ hours of admission; and the admission met at least one criterion for diabetes or hyperglycemia.
+
+Diabetes or hyperglycemia was established by at least one of three non-mutually-exclusive criteria: a documented diabetes diagnosis, from a manually curated list of concept identifiers; recurrent hyperglycemia, two glucose measurements $\ge 180$\,mg/dL separated by at least $2$ and at most $24$ hours; or extreme hyperglycemia, any glucose measurement $\ge 250$\,mg/dL. The three were retained separately rather than collapsed, since the relationship between them is itself a finding. Hypoglycemia is deliberately not an entry criterion: the cohort is defined by hyperglycemic burden, and hypoglycemia is treated throughout as an outcome.
+
+Pediatric and obstetric departments were excluded, which together with the adult age criterion also removes pregnancy-related admissions, including gestational diabetes.
+
+$98{,}050$ admissions among $36{,}962$ patients met the clinical criteria; restricting to the study period of August 2022 through December 2025 yields the final cohort of $48{,}354$ admissions among $29{,}577$ patients.
+
+\paragraph{Documentation completeness.}
+Both datasets are scoped to hospital admissions rather than to a patient's lifetime record, so a condition managed outside the hospital may be absent --- not because the patient lacks it, but because no inpatient encounter recorded it. Diabetes is the pertinent example: a long-standing diagnosis managed in the community may never be entered during an admission, and a cohort defined on the recorded diagnosis alone would silently exclude such patients while treating their absence as evidence.
+
+This is why eligibility does not rest on the diagnosis. Recurrent and extreme hyperglycemia are observable in the measurement stream whatever the problem list contains, so the glucose criteria recover patients whose dysglycemia is real but undocumented. The relationship between the three criteria is reported in Chapter~\ref{chapter:results}; a large share of the cohort presents clinically significant dysglycemia with no documented diabetes diagnosis at all.
+
+The same reasoning does not rescue everything. Where a variable has no measurement stream behind it, under-documentation cannot be worked around: the history components of the static vector --- prior admissions, prior complications, comorbidity burden --- are computed from recorded encounters and left-censored by whatever this network observed. Care received elsewhere is invisible to them. This affects both datasets and is revisited in Section~\ref{sec:limitations}.
+
+\paragraph{Study periods.}
+The assessed recommendations are those of the national position paper \citep{hochberg2023inpatient}, issued in September 2023. The pre-intervention period therefore ends immediately before its publication, running from August 2022 to July 2023, and the post-intervention period begins a year after it, running from August 2024 to December 2025.
+
+The intervening year is excluded from the primary comparison. The implementation was not a single event but a package rolled out over that span --- the guideline update itself, a mandatory staff e-learning module, and a new quality indicator for persistent hyperglycemia --- so admissions falling within it belong cleanly to neither period.
+
+\paragraph{Outcomes.}
+Ten complications are evaluated on this cohort: $30$-day mortality, hyperglycemia, severe hyperglycemia, hypoglycemia, severe hypoglycemia, hyperosmolality, ketoacidosis, infection, inpatient AKI / kidney complication, and inpatient MI / cardiovascular complication. All ten are emitted as abstractions by the same engine that scores adherence, so outcome ascertainment and exposure measurement draw on one explicit knowledge base --- which matters when the two are afterwards correlated. Thirty-day mortality is the exception, taken from linked death records. Operational definitions are in Appendix~\ref{appendix:outcomes}.
+
+The set is wider than the six predicted on MIMIC-IV because it answers a different requirement: that task needs outcomes with lab-derived onset times inside its horizon, whereas the clinical study needs the complications the guideline is meant to prevent. These same ten are the prediction targets for the Kineret models, so both analyses of this cohort address one endpoint set.
+
+\subsection{The Prediction Task on Kineret}
+\label{sec:method-kineret-task}
+\label{sec:evalm-kineret-task}
+
+Kineret is used not only as the substrate for the adherence analysis but as a second dataset for INTERVenE-Enc, addressing two questions the MIMIC-IV study cannot: whether the architecture transfers to a data source it was not designed on, and whether measured guideline adherence carries predictive information beyond what the clinical record already supplies.
+
+\paragraph{Task.}
+The model observes the first $K$ days of an admission and predicts, per complication, whether it occurs in $(K, 14]$ days, when it occurs, and how long the stay will be. Every arm therefore carries three heads: multi-label risk over the target set, per-outcome onset time trained on positives only, and length of stay trained on discharged admissions. This is a wider contract than the MIMIC-IV study, where onset time was an INTERVenE-only auxiliary; here the logistic-regression and ss-STraTS baselines were extended with onset heads so that onset error is a comparable column rather than a metric only one model is scored on.
+
+The targets are the clinical study's ten complications, filtered to those clearing $1\%$ prevalence on the training split at the evaluation window. Using the same endpoint set as the adherence analysis is deliberate: it lets a recommendation's measured association with an outcome and a model's predictive use of that recommendation be read against one another.
+
+\paragraph{The context window.}
+$K$ enters twice, and the distinction matters. In \emph{training} it is a data augmentation: each admission contributes one sample per window in $1$--$13$ days, the same trajectory cut at a different point with its label window re-derived to match, so the model learns to forecast from however much history it happens to have. In \emph{evaluation} it is a single fixed window, chosen from the target-support table before training begins, and every reported number comes from it.
+
+Reporting at one window rather than sweeping keeps the results a table rather than a surface, and keeps the head layout fixed --- targets are support-filtered once, on train, at that window.
+
+\paragraph{The seven arms.}
+Table~\ref{tab:kineret-ladder} lists the arms. Each adds one layer of structure over the last, on identical patients, labels, and split.
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{The Kineret comparison. Every arm shares the cohort, the labels, the split, and the head layout; only the input representation changes.}
+\label{tab:kineret-ladder}
+\small
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}X}
+\toprule
+Arm & Model & Input \\
+\midrule
+1 & LogReg                     & Raw measurements, distribution-summarized; no temporal model \\
+2 & LogReg $+$ QA              & As above, plus aggregated compliance in the context vector \\
+3 & ss-STraTS                  & Raw measurements with learned temporal attention \\
+4 & ss-STraTS $+$ QA           & As above, plus aggregated compliance in the context vector \\
+5 & INTERVenE-Enc ($\sigma$-bins) & Knowledge-free intervals over the same raw data \\
+6 & INTERVenE-Enc (KB)         & Knowledge-based Mediator abstractions \\
+7 & INTERVenE-Enc (KB $+$ QA)  & As above, plus treatment-quality pattern tokens \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Three contrasts carry the argument. Arms~5--6 isolate the knowledge base: same raw data, same architecture, same labels, different abstraction layer. Arms~6--7 isolate the treatment-quality signal. And arms~1--2 and~3--4 put the same adherence question to models that cannot represent pattern tokens, which is what separates the QA effect from the architecture consuming it --- a lift that appears only for INTERVenE would mean something different from one that appears everywhere.
+
+Arm~1 is the floor: it discards temporal ordering entirely, so any model failing to clear it is not using time. The $\sigma$-bin arm discretizes each measurement into seven bands at $\pm0.5\sigma$, $\pm1\sigma$, and $\pm2\sigma$, merging consecutive same-concept observations within $24$ hours so the encoder has interval structure to model at all; it receives no knowledge-base-derived complication events, since without a knowledge base one would not have them.
+
+The QA arms are deliberately asymmetric. Every one receives the same aggregated block --- mean compliance per pattern over that sample's own observation window --- appended to its static context vector, and that block is identical across arms. Only INTERVenE-Enc additionally receives the compliance patterns as temporal tokens, because they are intervals and it is the only architecture that can represent them. Giving each model the signal in the richest form it admits is what stops the comparison from either starving INTERVenE or crediting the others with a representation they cannot use.
+
+\paragraph{Holding the comparison fixed.}
+Everything the arms share is computed once and read by all of them: the study window, applied to every source table in one place; the labels; the patient-level split, frozen at build time, with every augmented sample inheriting its patient's split so no patient can appear on both sides; and the head layout. Cohort membership takes the \emph{minimum} trajectory length across the two source tables rather than their union, since abstractions are derived and the last Mediator interval routinely closes before the last raw measurement --- a union would admit patients the raw-data arms could score but INTERVenE would silently drop.
+
+Two guards matter for validity. Admissions whose label window would run past the end of the extract are dropped, since scoring their unobservable late complications as negatives is a censoring artifact indistinguishable from a true negative. And because the raw table and the Mediator output disagree about how often each complication fired, the two are reconciled into one canonical event table, which supplies the labels and is re-injected into every arm's input stream, so event support is identical across arms by construction rather than by luck.
+
+Terminal markers are stripped from every input stream. Outcome events falling inside the observation window are not: they are observed history, the label window begins strictly after the input window, and withholding them from the raw-data arms would bias the comparison rather than protect it.
+
+\paragraph{Baselines.}
+Logistic regression and ss-STraTS are the comparators, both consuming the raw event stream rather than the interval stream, so the contrast against INTERVenE-Enc isolates the representation.
+
+The three remaining MIMIC-IV baselines are not run. KarmaLego+TPF is neither practical nor necessary: pattern mining at this scale is not feasible inside the regulated environment, and the comparison it exists to support --- symbolic against neural modeling of the identical interval stream --- is already established on MIMIC-IV. GRU-D is omitted because one neural architecture over the raw event stream is enough to anchor the comparison, and STraTS fills that role. The pretrained STraTS configuration is omitted because no large-cohort pretraining stage is run on Kineret, for STraTS or for INTERVenE-Enc; including a pretrained arm for one model and not the other would break the symmetry the comparison depends on.
+
+\paragraph{Training.}
+Models are trained from scratch under the same three-phase schedule, rather than fine-tuned from the MIMIC-IV checkpoint. The cohorts differ in target set and in patient distribution, so a fine-tuned model would confound the architecture's contribution with the initialization's, and training from scratch keeps the arms comparable to one another. This is a scoping decision, not a judgment that transfer would fail: cross-cohort pretraining is the natural route to a model robust across hospital networks, and is taken up in Appendix~\ref{appendix:future_work}.
+
+\section{Evaluation of the Knowledge Base}
+\label{sec:evalm-kb}
+\label{sec:method-kb-eval}
+
+Building a quality-assessment system is not itself a goal of this thesis, so the knowledge base is not subjected to the technical and silent evaluation protocols used for decision-support engines (Section~\ref{sec:rw-guidelines}). It is validated empirically instead, against the data it is applied to.
+
+The concern is specific: clinical literature states the ranges a measurement \emph{should} occupy, but if real values concentrate outside them, or leave a defined state almost unpopulated, then clinically correct thresholds will still produce degenerate abstractions. Three checks were run after abstraction:
+
+\begin{itemize}
+\item the mean duration of each state and trend, to confirm intervals are neither collapsing to points nor spanning implausible stretches;
+\item the ratio of interval-bearing abstractions to instantaneous events, to confirm that concepts intended to yield durations actually do;
+\item the representation of every predefined discrete state, to confirm none was rendered unreachable by a badly placed threshold.
+\end{itemize}
+
+Where a check failed, the thresholds or relevance durations were revised and the abstraction rerun. These checks were part of building the knowledge base rather than an experiment on it, and they ran repeatedly against successive revisions, so no single set of results characterizes the deployed version. What they produced is the knowledge base itself, given in Appendix~\ref{appendix:kb}.
+
+\section{Evaluation of the Predictive Models}
+\label{sec:evalm-models}
+
+Metrics follow Section~\ref{sec:prelim-eval}: AUPRC primary, AUROC and best $F_1$ secondary, per-outcome results aggregated by support-weighted averaging, and calibration reported separately via reliability curves. Length-of-stay is reported as mean absolute error in hours. Uncertainty is a $2{,}000$-resample bootstrap at the patient level, with two models treated as meaningfully different only when their intervals do not overlap --- sampling variability for the model that was trained, not the variance of the training procedure, since multi-seed retraining was not affordable at this scale.
+
+The two INTERVenE variants are evaluated under the same contract despite an asymmetry in difficulty. The encoder reads its prediction from the observed window in a single pass, whereas the decoder is scored only after a full autoregressive rollout, its outcome vector assembled from the outcome and terminal tokens it actually generated. Its numbers reflect a strictly harder generative readout and are read as such.
+
+\paragraph{The Kineret arm.}
+The Kineret arms are evaluated under the same metrics and bootstrap procedure, on the held-out Kineret test split, at the single evaluation window. Two limits apply.
+
+Kineret and MIMIC-IV numbers are not comparable: the cohorts differ in endpoint set and outcome prevalence, so a gap between the tables reflects the datasets at least as much as the models. They are reported side by side for context, never as a transfer measurement. Within Kineret the baseline comparison is also narrower, resting on one neural competitor and a distributional floor rather than the four arms of the MIMIC-IV benchmark.
+
+The within-Kineret contrasts, by contrast, are controlled: adjacent arms share architecture, schedule, split, and seed, and differ only in the input representation. Each is reported per outcome as well as in aggregate. For the QA arms in particular, a signal that helps the glycemic complications the guideline targets while doing nothing for cardiovascular events would be more credible than a uniform lift, and only the per-outcome breakdown distinguishes them. Adjacent arms whose intervals overlap have not been separated by this data, and are reported as such rather than as an ordering.
+
+\section{Ablations}
+\label{sec:evalm-ablations}
+\label{sec:method-ablations}
+
+The ablations of Section~\ref{sec:method-optimization} serve model selection. Two further families serve a research claim --- what the interval representation itself contributes --- and both hold the deployed architecture fixed, varying only the input.
+
+The \emph{input-representation} ablation replaces the KBTA vocabulary with a structured but non-semantic discretization, asking whether the clinical naming of the intervals drives performance or whether any structured interval representation would do, and therefore whether KBTA is a predictive prerequisite or an interpretability substrate.
+
+The \emph{interval-structure} ablation collapses every interval to a near-zero duration, holding the vocabulary fixed. It separates the contribution of the symbols from that of their persistence over time, which the first cannot distinguish.
+
+Both run on MIMIC-IV, where the baseline comparison that gives them reference points is available. The Kineret comparison of Section~\ref{sec:method-kineret-task} repeats the input-representation ablation on a second cohort --- its arms~5--6 pose the same knowledge-free-versus-knowledge-based question --- and adds a third contrast the MIMIC-IV cohort cannot support, since adherence is measured only here.
+
+Architectural ablations over capacity, head count, and the phase schedule are reported in Appendix~\ref{appendix:ablations}.
+
+\section{Explainability and Protocol Refinement}
+\label{sec:evalm-xai}
+
+Explanations are produced by sparse transcoders (Section~\ref{sec:prelim-xai}) rather than by post-hoc surrogate attribution. One JumpReLU transcoder is trained per INTERVenE-Enc block, on activations from a $1{,}500$-patient stratified subset of the test cohort, each reconstructing its block's MLP output from an overcomplete sparse dictionary at $16\times$ expansion and $2{,}048$ features per layer, reaching per-layer $R^2$ between $0.97$ and $0.995$ at roughly $5$--$19\%$ active features.
+
+The transcoders are never substituted into the network. They are attached through a \emph{gradient-decoupled hook} that injects
+\begin{equation}
+y^{\mathrm{used}}_L = y^{\mathrm{true}}_L + \big(\hat{y}_L - \mathrm{sg}(\hat{y}_L)\big),
+\label{eq:gd-hook}
+\end{equation}
+where $\mathrm{sg}(\cdot)$ is a stop-gradient. The added term is numerically zero, so the forward pass is bit-exact to the deployed model and the logits explained are its true outputs; but autograd retains a live path from the logit through $\hat{y}_L$ to the sparse code $f_L$. The transcoder therefore serves only as a named-concept basis for decomposing a gradient.
+
+The signed contribution of input token $t$ to outcome $k$ is the layer-summed input$\times$gradient attribution
+\begin{equation}
+\mathrm{contrib}_t^{(k)} \;=\; \sum_{L=1}^{N_{\mathrm{layers}}}\,\sum_{j=1}^{d_{\mathrm{feat}}} f_L(t,j)\;\frac{\partial\,\mathrm{risk}_k}{\partial f_L(t,j)} ,
+\label{eq:contrib}
+\end{equation}
+aggregated by token across $300$ test patients, with START and END boundaries collapsed so an interval contributes a single value. Because every input token is a KBTA abstraction, each contribution resolves to a named clinical concept by construction.
+
+INTERVenE-Ar requires no such apparatus for its primary explanation. Because it generates the abstraction trajectory itself, the sequence of tokens it emits alongside its per-step risk curve is directly inspectable.
+
+Two limits are carried into the reporting. As with any gradient-based attribution, Equation~\eqref{eq:contrib} measures local sensitivity to a concept, not its causal necessity; and it describes the model rather than the patient, identifying what drove a prediction, which is a claim about a fitted function rather than about physiology. Recommendations for protocol refinement therefore rest on the statistical analyses described next, not on attribution alone.
+
+\section{Adherence Assessment Before and After the Intervention}
+\label{sec:evalm-adherence}
+
+The admission is the unit of analysis throughout this part. A patient may contribute several admissions, and patient-level grouping is applied wherever the statistics require it.
+
+Overall and per-recommendation adherence were compared between periods by Welch's unequal-variance $t$-test, each admission attributed by its admission date; the periods differ in size and equal dispersion cannot be assumed. Confidence intervals for the change in mean adherence are Welch $t$-intervals, reported unadjusted; because fourteen recommendations are tested simultaneously, component-level $p$-values are adjusted by the Benjamini--Hochberg procedure \citep{benjamini1995controlling}.
+
+Monthly adherence is reported across the whole study period, including the excluded transition year, with $95\%$ confidence intervals from the within-month standard error and an ordinary least-squares fit to the monthly means as the trend estimate. Reporting the trend alongside the contrast is what allows a step change at publication to be distinguished from a drift already underway. The comparison is also stratified by hospital, since a pooled improvement is compatible with heterogeneous or opposing center-level trajectories.
+
+This design supports an associational reading only. A before--after comparison cannot separate the intervention from concurrent secular change.
+
+\section{Adherence and Mortality at the Whole-Admission Level}
+\label{sec:evalm-mortality}
+
+Before decomposing adherence into components, the aggregate score is related to $30$-day mortality in two descriptive steps. Mean whole-admission adherence is compared between admissions ending in death within $30$ days and those not, by Welch's $t$-test. The graded relationship is then tested by logistic regression on the continuous score, reported as the odds ratio per $0.1$-point increase; adherence strata appear in the corresponding figure for display only, with strata under $30$ admissions suppressed.
+
+An adjusted estimate follows: logistic regression on the overall adherence score with prespecified covariates --- age, sex, the modified CCI, and hospital as fixed effects --- with continuous predictors standardized and standard errors clustered on patient identity.
+
+Both are descriptive rather than causal. Whole-admission adherence spans the entire stay, so it does not strictly precede the outcome: an admission that deteriorates early may accrue lower adherence \emph{because} it deteriorated. The component-level analyses that follow remove this ambiguity and carry the analytical weight.
+
+\section{Influence of Adherence on Clinical Outcomes}
+\label{sec:evalm-influence}
+\label{sec:method-influence}
+
+Whether adherence relates to what happens to the patient is approached in two stages, screening first and adjusting second.
+
+\paragraph{Component-level screening.}
+One model is fitted per complication per observation window. The analysis dataset holds one row per admission and complication, labelled positive if the complication first occurred at or after the cutoff and negative if it never occurred. Admissions in which it occurred \emph{before} the cutoff are excluded rather than labelled negative, since a condition already present cannot be attributed to subsequent in-stay care. Adherence and baseline covariates are computed only up to the cutoff.
+
+Models are fitted by bias-reduced (Firth penalized-likelihood) logistic regression \citep{firth1993bias}, with adherence and covariates entered jointly so each adherence coefficient is estimated holding measured comorbidity constant. Firth's method is a necessity rather than a preference: unpenalized maximum likelihood failed to converge under separation for most complications (Section~\ref{sec:prelim-causal}). Because the penalty performs no variable selection, highly correlated predictors are pruned before fitting and the remainder standardized; Benjamini--Hochberg correction is applied within each model's own family of tested predictors, excluding pruned features. A bootstrap sign-agreement check flags estimates whose direction is unstable under resampling.
+
+Each model is fitted independently at $24$, $48$, and $72$ hours. A predictor is called \emph{robust} only if it remains significant with a consistent effect direction at all three --- the analysis's main defense against a finding that is an artifact of where the window was cut.
+
+One exclusion avoids mechanical circularity: routine glucose monitoring is dropped from the glycemic-outcome models, since measurement is itself the mechanism by which those events are detected, and a closely monitored admission registers more of them regardless of how it was managed.
+
+\paragraph{Propensity weighting.}
+The regressions above yield conditional predictive associations, not effects. The recurrent components were therefore re-examined under inverse probability of treatment weighting \citep{rosenbaum1983central, austin2015moving}, with adherence dichotomized at the median of each outcome's eligible population, so reported coefficients compare above-median with at-or-below-median adherence.
+
+The binary exposure is intrinsic to the design rather than a simplification: the propensity score is the probability of belonging to the high-adherence group given baseline covariates \citep{rosenbaum1983central}, and the standardized mean differences used to verify balance \citep{austin2009balance} are two-group contrasts undefined for a continuous exposure. Retaining continuous adherence in the regressions above makes the designs complementary --- a conditional estimate from adjustment, a balance-verified marginal contrast from weighting.
+
+Propensity scores are estimated by bias-reduced logistic regression on the baseline covariates, converted to stabilized weights and trimmed at the first and ninety-ninth percentiles, and weighted logistic regression is fitted per outcome. Balance is assessed by the maximum standardized mean difference after weighting, with $<0.10$ required for an estimate to be interpretable; pairs failing this are reported as \emph{non-estimable}, since weighting groups that remain dissimilar does not support the intended contrast.
+
+Benjamini--Hochberg correction is applied within each family of tests: across component-level pre--post comparisons, across predictors within each component-level model, and across outcomes within the propensity-weighted analysis. Confidence intervals are unadjusted throughout, so an interval excluding the null may accompany a non-significant adjusted $p$-value; both are reported.
+
+The assumptions of Section~\ref{sec:prelim-causal} apply and are not testable from these data. Confounding by indication is the specific concern: adherence is not assigned at random, and a clinician's decision to follow a recommendation may depend on the same patient characteristics that determine prognosis. Weighting balances what was measured, not what was not.
+
+\paragraph{Implementation.}
+Extraction and cohort construction used \texttt{dask} and \texttt{pyarrow} over Parquet storage, with \texttt{pandas} and \texttt{numpy} in memory; threshold discovery used $k$-means and kernel density estimation from \texttt{scikit-learn}, with peak detection from \texttt{scipy}. Statistical analysis used \texttt{statsmodels} and its Benjamini--Hochberg implementation. Bias-reduced logistic regression is unavailable there and was implemented directly, following Firth's iteratively reweighted least-squares formulation (Section~\ref{sec:prelim-causal}), with standard errors from the penalized information matrix. All clinical-study analysis ran under Python 3.13 inside the regulated environment.

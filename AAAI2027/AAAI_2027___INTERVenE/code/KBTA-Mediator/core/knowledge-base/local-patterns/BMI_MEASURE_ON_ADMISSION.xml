@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pattern name="BMI_MEASURE_ON_ADMISSION_PATTERN" concept-type="local-pattern">
+    <categories>Admission</categories>
+    <description>Captures if BMI (Body Mass Index) or weight were measured within reasonable time of admission. The data process place a BMI/ weight instance if was measured 6 month prior to admission.</description>
+    <derived-from>
+        <attribute name="BMI_MEASURE" tak="raw-concept" idx="0" ref="E1"/>
+        <attribute name="WEIGHT_MEASURE" tak="raw-concept" idx="0" ref="E2"/>
+        <attribute name="ADMISSION_EVENT" tak="event" ref="A1"/>
+    </derived-from>
+ 
+    <!-- Patterns can have unique or shared values -->
+    <abstraction-rules>
+        <rule>
+            <!-- Relation between 2 KBTA objects -->
+            <temporal-relation how='before' max-distance='72h'>
+                <anchor>
+                    <attribute ref="A1">
+                        <allowed-value equal="True"/>
+                    </attribute>
+                </anchor>
+                <event select='first'>
+                    <attribute ref="E1">
+                        <allowed-value min="10"/>
+                    </attribute>
+                    <attribute ref="E2">
+                        <allowed-value min="0.5"/>
+                    </attribute>
+                </event>
+            </temporal-relation>
+
+            <!-- OPTIONAL: Compliance function to define fuzzy time window -->
+            <compliance-function>
+                <time-constraint-compliance>
+                    <function name="id">
+                        <trapez trapezA="0h" trapezB="0h" trapezC="48h" trapezD="72h"/>
+                    </function>
+                </time-constraint-compliance>
+            </compliance-function>
+        </rule>
+    </abstraction-rules>
+</pattern>

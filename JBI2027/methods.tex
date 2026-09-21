@@ -1,0 +1,355 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Study Design and Data Source}
+
+We conducted a retrospective multicenter study using electronic health
+record data from six Israeli general hospitals, drawn from Kineret
+\citep{rappoport2025kineret}, the
+data warehouse of Israel's largest hospital network, represented in the
+Observational Medical Outcomes Partnership (OMOP) common data model. Data
+were extracted in two batches corresponding to the periods before and after
+the national implementation of the inpatient hyperglycemia-treatment
+recommendations. The analysis window spanned August 2022 through December
+2025.
+
+The assessed recommendations are those of the national position paper on
+the treatment of diabetes in hospitalization in a general hospital
+\citep{hochberg2023inpatient}, issued in September 2023 by the Israel
+Endocrine Society, the Israel Diabetes Association, and the National
+Diabetes Council. The pre-intervention period therefore ends immediately
+before its publication and the post-intervention period begins a year after
+it, with the intervening months excluded to allow for staggered adoption.
+
+The study received Helsinki committee approval covering up to 30,000 adult
+patients admitted between 2022 and 2025, defined by the cohort criteria set
+out in Section~\ref{sec:cohort-definition}.
+
+\subsection{From OMOP Tables to a Unified Event Dataset}
+
+The source OMOP tables were reorganized into five unified, columnar
+tables---visits, visit types, clinical events, drug exposures, and
+measurements---without semantic transformation. Measurement units were
+normalized at this stage, but source concept identifiers and names were
+preserved verbatim, so that all terminology decisions are made explicitly at
+the abstraction stage rather than being embedded in the extract.
+
+Kineret was not mapped to an international coding system at the time of this
+work, so a dataset-specific concept index---a many-to-one mapping from local
+measurement, medication, and observation codes onto the concepts named in
+the knowledge base---had to be constructed before abstraction could proceed.
+The index is what makes the remainder of the pipeline dataset-agnostic: once
+it exists, the same knowledge base and engine run unchanged on any source
+within the same clinical scope. Curation was performed jointly by a clinical
+domain expert and a data scientist, with candidate codes surfaced by
+descriptive analytics over the extracted concept dimensions and adjudicated
+by the domain expert. The curated indices, rather than the exploratory
+analytics used to generate the candidate lists, are the reproducible
+artifact of this step, and are provided as supplementary material.
+Further detail on the extraction and on the derived concepts is given in
+Appendix~\ref{app:data-prep}.
+
+\subsection{Cohort Definition}
+\label{sec:cohort-definition}
+
+An admission was considered eligible if it satisfied all of the following
+conditions. The admission was an inpatient visit with at least one
+measurement recorded between 18:00 and 07:00, used as evidence of a genuine
+overnight stay; its length of stay was between 48 hours and 14 days; the
+patient was at least 18 years old at admission; the admission did not take
+place in an excluded department; the visit identifier was not associated
+with more than one patient identifier, which was treated as a data-integrity
+failure; the patient did not die within 48 hours of admission; and the
+admission met at least one criterion for diabetes or hyperglycemia.
+
+Exclusions were applied through curated indices rather than inline rules, so
+that each exclusion is recorded once alongside the concept vocabulary and
+applied uniformly across the pipeline. Pediatric and obstetric departments
+were excluded, which together with the adult age criterion also removes
+pregnancy-related admissions, including gestational diabetes.
+
+Diabetes or hyperglycemia was established by at least one of three
+non-mutually-exclusive criteria: (i) a documented diabetes diagnosis,
+identified through a manually curated list of concept identifiers;
+(ii) recurrent hyperglycemia, defined as two glucose measurements
+$\geq180$ mg/dL separated by at least 2 and at most 24 hours; or
+(iii) extreme hyperglycemia, defined as any glucose measurement
+$\geq250$ mg/dL. Hypoglycemia was deliberately not used as an entry
+criterion: the cohort is defined by hyperglycemic burden, and hypoglycemia
+is treated throughout as an outcome rather than as a route into the study
+population.
+
+For the pre--post comparison, admissions between August 2022 and July 2023
+constituted the pre-intervention period and admissions between August 2024
+and December 2025 the post-intervention period. The intervening months were
+excluded from the primary comparison to allow for staggered adoption.
+
+Thirty-day mortality was defined from the linked death records as death
+occurring between 14 days before and 30 days after the recorded discharge
+datetime. The backward tolerance accommodates admissions in which the death
+record precedes the administrative discharge timestamp, so that in-hospital
+deaths are captured.
+
+\subsection{Constructing the Abstraction Input}
+
+Two inputs were derived from the unified event dataset.
+
+The \emph{temporal input} is a long-format table in which each row records a
+single time-stamped clinical fact: admission identifier, concept name, start
+and end datetime, and value. A small number of concepts were derived rather
+than extracted directly, and structural tokens were inserted to make the
+admission timeline explicit to the abstraction engine---an \textsc{admission}
+token at the visit start, a terminal \textsc{release} or \textsc{death}
+token at its end, and recurring \textsc{meal} tokens at fixed daily times,
+which supply the anchors required by recommendations defined relative to
+meals. Meal times are not recorded in the source data and were therefore
+assumed to occur at fixed daily times---breakfast, lunch, dinner, and a
+night snack---following standard hospital practice. Selected concepts
+recorded before admission, such as chronic
+diagnoses and home medications, were propagated into the admission window
+using per-concept relevancy lookback periods
+(Appendix~\ref{app:data-prep}).
+
+The \emph{context input} is a static table with one row per admission,
+holding baseline characteristics ascertained from the first 48 hours:
+demographics, chronic condition flags, and indicators distinguishing
+medications taken at home from those administered in hospital. From these
+flags a comorbidity score was computed, following the structure of the
+Charlson Comorbidity Index and referred to throughout as a modified Charlson
+comorbidity index (CCI). The modification was necessary because the source
+dataset was not mapped to a standard vocabulary, so condition categories
+were available only to the extent that the corresponding codes could be
+identified during curation; the weighting was adapted to the categories the
+extract supports, and is given in Appendix~\ref{app:data-prep}.
+
+\subsection{Guideline Adherence Assessment}
+
+Guideline adherence was assessed by knowledge-based temporal abstraction
+\citep{shahar1997framework}, which converts time-stamped clinical data into
+named interval concepts---states, trends, events, and contexts---and then
+detects, over those intervals, the temporal pattern that correct execution
+of each recommendation would have left in the record
+\citep{ben2024supporting}. Abstraction and
+assessment are performed by the Temporal Mediator in a single pass, using
+our reimplementation of it \citep{mediator-github}. All domain knowledge is
+declared externally as XML units validated against a shared schema, so that
+both the clinical semantics and the guideline requirements are stated once,
+outside the analysis code.
+
+Each recommendation is formalized as a quality-assessment temporal pattern:
+an \emph{anchor} identifying the clinical situation in which the
+recommendation applies, an \emph{action} that satisfies it, a constraint
+type, and a membership function grading partial compliance. Applicability is
+enforced by context---an anchor falling outside the context in which the
+recommendation holds generates no obligation and is not scored---so that
+an insulin dose after a meal, for example, is required only
+where glucose levels are elevated. Recurring recommendations such as routine glucose
+monitoring are instead evaluated by counting qualifying events within
+fixed-length windows across the admission.
+
+Compliance is graded rather than binary. Each constraint carries a
+trapezoidal membership function mapping the observed timing, frequency, or
+value to $[0,1]$: if correction insulin is expected within 4 hours of a
+hyperglycemic reading and considered missed after 12, insulin given at 8
+hours scores $0.5$ rather than counting as an outright failure. Three
+constraint types are used, corresponding to the compliance aspects reported
+in the Results---\emph{time}, the interval between anchor and action;
+\emph{value}, the magnitude of the recorded value, most often a dose; and
+\emph{cyclic}, the number of qualifying events within a window. Aspect
+scores are computed separately and averaged at analysis, and trapezoid
+boundaries may be rescaled per patient, which is how weight-normalized
+dosing is expressed.
+
+Two conventions govern unmet obligations. Where the recommendation requires
+an action, an unanswered anchor scores 0; where it requires an action to be
+withheld, the absence of a response is itself compliant and scores 1. A
+recommendation that never became applicable yields no output rather than a
+zero, so inapplicable recommendations do not depress the score.
+
+Discretization thresholds, relevance durations, and trend limits were
+acquired in two passes. One-dimensional $k$-means and kernel density
+estimation over each concept's value distribution proposed candidate
+boundaries; these were then reconciled against published reference ranges
+and the definitions in the national guideline, which were authoritative,
+with the data-driven candidates used only to resolve cases where the
+literature gives a range rather than a value. Concepts with too many
+distinct value combinations for in-engine discretization, such as
+corticosteroid preparations at varying doses, were pre-discretized during
+data preparation.
+
+The knowledge base was authored by the first author and developed under the
+guidance of two co-authors, one specializing in medical informatics and
+temporal reasoning and one in diabetes care, who reviewed the formalized
+recommendations for clinical fidelity against the source position paper
+\citep{hochberg2023inpatient}. Because it names clinical concepts
+rather than dataset columns, it is transferable to any electronic health
+record within the same clinical scope once a concept index maps that
+source's codes onto its vocabulary. Scoring is retrospective and offline:
+the procedure issues no recommendation and returns nothing to the treating
+team. The engine emits one compliance score per admission, pattern,
+compliance aspect, and evaluation time, and these scores are the exposure
+variable for all subsequent analyses.
+
+\subsection{Outcome Definitions}
+
+Ten complications were evaluated: 30-day mortality, hyperglycemia, severe
+hyperglycemia, hypoglycemia, severe hypoglycemia, hyperosmolality,
+ketoacidosis, infection, Inpatient acute kidney injury (AKI), and inpatient myocardial infarction (MI).
+All ten are emitted as abstractions by the same engine, so that outcome
+ascertainment and adherence assessment draw on a single, explicit knowledge
+base. They differ only in where the underlying logic is evaluated. The
+glycemic outcomes and acute kidney injury are derived by the engine directly
+from measurements: hyperglycemia and hypoglycemia from glucose values, using
+a parameterized concept that distinguishes a sustained state from an
+isolated reading, and acute kidney injury from serum creatinine and its
+ratio to baseline. Ketoacidosis, infection, hyperosmolality, and myocardial
+infarction require multi-step logic combining several concept types with
+their own temporal windows, and were therefore precomputed during data
+preparation and supplied to the engine as primitive concepts, which it
+re-emits as complication events. Thirty-day mortality is taken from the
+linked death records.
+
+Two outcomes are reported under abbreviated labels and warrant note here.
+MI requires evidence of an ischemic
+cardiac event together with a troponin level of at least 600, so that coded
+cardiac history unaccompanied by biochemical evidence of acute injury does
+not qualify. AKI is defined from laboratory
+values as stage 2 or above, excluding stage~1. Full operational definitions
+of all ten complications are given in Appendix~\ref{app:definitions}, and
+the definitions of the assessed guideline recommendations in
+Appendix~\ref{app:patterns}.
+
+\subsection{Statistical Analysis}
+
+\subsubsection{Aggregation of adherence scores}
+
+The admission is the unit of analysis throughout. A patient may contribute
+several admissions, and patient-level grouping is applied wherever the
+statistics require it, as in the clustered standard errors of the mortality
+model below. Compliance scores were aggregated in
+stages designed so that neither frequently-evaluated patterns nor
+frequently-evaluated days dominate the result. Scores were first averaged
+within each admission, pattern, compliance aspect, and calendar day; aspects
+were then collapsed within each admission, pattern, and day; days were then
+collapsed within each admission and pattern; and finally patterns were
+averaged with equal weight to give one overall adherence score per
+admission. Component-level analyses use the corresponding pattern-level and
+aspect-level aggregates.
+
+\subsubsection{Change in adherence following implementation}
+
+Overall and component-level adherence were compared between the pre- and
+post-intervention periods using Welch's unequal-variance $t$-test, with each
+admission attributed to a period by its admission date. Confidence intervals for the difference in means are Welch
+$t$-intervals and are reported unadjusted; $p$-values were adjusted across
+the component-level comparisons using the Benjamini--Hochberg false
+discovery rate (FDR) procedure. Monthly means are reported with 95\%
+confidence intervals derived from the within-month standard error, and the
+overall temporal trend is an ordinary least-squares fit to the monthly
+means.
+
+\subsubsection{Adherence and 30-day mortality}
+
+Mean whole-admission adherence was compared between admissions ending in
+death within 30 days and those not, using Welch's $t$-test. The graded
+relationship was then tested by logistic regression on the continuous score,
+reported as the odds ratio per $0.1$-point increase; adherence strata appear
+in the corresponding figure for display only, with strata under 30
+admissions suppressed, and are not the basis of the trend statistic.
+
+The adjusted estimate was a logistic regression on the overall adherence
+score with prespecified covariates---age, sex, the modified Charlson
+comorbidity index, and hospital as fixed effects---with continuous
+predictors standardized, so the odds ratio corresponds to a
+one-standard-deviation increase, and standard errors clustered on patient
+identity. Both estimates use whole-admission adherence and are reported as
+descriptive.
+
+\subsubsection{Component-level models}
+
+To identify which individual recommendations were associated with each
+complication, one model was fitted per complication per observation window.
+The analysis dataset contains one row per admission and complication,
+labelled positive if the complication first occurred at or after the
+observation cutoff and negative if it never occurred; admissions in which
+the complication occurred \emph{before} the cutoff were excluded, since a
+pre-existing condition cannot be attributed to subsequent in-stay care. Both
+adherence and baseline covariates were computed only from admission up to
+the cutoff, never afterwards. Cutoffs of 24, 48, and 72 hours were used.
+
+Models were fitted by bias-reduced (Firth penalized-likelihood) logistic
+regression \citep{firth1993bias}, with adherence and baseline covariates
+entered jointly so that each adherence coefficient is estimated holding
+measured comorbidity constant. Firth's method was necessary because
+unpenalized maximum likelihood failed to converge under separation for most
+complications, given the low event counts of several endpoints; the
+Jeffreys-prior penalty yields finite estimates and valid Wald inference
+without inducing sparsity. Highly correlated predictors were pruned before
+fitting and the remainder standardized so coefficients are comparable.
+Benjamini--Hochberg FDR correction was applied within each model's own family
+of tested predictors, excluding pruned features, which were never tested. A
+bootstrap sign-agreement check flagged estimates whose direction was unstable
+under resampling. A predictor was considered robust only if it remained
+significant with consistent direction across all three windows.
+
+To avoid mechanical circularity, the routine glucose-monitoring component
+was excluded from the models for glycemic outcomes, since glucose
+measurement is itself the mechanism by which hyperglycemic and hypoglycemic
+events are detected.
+
+\subsubsection{Propensity-weighted analysis}
+
+The recurrent components were re-evaluated using inverse probability of
+treatment weighting. Adherence was dichotomized at the median of each
+outcome's eligible population, so reported coefficients are log-odds ratios
+comparing above-median with at-or-below-median adherence, and the
+corresponding odds ratio is $\exp(\beta)$. A binary exposure is intrinsic to
+this design rather than a simplification: the propensity score is the
+probability of belonging to the high-adherence group conditional on baseline
+covariates \citep{rosenbaum1983central}, and the standardized mean
+differences used to verify balance \citep{austin2009balance} are two-group
+contrasts undefined for a continuous exposure. Continuous adherence is
+retained in the regression analyses above, making the two designs
+complementary: a conditional estimate from regression adjustment and a
+balance-verified marginal contrast from weighting.
+
+Propensity scores were estimated by bias-reduced logistic regression on the
+baseline covariates, converted to stabilized weights and trimmed at the
+first and ninety-ninth percentiles, and weighted logistic regression models
+fitted for each outcome. Balance was assessed by the maximum standardized
+mean difference after weighting, with $0.10$ required for an estimate to be
+interpretable; component--outcome pairs failing this are reported as
+non-estimable, since weighting groups that remain dissimilar does not
+support the intended contrast.
+
+\subsubsection{Multiplicity}
+
+Benjamini--Hochberg FDR correction \citep{benjamini1995controlling} was
+applied within each family of tests:
+across component-level pre--post comparisons, across predictors within each
+component-level model, and across outcomes within the propensity-weighted
+analysis. Confidence intervals are reported unadjusted throughout, so an
+interval excluding the null may accompany a non-significant FDR-adjusted
+$p$-value.
+
+\subsubsection{Implementation}
+
+All processing and analysis were performed in Python 3.13. The extraction
+and cohort-construction pipeline used \texttt{dask} and \texttt{pyarrow}
+over Parquet storage, with \texttt{pandas} and \texttt{numpy} for in-memory
+operations; the empirical threshold discovery used $k$-means clustering and
+kernel density estimation from \texttt{scikit-learn} with peak detection
+from \texttt{scipy}.
+
+Guideline adherence was computed using the Mediator abstraction engine
+\citep{mediator-github}, which validates the knowledge base against its XML
+schema before evaluating the abstractions.
+
+Statistical analysis used \texttt{statsmodels} for the logistic,
+propensity-weighted, and Welch comparisons, together with its
+Benjamini--Hochberg implementation for multiplicity correction. Bias-reduced
+logistic regression was implemented directly, following Firth's iteratively
+reweighted least-squares formulation with a Jeffreys-prior penalty, with
+standard errors taken from the penalized information matrix; it is released
+with the analysis code rather than drawn from a library.
+

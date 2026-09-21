@@ -1,0 +1,30 @@
+# LaTeX build artefacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.tocheb
+*.nav
+*.snm
+*.vrb
+*.run.xml
+*-blx.bib
+_minted-*/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Working artefacts
+*.bak
+*.tmp
+*.swp

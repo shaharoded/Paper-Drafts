@@ -1,0 +1,163 @@
+\section{Materials and Methods}
+\label{sec:methods}
+
+\subsection{Study design and data source}
+
+We conducted a retrospective multicenter study using electronic health record
+data from six Israeli general hospitals, drawn from Kineret
+\citep{rappoport2025kineret}, the data warehouse of Israel's largest hospital
+network, represented in the Observational Medical Outcomes Partnership (OMOP)
+common data model. The assessed recommendations are those of the national
+position paper on the treatment of diabetes in hospitalization in a general
+hospital \citep{hochberg2023inpatient}, issued in September 2023. The
+pre-intervention period ends immediately before publication (August 2022--July
+2023) and the post-intervention period begins a year after it (August
+2024--December 2025), the intervening months being excluded to allow for
+staggered adoption.
+
+Kineret was not mapped to an international coding system at the time of this
+work, so a dataset-specific concept index---a many-to-one mapping from local
+codes onto the concepts named in the knowledge base---was curated first. That
+index is what makes the remainder of the pipeline dataset-agnostic: once it
+exists, the same knowledge base and engine run unchanged on any source within
+the same clinical scope. The curated indices are provided as supplementary
+material, and the curation procedure is described in Supplementary
+Appendix~S1.
+
+\subsection{Cohort definition}
+\label{sec:cohort-definition}
+
+An admission was eligible if it was an inpatient visit of 48 hours to 14 days
+in a patient aged at least 18 years, with evidence of a genuine overnight stay,
+no death within 48 hours of admission, no admission to an excluded department,
+and at least one criterion for diabetes or hyperglycemia. Excluding pediatric
+and obstetric departments also removes pregnancy-related admissions. Diabetes or
+hyperglycemia was established by at least one of three non-mutually-exclusive
+criteria: a documented diabetes
+diagnosis from a manually curated list of concept identifiers; recurrent
+hyperglycemia, two glucose measurements $\geq$180 mg/dL separated by 2 to 24
+hours; or extreme hyperglycemia, any glucose measurement $\geq$250 mg/dL.
+Hypoglycemia was deliberately not an entry criterion: the cohort is defined by
+hyperglycemic burden, and hypoglycemia is treated throughout as an outcome
+rather than as a route into the study population. Full eligibility rules are
+given in Supplementary Appendix~S1.
+
+\subsection{Abstraction input}
+
+The \emph{temporal input} is a long-format table in which each row records one
+time-stamped clinical fact, with structural tokens inserted to make the
+admission timeline explicit---notably recurring \textsc{meal} tokens, assumed
+to fall at fixed daily times because meal times are not recorded in the source
+data. The \emph{context input} holds one row per admission of baseline
+characteristics from the first 48 hours, from which a modified Charlson
+comorbidity index (CCI) was computed (Supplementary Appendix~S1).
+
+\subsection{Guideline adherence assessment}
+
+Adherence was assessed by knowledge-based temporal abstraction
+\citep{shahar1997framework}, which converts time-stamped clinical data into
+named interval concepts and then detects, over those intervals, the temporal
+pattern that correct execution of each recommendation would have left in the
+record \citep{ben2024supporting}. Abstraction and assessment are performed in a
+single pass by our reimplementation of the Temporal Mediator
+\citep{mediator-github}. All domain knowledge is declared externally as XML
+units validated against a shared schema, so that the clinical semantics and the
+guideline requirements are stated once, outside the analysis code.
+
+Each recommendation is formalized as a quality-assessment temporal pattern: an
+\emph{anchor} identifying the clinical situation in which it applies, an
+\emph{action} that satisfies it, a constraint type, and a membership function
+grading partial compliance. Applicability is enforced by context---an anchor
+falling outside the context in which the recommendation holds generates no
+obligation and is not scored---so that an insulin dose after a meal is required
+only where glucose is elevated. Recurring recommendations such as routine
+glucose monitoring are instead evaluated by counting qualifying events within
+fixed-length windows.
+
+Compliance is graded rather than binary. Each constraint carries a trapezoidal
+membership function mapping observed timing, frequency, or value to $[0,1]$: if
+correction insulin is expected within 4 hours of a hyperglycemic reading and
+considered missed after 12, insulin given at 8 hours scores 0.5 rather than
+counting as an outright failure. Three constraint types are
+used---\emph{time}, \emph{value}, and \emph{cyclic}---corresponding to the
+compliance aspects reported below. An unanswered anchor
+scores 0 where the recommendation requires an action, and 1 where it requires
+one to be withheld, since there the absence of a response is itself compliant;
+a recommendation that never became applicable yields no output rather than a
+zero, so inapplicable recommendations do not depress the score.
+
+Fourteen recommendations were formalized by the first author under the guidance
+of two co-authors specializing in temporal reasoning and in diabetes care, who
+reviewed them for clinical fidelity against the source position paper. Scoring
+is retrospective and offline: the procedure issues no recommendation and
+returns nothing to the treating team. Thresholds and the full pattern
+definitions are given in Supplementary Appendices~S1 and~S3.
+
+\subsection{Outcome definitions}
+
+Ten complications were evaluated: 30-day mortality, hyperglycemia, severe
+hyperglycemia, hypoglycemia, severe hypoglycemia, hyperosmolality,
+ketoacidosis, infection, inpatient acute kidney injury, and inpatient
+myocardial infarction. All ten are emitted as abstractions by the same engine,
+so that outcome ascertainment and adherence assessment draw on a single
+explicit knowledge base. Thirty-day mortality was taken from linked death
+records, defined as death between 14 days before and 30 days after the recorded
+discharge datetime, the backward tolerance capturing in-hospital deaths whose
+death record precedes the discharge timestamp. Operational definitions are
+given in Supplementary Appendix~S2.
+
+\subsection{Statistical analysis}
+
+The admission is the unit of analysis. Compliance scores were collapsed
+successively over compliance aspects, calendar days, and finally patterns with
+equal weight, so that neither frequently-evaluated patterns nor
+frequently-evaluated days dominate the resulting per-admission score
+(Supplementary Appendix~S1).
+
+Adherence was compared between periods by Welch's unequal-variance $t$-test,
+each admission attributed by its admission date. Confidence intervals are
+unadjusted Welch $t$-intervals, and $P$ values were adjusted across
+component-level comparisons by the Benjamini--Hochberg false discovery rate
+(FDR) procedure \citep{benjamini1995controlling}. Monthly means carry 95\% CIs
+from the within-month standard error, and the temporal trend is an ordinary
+least-squares fit to those means.
+
+Whole-admission adherence was compared between admissions ending in death
+within 30 days and those not, and the graded relationship tested by logistic
+regression on the continuous score, reported as the odds ratio (OR) per
+0.1-point increase, then adjusted for age, sex, modified CCI, and hospital with
+standard errors clustered on patient identity. Both are descriptive, since
+whole-admission adherence does not strictly precede the outcome.
+
+To identify which individual recommendations were associated with each
+complication, one model was fitted per complication at cutoffs of 24, 48, and
+72 hours. Each row is an admission--complication pair, labelled positive if the
+complication first occurred at or after the cutoff and negative if it never
+occurred; admissions in which it occurred \emph{before} the cutoff were
+excluded, since a pre-existing condition cannot be attributed to subsequent
+in-stay care, and adherence and covariates were computed only up to the cutoff.
+Models were fitted by bias-reduced (Firth penalized-likelihood) logistic
+regression \citep{firth1993bias}, unpenalized maximum likelihood having failed
+to converge under separation for most complications. Correlated predictors were
+pruned and the remainder standardized, and a predictor was considered robust
+only if it remained significant with consistent direction across all three
+windows. To avoid mechanical circularity, routine glucose monitoring was
+excluded from the glycemic models, since glucose measurement is itself the
+mechanism by which those events are detected.
+
+Because these models estimate conditional predictive associations rather than
+treatment effects, overall adherence and the recurrent components were
+re-evaluated by inverse probability of treatment weighting, with adherence
+dichotomized at the median of each outcome's eligible population. The binary
+exposure is intrinsic to the design rather than a simplification, since the
+propensity score \citep{rosenbaum1983central} and the standardized mean
+differences (SMDs) used to verify balance \citep{austin2009balance} are
+two-group constructs undefined for a continuous exposure; retaining continuous
+adherence in the regressions above therefore makes the two designs
+complementary. Propensity scores were estimated by bias-reduced logistic
+regression, converted to stabilized weights and trimmed at the 1st and 99th
+percentiles. Balance was assessed by the maximum post-weighting SMD, with
+$<$0.10 required for an estimate to be interpretable; pairs failing this are
+reported as non-estimable. Confidence intervals are unadjusted throughout, so an
+interval excluding the null may accompany a nonsignificant adjusted $P$ value.
+Analyses used Python 3.13 (Supplementary Appendix~S1).

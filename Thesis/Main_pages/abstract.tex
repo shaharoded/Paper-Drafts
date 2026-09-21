@@ -1,0 +1,46 @@
+\thispagestyle{plain}
+
+% Single-spaced with tighter paragraph separation. These MUST stay inside
+% \begingroup...\endgroup: \include issues a \clearpage but does not open a
+% group, so without this the settings leak into the rest of the thesis and
+% silently reflow every following chapter.
+\begingroup
+\singlespacing
+\setlength{\parskip}{2pt}
+
+\begin{center}
+    \Large
+    \thesistitle
+
+    \vspace{0.2cm}
+    \large
+    \thesisauthorname
+
+    \vspace{0.2cm}
+    \large
+    Master of Sciences Thesis
+
+    \vspace{0.1cm}
+    \large
+    Ben-Gurion University of the Negev
+
+    \vspace{0.1cm}
+    \large
+    \thesisyear
+
+    \vspace{0.3cm}
+    \Large
+    \textbf{Abstract}
+\end{center}
+
+Inpatient hyperglycemia is common, harmful, and its management is governed by clinical guidelines whose adherence is rarely measured. This thesis asks whether that adherence can be assessed automatically and at national scale, and whether short-horizon complication prediction --- conventionally a feature-based classification over raw measurements --- can instead be shaped as temporal next-token prediction, with a transformer-based model reasoning over acquired medical knowledge.
+
+One representation joins both objectives. A diabetes knowledge base authored for this work encodes the clinical semantics of inpatient care and the Israeli national position paper as quality-assessment temporal patterns. A temporal-abstraction engine converts an OMOP-formatted record into knowledge-based temporal abstractions and, in the same pass, scores how far the recorded care departed from the guideline's specifications. Every interval becomes a named clinical token, so prediction and measurement read one stream.
+
+A \emph{methodological study} on $57{,}078$ MIMIC-IV admissions establishes the architecture. \textbf{INTERVenE}, a transformer family operating natively on those intervals, comprises a bidirectional variant for single-pass prediction and an autoregressive variant that generates abstraction trajectories with per-step risk curves. The encoder reaches a support-weighted AUPRC of $0.672$, improving on the strongest neural baseline by $0.041$ with non-overlapping confidence intervals and on a symbolic pipeline consuming the identical interval stream by $0.085$. Sparse-transcoder attribution, computed on the deployed model through a gradient-decoupled hook, resolves every explanation to a named clinical concept. Ablations separate the sources of that gain: collapsing every interval to a point event degrades performance sharply, while replacing the clinically named intervals with an automatically derived $\sigma$-bin discretization does not. On this cohort, knowledge-based abstraction is therefore an interpretability substrate obtained at essentially no cost in accuracy rather than a predictive prerequisite.
+
+A \emph{clinical study} on $48{,}354$ admissions across six Israeli general hospitals carries the same machinery into routine practice. Adherence levels differ by the \emph{kind} of action a recommendation requires rather than by its clinical weight: recommendations satisfied by a single discrete action on admission are near-universally implemented, while those calling for repeated insulin decisions across a stay score as low as $0.15$ and are most often entirely absent. Adherence rose modestly after implementation of a national quality measure, with marked inter-hospital heterogeneity that these data do not explain. Under propensity weighting, above-median adherence carried $44\%$ lower odds of $30$-day mortality but also $82\%$ lower odds of hyperglycemia, against a $20\%$ rise in mild hypoglycemia and no detectable rise in severe hypoglycemia --- the lopsided trade-off these recommendations are designed to strike. The recommendations that were least adhered to proved to be among those most strongly associated with outcomes.
+
+A closing experiment joins the two halves. INTERVenE transfers to the clinical cohort, reaching $0.527$ against $0.472$ for the strongest baseline. Here the knowledge base does carry predictive weight: the same $\sigma$-bin substitution costs $0.073$ AUPRC and leaves that arm level with the raw-stream baselines rather than ahead of them, so the MIMIC-IV equivalence bounds what clinical knowledge contributes when ported to a new source rather than what it contributes generally. A seven-arm ablation runs each input representation with and without the measured adherence profile supplied to the model as input. Supplying it changed no metric measurably, although attribution shows the model does read it, ranking compliance patterns among the top drivers for seven of eight outcomes. Adherence summarizes the intervals the model already sees rather than adding to them --- a statement about representation, not about whether following the guideline matters clinically, which the propensity-weighted analysis answers separately and affirmatively.
+
+\endgroup

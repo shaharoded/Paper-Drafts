@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+env/
+venv/
+
+# pytest cache
+.pytest_cache/
+
+# Editor
+.vscode/
+*.swp
+
+# Mappings
+*symbol_map.json
+
+# Generated outputs, models, and caches
+data/output/
+*.joblib
+*.pkl
+*.npz
+*.npy
+*.parquet
+*.feather
+*.zip
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Temporal files
+nadav_test.csv
+karmalego-deploy.zip
+context_data.csv
+qa_data.csv
+temporal_data.csv

@@ -1,0 +1,295 @@
+%File: main.tex
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage[submission]{aaai2027}  % DO NOT CHANGE THIS
+% aaai2027.sty automatically loads newtxtext, helvet, courier.
+% Do NOT add \usepackage{times}, \usepackage{helvet}, or \usepackage{courier}.
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\graphicspath{{images/}}
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\frenchspacing  % DO NOT CHANGE THIS
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\makeatletter\setlength{\@fptop}{0pt}\makeatother
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{0}
+
+\title{INTERVenE: Temporal-Abstraction-Interval Based Transformers for Short-Horizon Medical Event Prediction}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Electronic Health Record (EHR) prediction models in the intensive care unit must learn from sparse and irregular measurements while preserving the clinical meaning of time and supporting transparent decision-making. We present INTERVenE, a family of Transformer architectures whose input is an interval-based, knowledge-based temporal abstraction (KBTA), a token stream of named clinical concepts (states, trends, events, contexts) drawn from a curated medical ontology, rather than an unnamed bin index or a raw measurement triplet. This naming layer is what we ask KBTA to do: it makes the model's per-token attributions resolve to clinical concepts by construction. INTERVenE offers two complementary variants: an auto-regressive decoder that generates future abstraction trajectories with a per-step risk readout (localizing \emph{when} and \emph{after which events} risk rises), and a bidirectional encoder for single-pass joint risk and time-to-event prediction. Evaluated on 57,078 MIMIC-IV admissions against GRU-D, STraTS, and KarmaLego, INTERVenE-Enc reaches a support-weighted AUPRC of 0.672, improving by 0.041 over the strongest neural baseline with non-overlapping 95\% bootstrap CIs, while also taking the best AUROC (0.901) and length-of-stay MAE (44.4\,h). INTERVenE-Ar (AUROC$_w$ $0.854$, AUPRC$_w$ $0.587$ under the same evaluation contract - a strictly harder generative readout) provides a complementary token-level risk trajectory. An input-representation ablation confirms the lift transfers across structured discretizations, positioning KBTA-based intervals as the interpretable substrate that makes per-token attributions resolve to meaningful clinical concepts within the deployed model.
+\end{abstract}
+
+\section{Introduction}
+
+Short-horizon complication prediction in the intensive care unit (ICU) is challenging because physiological events are embedded in irregular, sparse, and heterogeneous electronic health record streams. Raw observations---such as laboratory measurements, medication administrations, and sporadic interventions---arrive at irregular patient-specific times, and their clinical interpretation often depends on duration, contextual trends, and missingness. Although high-capacity neural models excel on such complex temporal data, their ``black-box'' nature limits clinical trust. This paper asks whether a model that first converts raw observations into \textit{knowledge-based temporal-abstraction} (KBTA) intervals can outperform strong neural and symbolic alternatives while yielding clinically interpretable intermediate representations.
+
+We focus on diabetic ICU admissions in MIMIC-IV \citep{johnson2023mimiciv}. Rather than treating diabetes as a static comorbidity, we recognize that inpatient dysglycemia (blood-glucose disturbances) is a highly dynamic process: rapid fluctuations and persistent trends dictate immediate clinical actions and drive severe downstream complications. Accordingly, our task observes the first 48 hours of each admission and predicts whether six target complications will occur during hours 48--336.
+
+We present INTERVenE, an interval-based Transformer family for temporal EHR data with two variants: \textbf{INTERVenE-Ar}, an autoregressive decoder that forecasts future KBTA abstraction trajectories with token-level risk readouts, and \textbf{INTERVenE-Enc}, a bidirectional encoder for single-pass joint risk and time-to-event prediction. \textbf{INTERVenE-Enc} is probed with sparse transcoders that recover clinically meaningful latent drivers from the deployed model, while \textbf{INTERVenE-Ar}'s autoregressive decoding provides a direct readout of generated abstraction tokens alongside evolving risk trends. Benchmarked against GRU-D \citep{che2018recurrent}, supervised and self-supervised STraTS \citep{tipirneni2022strats}, and KarmaLego+TPF \citep{moskovitch2015karmalego,sheetrit2019tpf} on 57,078 MIMIC-IV admissions, INTERVenE-Enc reaches a support-weighted AUPRC of 0.672 ($+0.041$ over the strongest neural competitor, with non-overlapping 95\% confidence intervals), while INTERVenE-Ar generates complete admission abstraction trajectories with per-step risk curves while maintaining competitive predictive performance. An input-representation ablation demonstrates that KBTA serves as an \emph{interpretability} substrate rather than a predictive prerequisite.
+
+\noindent\textbf{Contributions:}
+\begin{itemize}\setlength{\itemsep}{.1em}
+  \item A KBTA-based interval tokenization framework casting clinical temporal abstractions as a named-concept Transformer vocabulary.
+  \item Two complementary Transformer variants over interval abstractions: INTERVenE-Enc for single-pass risk and time-to-event prediction, and INTERVenE-Ar for autoregressive trajectory generation with per-step risk curves.
+  \item A gradient-decoupled sparse-transcoder attribution pipeline whose explanations resolve to named clinical concepts by vocabulary construction.
+  \item Empirical validation on 57{,}078 MIMIC-IV admissions against four baselines with 2{,}000-resample patient-level bootstrap confidence intervals.
+\end{itemize}
+\noindent\textbf{Central thesis:} KBTA provides the interpretability substrate; INTERVenE provides the predictive framework operating over it.
+
+\section{Related Work}
+
+\paragraph{Temporal abstraction and interval mining.}
+Knowledge-Based Temporal Abstraction (KBTA) converts raw point observations into interval-level states, gradients (trends), events, and contextual periods by applying potentially context-sensitive declarative medical domain knowledge [e.g., sensitive to age, gender, previous administration of a medication, being before or after a meal, or being within the context of another abstraction]  \citep{shahar1997framework}.
+KBTA differs from generic data-driven abstraction strategies in what each bin means: every KBTA token is a named clinical concept - e.g., \textit{decreasing-glucose trend} over 3 days or \textit{moderate-anemia} - drawn from a curated medical ontology, rather than an unnamed discretized bin index, making downstream attribution legible and interpretable in clinical terms. KarmaLego mines frequent time-interval relation patterns from such sequences \citep{moskovitch2015karmalego}, while Temporal Probabilistic Profiles (TPF) summarize pattern distributions into fixed-length patient vectors suitable for conventional machine learning models \citep{sheetrit2019tpf}. We adopt this pipeline as our traditional clinical temporal data mining baseline.
+
+\paragraph{Deep learning for irregular clinical sequences.}
+Standard approaches for irregular EHR data involve modeling missingness and elapsed time via learned decays, as in GRU-D \citep{che2018recurrent}, or bypassing imputation via set-based attention over value-time-variable triplets, as in STraTS \citep{tipirneni2022strats}. Currently, Transformer architectures have successfully targeted longitudinal histories using visit-level summaries, heterogeneous concept relations, and time-gap embeddings \citep{li2020behrt,yang2023transformehr,huang2024heart}. However, these models predominantly process either point-in-time raw values or highly aggregated diagnosis codes. INTERVenE departs from this paradigm by tokenizing explicit \emph{abstracted intervals}. By combining KBTA semantics with continuous Time2Vec embeddings \citep{kazemi2019time2vec}, INTERVenE synthesizes the representation power of deep sequence models with the declarative medical knowledge of classical clinical AI.
+
+\paragraph{Explainability in sequential clinical models.}
+Clinical interpretability requires discovering not only \emph{which} variables influenced a prediction, but \emph{when} and in \emph{what context}---a challenge post-hoc methods like SHAP or LIME only partially address when operating on raw measurement streams. By operating natively on a KBTA vocabulary, INTERVenE ensures its decision pathways and sparse-transcoder feature extraction \citep{dunefsky2024transcoders} resolve to named clinical concepts rather than raw numerical artifacts.
+
+\section{Cohort and Prediction Task}
+
+The cohort contains 57,078 adult diabetes-related admissions from MIMIC-IV. We focus on diabetic admissions because they provide dense physiological measurements, a mature KBTA ontology, and six clinically meaningful complications with lab-derived onset times, making the cohort well suited to interval-based modeling. Admissions are split at the patient level into 39,954 training, 8,562 validation, and 8,562 held-out test admissions. All methods use the same patient split, 48-hour observation window, and outcome labels.
+
+Each admission is represented by a temporal event stream of irregularly timed observations (laboratory measurements, medication administrations, and interventions) together with a flat context vector of static patient attributes (demographics and admission-level descriptors). The Mediator temporal abstraction engine \citep{shahar1997framework} converts the event stream into KBTA intervals (states, trends, events, and contexts). All models receive the same flat context vector; they differ only in their temporal representation. GRU-D and STraTS consume the raw event stream, whereas KarmaLego and both INTERVenE variants operate on the derived KBTA interval stream.
+
+The prediction window spans hours 48--336 after admission. Target complications occurring during the initial 48-hour observation window are excluded from the positive label, ensuring models predict future events rather than observations already seen. We predict six binary outcomes: death, kidney complication, hyperglycemia, severe hyperglycemia, hypoglycemia, and severe hypoglycemia. Clinical thresholds are provided in the Appendix. A continuous length-of-stay target serves as an auxiliary regression objective across all models. AUPRC is the primary evaluation metric because the outcomes are imbalanced; AUROC and best F1 are reported as secondary measures. Support-weighted metrics average per-outcome scores weighted by the number of positive cases.
+
+\section{Methods}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{architecture_diagram.png}
+    \caption{The INTERVenE architecture. Raw clinical sequences are abstracted into KBTA intervals. These intervals are tokenized into a hierarchical vocabulary, enriched with Time2Vec continuous temporal encodings, and processed by either an autoregressive decoder (INTERVenE-Ar) or a bidirectional encoder (INTERVenE-Enc). Temporal Rotary Position Embeddings (RoPE) are applied within the attention layers, while AdaLN-Zero injects static patient context.}
+    \label{fig:architecture}
+\end{figure*}
+
+\subsection{Shared Representation and Backbone}
+
+The core of INTERVenE is a structured alignment of discrete medical knowledge and continuous temporal dynamics. Raw temporal records are mapped to KBTA intervals using the Mediator temporal abstraction engine \citep{shahar1997framework}, which applies a diabetes-specific knowledge base to identify clinically meaningful states, trends, contexts and events.
+
+To handle variable durations effectively within a sequence model, each interval is converted into two discrete tokens: a \emph{START} and an \emph{END} timepoint. Each point is then tokenized into a dense representation via four hierarchical embedding layers: Raw Concept, TAK Abstraction Concept (e.g., glucose trend), Concept with Value, and finally Positional Role. For example, a high-glucose interval start token maps to \emph{GLUCOSE} $\rightarrow$ \emph{GLUCOSE\_STATE} $\rightarrow$ \emph{GLUCOSE\_STATE\_HIGH} $\rightarrow$ \emph{GLUCOSE\_STATE\_HIGH\_START}. By concatenating these hierarchical embeddings, we explicitly enforce semantic similarity. \emph{GLUCOSE\_STATE} and \emph{GLUCOSE\_TREND} inherently share the base representation of \emph{GLUCOSE}, while the START and END boundaries of the same interval share 3 out of 4 identical layers. 
+
+To model time, absolute timestamps are anchored to admission and encoded with Time2Vec, which learns linear and periodic temporal components \citep{kazemi2019time2vec}. Unlike standard Transformers, which combine token and positional information through element-wise addition, INTERVenE concatenates the four hierarchical concept embeddings with the Time2Vec representation. The resulting $5d$-dimensional vector is then linearly projected back to the model embedding dimension $d$, preserving concept identity and temporal information as distinct subspaces while allowing the projection layer to learn their interaction. Concretely, each boundary token $c_i$ is represented as
+
+\begin{equation}
+\begin{aligned}
+z_i =\;&
+\Big[
+E_1(c_i^{(1)}) \Vert
+E_2(c_i^{(2)}) \Vert
+E_3(c_i^{(3)}) \Vert
+E_4(c_i^{(4)}) \Vert
+\phi_{\mathrm{T2V}}(t_i-t_0)
+\Big],\\
+h_i^{(0)} =\;& W z_i + b
+\end{aligned}
+\end{equation}
+
+where $\Vert$ denotes vector concatenation, $E_\ell(c_i^{(\ell)}) \in \mathbb{R}^{d}$ is the embedding of the $\ell$-th hierarchical concept associated with token $i$, and $\phi_{\mathrm{T2V}}(t_i-t_0) \in \mathbb{R}^{d}$ is the Time2Vec encoding of the elapsed time from the admission timestamp $t_0$ to the token timestamp $t_i$. The resulting $5d$-dimensional representation is linearly projected to the model embedding dimension $d$ before entering the Transformer. Temporal rotary position embeddings (RoPE) \citep{su2024roformer} are also applied within the attention layers. Finally, static patient context (e.g., age, sex) is injected directly into each Transformer block through AdaLN-Zero adaptive layer-normalization \citep{peebles2023adaln0}. The raw context attributes are linearly projected to $d_\text{model}$ before entering AdaLN-Zero; this projected vector acts as a global bias to shift the entire event manifold into a patient-specific subspace, utilizing context-dropout during training to regularize the shared latent space.
+
+This embedder, together with temporal-RoPE attention and AdaLN-Zero conditioning over SwiGLU blocks, forms a single backbone shared by both variants. They differ only in their attention mask - causal for INTERVenE-Ar, bidirectional for INTERVenE-Enc - and in their Phase-2/3 objectives, and both follow the same three-phase schedule that begins here. \textbf{Phase 1 (representation)} trains the embedder on a temporal next-token objective - a multi-hot BCE over the events falling in a short future window - augmented with a time-delta regression auxiliary,
+\begin{equation}
+\mathcal{L}_1 = \mathrm{BCE}_{\text{win}}\big(\hat{y}, y\big) + \lambda_{\Delta t}\,\mathrm{MSE}\big(\widehat{\Delta t}, \Delta t\big)
+\end{equation}
+The $\Delta t$ term is held behind a BCE-only warmup and unlocked once the main signal is meaningful; its weight $\lambda_{\Delta t}$ is then calibrated once from the loss ratio at unlock and capped at a fixed fraction of the BCE so it never dominates. This phase isolates a patient-aware event representation before the deeper sequence model is trained on top of it.
+
+\subsection{INTERVenE-Ar (Autoregressive Decoder)}
+
+INTERVenE-Ar applies a causal mask and is trained to generate full abstraction trajectories while reading a risk curve at every generated step.
+
+\textbf{Phase 2 (causal pretraining).} The backbone is pretrained with a legality-masked multi-hot next-token BCE under teacher forcing, with clinically illegal continuations removed from the target (e.g., opening a \texttt{GLUCOSE\_STATE\_NORMAL} while \texttt{GLUCOSE\_STATE\_HIGH} is still active). Terminal events are sparse and arrive late, so a hard next-step target yields almost no pre-event signal. We therefore replace the standard one-hot next-token target with a soft-kernel temporal target applied across the full token vocabulary. For each query position $t$ and token class $v$, the soft target is                                   
+
+\begin{equation}
+  \tilde{y}_v(t) = \exp\big(-\Delta t_{tv} / \tau_v\big), \qquad \Delta t_{tv} \le H
+\end{equation}
+
+where $\Delta t_{tv} = t_v - t_t$ is the time gap to a future occurrence of $v$, $H$ is a hard look-ahead horizon, and $\tau_v$ is a per-class decay constant. Terminal tokens (DEATH/RELEASE) use a fixed $\tau = 12\,\text{h}$; outcome-class tokens are initialized at $\tau = 48\,\text{h}$ and remain learnable. The per-outcome risk head is trained on the same time-decayed soft labels using a separate per-outcome learnable $\tau_k$ within an outcome horizon $H_{\text{out}}$. Three staged auxiliaries shape the backbone: a stage-0 set comprising the $\Delta t$ regression, a masked set cross-entropy over all legal token classes at each non-padding step, and a \emph{time-to-terminal} (\texttt{ttt}) regression:
+\begin{equation}
+\mathcal{L}_{\texttt{ttt}} = \mathrm{MSE}\big(\hat{\delta}_i, \log(1+\delta_i)\big)
+\end{equation}
+where $\delta_i$ is the number of hours from position $i$ to the next terminal event, evaluated at every non-terminal position; and a stage-1 pairwise ranking loss (an AUROC proxy on the outcome head) that unlocks once the total validation loss plateaus. Each auxiliary weight is calibrated at activation and capped at a fixed fraction of the BCE. A curriculum-by-masking (CBM) routine atomically corrupts linked START/END interval pairs on the input side, teaching the model to tolerate the corrupted context it will later generate (implementation details in Appendix~\ref{app:implementation}).
+
+\textbf{Phase 3 (risk-head alignment).} Phase 2 trains the risk head under teacher forcing, whereas inference reads it off free-running trajectories. Phase 3 closes this gap by fine-tuning on natural-distribution batches, with the backbone held at $0.01\times$ the head learning rate and per-outcome positive weighting to compensate class imbalance. A patient-level attention pool auxiliary trains in parallel: a learnable query per outcome attends over the backbone hidden states to produce a patient-level BCE signal, calibrated once after the first epoch. This phase gave the largest single lift in our ablation (Table~\ref{tab:abl-ar-all}).
+
+\textbf{Inference.} The decoder is seeded with the first 48 hours (the task's $k{=}2$-day input window) and generates a free-running trajectory, reading the risk head at each step to produce a per-complication probability curve over time. A \texttt{ttt}-driven \emph{inference gate} uses the model's own time-to-terminal estimate to halt generation, re-calibrating trajectory length post hoc with no retraining. Patients that reach the length cap receive a forced terminal token (DEATH or RELEASE by highest logit), clamped to $\le 336$\,h.
+
+\subsection{INTERVenE-Enc (Bidirectional Encoder)}
+
+INTERVenE-Enc replaces the causal mask with full bidirectional attention, trading trajectory generation for a faster, single-pass discriminative read-out.
+
+\textbf{Phase 2 (masked pretraining).} The backbone is pretrained with masked language modeling using \emph{atomic-interval masking}: roughly 15\% of eligible positions are selected, and linked interval START/END pairs are masked jointly with dedicated \texttt{[MASK\_INTERVAL\_*]} tokens: masking boundaries independently would allow the model to infer a masked boundary from its visible partner, reducing the task to near-trivial position lookup rather than genuine context reconstruction. The main loss is full-vocabulary cross-entropy at the masked positions. Two time-aware auxiliaries keep temporal structure in the hidden states: \texttt{t\_pos} regresses normalized time-since-admission at every position, and \texttt{t\_local} regresses the normalized local neighbor gap $\min(t-t_{\text{prev}},\, t_{\text{next}}-t)/24\text{h}$ at masked positions, forcing a masked token to retain its temporal placement once its concept identity is hidden. Auxiliary weights follow per-task fraction caps.
+
+\textbf{Phase 3 (joint risk and time).} A task module attaches a per-outcome attention pool (the same mechanism as the Ar pool head) feeding a shared MLP and two heads, optimized jointly:
+\begin{equation}
+\mathcal{L}3 = \mathrm{BCE}_{w}(\text{risk}) + \lambda_{\text{time}}\mathrm{MSE}(\text{time})
+\end{equation}
+The risk term is a multi-label BCE over the scored outcomes (RELEASE dropped and reported separately as length-of-stay) with per-outcome positive weighting from training prevalence; the time term is a per-outcome MSE in $z$-normalized hours over positive patients only, regressing hours to first occurrence, with the RELEASE slot trained on patients released within the horizon so it doubles as a length-of-stay predictor. The balance weight $\lambda_{\text{time}}{=}0.1$ is the encoder's single dominant lever: shifting toward the risk-dominant regime lifts AUPRC substantially while remaining robust at full-data scale (Appendix Table~\ref{tab:abl-enc-all}). The backbone again runs at a small fraction of the head learning rate.
+
+\textbf{Inference.} A single bidirectional pass yields, per (patient, outcome), a risk probability $P = \sigma(\cdot)$ from the risk head and a time estimate $T = \mathrm{softplus}(\cdot)$ from the time head, with $P_{\text{RELEASE}} = 1 - P(\text{DEATH})$. No trajectory generation or terminal forcing is required, giving markedly lower latency than INTERVenE-Ar.
+
+\subsection{Interpretability via Sparse Transcoders}
+
+A central claim of this work is that operating on a KBTA vocabulary makes the model's reasoning legible. While attention maps track token-to-token routing, they do not decompose the semantic content embedded in MLP hidden states; sparse transcoders provide this decomposition, expressing the network's computations in terms of named-concept directions that can be directly interpreted. We probe a trained INTERVenE-Enc with sparse transcoders \citep{dunefsky2024transcoders}. For each encoder block $L$ we fit a JumpReLU transcoder \citep{rajamanoharan2024jumping} that encodes the block's MLP input $x_L$ (the post-normalisation, pre-MLP activation) into a sparse feature code $f_L$, and reconstructs the MLP output $\hat{y}_L$ from $f_L$ under a reconstruction + L0 objective, reaching high per-layer reconstruction (R$^2\approx 0.97$) with a sparse per-token code. Crucially, the transcoder is never substituted into the network. Instead we attach it via a \emph{gradient-decoupled hook}: the hook injects
+\begin{equation}
+y^{\mathrm{used}}_L = y^{\mathrm{true}}_L + \big(\hat{y}_L - \mathrm{sg}(\hat{y}_L)\big)
+\label{eq:gd-hook}
+\end{equation}
+where $\mathrm{sg}(\cdot)$ denotes stop-gradient. The added term is numerically zero, so the forward pass is bit-exact to the deployed model; but autograd retains a live path from the risk logit through $\hat{y}_L$ to $f_L$, enabling attribution without altering model behavior. Every attribution is therefore computed on the deployed model and its true risk logits, with the transcoder serving only as a sparse, named-concept basis for gradient decomposing. The signed contribution of input token $t$ to outcome $k$ is the layer-summed, first-order input$\times$gradient attribution
+\begin{equation}
+\mathrm{contrib}_t^{(k)} \;=\; \sum_{L=1}^{N_{\mathrm{layers}}}\,\sum_{j=1}^{d_{\mathrm{feat}}} f_L(t,j)\;\frac{\partial\,\mathrm{risk}_k}{\partial f_L(t,j)},
+\label{eq:contrib}
+\end{equation}
+aggregated by token across patients. As with any gradient-based attribution (saliency, integrated gradients, SHAP), Eq.~\eqref{eq:contrib} reflects the model's local sensitivity to a concept, not the concept's causal necessity. Because every input token is a KBTA abstraction, each $\mathrm{contrib}_t^{(k)}$ resolves to a named clinical concept - a state, trend, or event --- rather than a raw numerical artifact.
+
+
+\subsection{Baselines}
+
+We benchmark against four baselines spanning the principal modeling paradigms for irregular clinical sequences. \textbf{GRU-D} \citep{che2018recurrent} augments a gated recurrent network with learned exponential decays that model elapsed time between observations and the effects of missing data, providing the canonical recurrent approach to irregular clinical sampling. \textbf{STraTS} \citep{tipirneni2022strats} represents each observation as a (concept, time, value) triplet, embedding continuous values and timestamps before processing the resulting set with a Transformer. We evaluate both its self-supervised variant (forecasting pretraining followed by supervised fine-tuning) and a supervised-only variant trained from scratch, as pretraining did not consistently improve performance on this cohort. \textbf{KarmaLego+TPF} is the only baseline that operates on the same KBTA representation as INTERVenE. KarmaLego \citep{moskovitch2015karmalego} mines frequent Allen-style temporal interval relation patterns (TIRPs) from the interval sequences; we mine patterns on the training split using a class-balanced discovery subset, a reduced three-relation set, 1-minute tolerance, 4-hour maximum gap, and minimum vertical support of 0.20. Temporal Probabilistic Profiles (TPF) \citep{sheetrit2019tpf} summarize each patient by per-pattern count and duration statistics. Features are selected using $\chi^2$/BH-FDR ($q<0.05$), and $\ell_2$-regularized logistic regression classifiers are tuned by grid search on the validation split.
+
+All baselines are re-implemented, trained, and selected under the same protocol as INTERVenE: the shared patient-level split, 48-hour observation window, flat context vector, validation-based early stopping, and held-out test evaluation. Consequently, reported differences reflect modeling rather than data or tuning choices. Because the event representation is the only input that varies, the KarmaLego comparison isolates Transformer sequence modeling against symbolic pattern mining on the \emph{same} KBTA representation. GRU-D and STraTS instead operate on the raw event stream; feeding them KBTA intervals would not constitute a matched comparison, since the abstraction layer is integral to INTERVenE rather than a replaceable preprocessing step.
+
+\section{Results}
+
+Table~\ref{tab:headline} summarizes support-weighted headline metrics and Table~\ref{tab:per-outcome} reports the per-outcome breakdown. All methods share the same train/validation/test split and evaluation protocol, with statistical significance assessed by non-overlapping 95\% patient-level bootstrap confidence intervals (2,000 resamples). INTERVenE-Ar is reported for completeness under its generative rollout scoring contract rather than as a like-for-like discriminative baseline.
+
+\begin{table}[t]
+  \caption{Headline patient-level performance on the MIMIC-IV diabetic cohort, support-weighted across the six outcomes. AUPRC$_w$ is the primary evaluation metric; AUROC$_w$ and F1$_w$ summarize discrimination; LoS is length-of-stay MAE (hours). Parameter counts correspond to the deployed models; for KarmaLego, the budget is the number of selected sparse TIRP features. Bold indicates the best result in each column.}
+  \label{tab:headline}
+  \centering
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{lccccc}
+    \toprule
+    Method & Params & AUPRC$_w$ & AUROC$_w$ & F1$_w$ & LoS (h) \\
+    \midrule
+    KarmaLego+TPF   & 25.6k\,feat. & $0.587{\pm}0.012$ & $0.870{\pm}0.005$ & $0.571{\pm}0.010$ & $100.1{\pm}3.4$ \\
+    GRU-D           & 47.9k        & $0.626{\pm}0.014$ & $0.889{\pm}0.005$ & $0.609{\pm}0.011$ & $47.9{\pm}0.8$ \\
+    STraTS (pre+ft) & 92.7k        & $0.614{\pm}0.014$ & $0.890{\pm}0.005$ & $0.601{\pm}0.011$ & $48.6{\pm}0.9$ \\
+    ss-STraTS       & 86.5k        & $0.631{\pm}0.014$ & $0.895{\pm}0.005$ & $0.618{\pm}0.011$ & $48.5{\pm}0.9$ \\
+    INTERVenE-Ar    & 1.77M        & $0.587{\pm}0.013$ & $0.854{\pm}0.007$ & $0.569{\pm}0.011$ & $65.1{\pm}1.1$ \\
+    \textbf{INTERVenE-Enc} & 1.85M  & $\mathbf{0.672{\pm}0.012}$ & $\mathbf{0.901{\pm}0.005}$ & $\mathbf{0.628{\pm}0.011}$ & $\mathbf{44.4{\pm}0.9}$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \smallskip
+  \footnotesize INTERVenE-Ar is evaluated from a free-running autoregressive rollout; LoS MAE is read from the terminal generated state. Its headline metrics therefore reflect a generative rollout rather than the single-pass discriminative evaluation used by the other models and are reported for completeness rather than as a like-for-like comparison. The locked Ar configuration is detailed in Table~\ref{tab:abl-ar-all}.
+\end{table}
+
+\begin{table*}[t]
+  \caption{Per-outcome AUPRC, AUROC, Best-F1, and time-head MAE. Header rows report the positive prevalence (\emph{prev.}, the AUPRC random baseline) and the median-time baseline MAE (\emph{base MAE}). Bold indicates the best value for each (outcome, metric) pair; MAE is reported only for the INTERVenE variants.}
+  \label{tab:per-outcome}
+  \centering
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{llcccccc}
+    \toprule
+    Method & Metric & KIDNEY & Hyperglyc. & Sev.\ Hyper. & Hypoglyc. & Sev.\ Hypo. & DEATH \\
+           & \emph{prev.}        & 9.3\%  & 26.4\% & 12.6\% & 5.8\%  & 2.7\%  & 12.9\% \\
+           & \emph{base MAE (h)} & 28.8   & 26.6   & 33.2   & 42.6   & 45.3   & 136.9 \\
+    \midrule
+    \multirow{3}{*}{KarmaLego + TPF}
+      & AUPRC   & $0.704 \pm 0.029$ & $0.776 \pm 0.014$ & $0.521 \pm 0.029$ & $0.211 \pm 0.031$ & $0.081 \pm 0.021$ & $0.477 \pm 0.029$ \\
+      & AUROC   & $0.910 \pm 0.012$ & $0.884 \pm 0.007$ & $0.847 \pm 0.012$ & $0.754 \pm 0.021$ & $0.734 \pm 0.030$ & $0.827 \pm 0.012$ \\
+      & Best-F1 & $0.674 \pm 0.025$ & $0.695 \pm 0.014$ & $0.532 \pm 0.021$ & $0.280 \pm 0.031$ & $0.155 \pm 0.029$ & $0.492 \pm 0.022$ \\
+    \midrule
+    \multirow{3}{*}{GRU-D}
+      & AUPRC   & $0.729 \pm 0.029$ & $0.778 \pm 0.018$ & $0.559 \pm 0.032$ & $0.249 \pm 0.036$ & $0.128 \pm 0.032$ & $0.553 \pm 0.033$ \\
+      & AUROC   & $0.921 \pm 0.011$ & $0.899 \pm 0.007$ & $0.889 \pm 0.010$ & $0.817 \pm 0.018$ & $0.826 \pm 0.024$ & $\mathbf{0.896 \pm 0.010}$ \\
+      & Best-F1 & $0.678 \pm 0.027$ & $0.718 \pm 0.015$ & $0.582 \pm 0.022$ & $0.310 \pm 0.032$ & $0.218 \pm 0.044$ & $0.542 \pm 0.025$ \\
+    \midrule
+    \multirow{3}{*}{STraTS (pre+ft)}
+      & AUPRC   & $0.708 \pm 0.032$ & $0.768 \pm 0.018$ & $0.544 \pm 0.033$ & $0.282 \pm 0.040$ & $\mathbf{0.150 \pm 0.040}$ & $0.522 \pm 0.035$ \\
+      & AUROC   & $0.917 \pm 0.011$ & $0.896 \pm 0.007$ & $0.888 \pm 0.010$ & $0.846 \pm 0.015$ & $\mathbf{0.839 \pm 0.024}$ & $0.888 \pm 0.010$ \\
+      & Best-F1 & $0.672 \pm 0.027$ & $0.710 \pm 0.014$ & $0.561 \pm 0.022$ & $0.336 \pm 0.032$ & $\mathbf{0.245 \pm 0.047}$ & $0.529 \pm 0.026$ \\
+    \midrule
+    \multirow{3}{*}{ss-STraTS}
+      & AUPRC   & $0.726 \pm 0.032$ & $0.782 \pm 0.017$ & $0.566 \pm 0.031$ & $0.267 \pm 0.036$ & $0.123 \pm 0.028$ & $0.563 \pm 0.033$ \\
+      & AUROC   & $0.925 \pm 0.011$ & $0.902 \pm 0.007$ & $0.892 \pm 0.009$ & $\mathbf{0.847 \pm 0.015}$ & $0.833 \pm 0.025$ & $0.895 \pm 0.010$ \\
+      & Best-F1 & $0.695 \pm 0.026$ & $0.718 \pm 0.014$ & $0.575 \pm 0.022$ & $0.336 \pm 0.031$ & $0.230 \pm 0.040$ & $0.553 \pm 0.026$ \\
+    \midrule
+    \multirow{4}{*}{INTERVenE-Ar}
+      & AUPRC   & $0.701 \pm 0.035$ & $0.772 \pm 0.017$ & $0.588 \pm 0.032$ & $0.274 \pm 0.040$ & $0.120 \pm 0.033$ & $0.368 \pm 0.029$ \\
+      & AUROC   & $0.906 \pm 0.014$ & $0.884 \pm 0.009$ & $0.884 \pm 0.011$ & $0.814 \pm 0.020$ & $0.804 \pm 0.028$ & $0.752 \pm 0.015$ \\
+      & Best-F1 & $0.695 \pm 0.027$ & $0.702 \pm 0.014$ & $0.576 \pm 0.024$ & $0.365 \pm 0.033$ & $0.196 \pm 0.038$ & $0.383 \pm 0.023$ \\
+      & MAE (h) & $28.0 \pm 3.0$    & $30.6 \pm 1.7$    & $41.4 \pm 2.9$    & $50.6 \pm 4.4$    & $60.4 \pm 7.5$    & $159.6 \pm 10.2$ \\
+    \midrule
+    \multirow{4}{*}{\textbf{INTERVenE-Enc}}
+      & AUPRC   & $\mathbf{0.790 \pm 0.028}$ & $\mathbf{0.818 \pm 0.014}$ & $\mathbf{0.629 \pm 0.032}$ & $\mathbf{0.308 \pm 0.042}$ & $0.144 \pm 0.036$ & $\mathbf{0.605 \pm 0.030}$ \\
+      & AUROC   & $\mathbf{0.944 \pm 0.009}$ & $\mathbf{0.911 \pm 0.007}$ & $\mathbf{0.901 \pm 0.010}$ & $0.840 \pm 0.017$ & $\mathbf{0.839 \pm 0.024}$ & $0.888 \pm 0.010$ \\
+      & Best-F1 & $\mathbf{0.737 \pm 0.025}$ & $\mathbf{0.733 \pm 0.014}$ & $\mathbf{0.603 \pm 0.024}$ & $\mathbf{0.363 \pm 0.035}$ & $0.234 \pm 0.042$ & $\mathbf{0.576 \pm 0.023}$ \\
+      & MAE (h) & $18.4 \pm 2.4$    & $18.5 \pm 1.1$    & $25.7 \pm 2.0$    & $34.1 \pm 3.1$    & $38.8 \pm 4.7$    & $123.0 \pm 8.1$ \\
+    \bottomrule
+  \end{tabular}%
+  }
+
+  \smallskip
+  \footnotesize Time MAEs are reported only for the INTERVenE variants because the baselines lack per-outcome time heads. INTERVenE-Ar's MAE corresponds to the peak predicted probability along the generated trajectory matched to the nearest ground-truth event.
+\end{table*}
+
+INTERVenE-Enc achieves the strongest overall performance, improving the primary metric to a support-weighted AUPRC of $0.672$ ($+0.041$ over the strongest neural baseline, ss-STraTS, and $+0.085$ over KarmaLego; non-overlapping 95\% CIs). It also achieves the best AUROC$_w$, Best-F1$_w$, and LoS MAE, making it the strongest single-pass discriminative model in the comparison. INTERVenE-Ar attains competitive performance despite the substantially harder generative evaluation protocol, in which predictions are scored only after a full autoregressive rollout. Its strongest performance is observed on the dysglycemia outcomes (Appendix Fig.~\ref{fig:ar-trajectory}), while DEATH remains challenging because of the long prediction horizon and sparse terminal events.
+
+Per-outcome (Table~\ref{tab:per-outcome}), INTERVenE-Enc achieves the highest AUPRC on five of the six outcomes, with the largest improvements for KIDNEY ($0.790$ vs.\ $0.726$) and DEATH ($0.605$ vs.\ $0.563$), while tying STraTS on the rarest outcome (SEVERE HYPOGLYCEMIA; $2.7$\% prevalence, overlapping 95\% CIs). The auxiliary time head consistently improves event-time prediction, reducing MAE by $7$--$14$\,h relative to the median-time baseline across all outcomes.
+
+\paragraph{Calibration.}
+Both variants support per-outcome temperature scaling, fitted on the validation split and applied unchanged to the held-out test set. INTERVenE-Enc is well calibrated as emitted (support-weighted ECE $0.016$), with only a small improvement after scaling ($0.013$; Appendix Table~\ref{tab:calibration}). INTERVenE-Ar exhibits higher calibration error under its peak-detector readout ($\approx4$--$12\%$ ECE), but temperature scaling substantially improves the prevalent outcomes (e.g., DEATH: $0.050 \rightarrow 0.011$; Appendix Table~\ref{tab:ar-calibration}).
+
+\paragraph{Interpretability.}
+Figure~\ref{fig:xai} aggregates per-token attributions for the DEATH outcome across 300 test patients; the complete six-outcome panel is provided in Appendix Figure~\ref{fig:xai-all}. Positive attribution is dominated by \emph{severe hypoalbuminemia}, a well-established mortality marker, followed by elevation of amino-transferase (liver stress) and increasing bicarbonate (acid--base decompensation). Negative attribution highlights recovery-associated concepts, including a decreasing trend of aspartate-aminotransferase and a subcutaneous basal-insulin treatment state, indicating that attribution reflects clinical direction rather than merely clinical activity. Because attribution is computed directly from the deployed model, every contribution reflects its learned sensitivity and, through the KBTA vocabulary, is expressed as a named clinical concept rather than a raw measurement. Similar clinically coherent patterns are observed across all six outcomes (Appendix Figure~\ref{fig:xai-all}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{xai_death.png}
+  \caption{Per-token DEATH risk drivers from gradient-decoupled sparse-transcoder attribution, averaged over 300 test patients. Red tokens push risk up, blue push it down. Full six-outcome panel in Appendix Fig.~\ref{fig:xai-all}.}
+  \label{fig:xai}
+\end{figure}
+
+\section{Discussion}
+
+These results support two complementary conclusions. First, predictive performance is primarily driven by the neural architecture rather than the specific interval discretization. INTERVenE-Enc consistently outperforms GRU-D, STraTS, and KarmaLego on the shared benchmark, while the input-representation and interval-structure ablations (Appendix Table~\ref{tab:abl-enc-all}) show that replacing KBTA with a simple $\sigma$-based discretization preserves essentially the same AUPRC and AUROC. This suggests that the predictive gains arise chiefly from the Transformer architecture operating on persistent interval representations rather than from a particular choice of discretization. However, representing clinical observations as persistent symbolic intervals, rather than instantaneous point events, remains essential: collapsing all KBTA intervals to a 1-second duration yields a substantial performance drop (weighted AUPRC $0.672 \to 0.593$, LoS MAE $+7.36\,h$), demonstrating that persistence over time of symbolic information is itself an important predictive signal. Second, KBTA contributes primarily through interpretability. By grounding interval tokens in ontology-derived clinical concepts—states, trends, and events—the KBTA vocabulary enables the gradient-decoupled attribution pipeline to resolve directly into clinically meaningful explanations. Our experiments therefore suggest that KBTA's principal contribution is interpretability, with a modest improvement in length-of-stay prediction, rather than being a prerequisite for predictive accuracy.
+
+The representation helps most where the clinical target is itself an abstraction: severe dysglycemia outcomes are defined by threshold-crossing states and their durations, so the input injects the clinical definition directly into the model. The gain extends to DEATH (AUPRC $0.605$ vs.\ ss-STraTS $0.563$) and length-of-stay ($44.4$\,h vs.\ $\sim$$48$\,h), outcomes not defined by any single KBTA threshold: here the model appears to recognize combinations of abstracted states - hypoalbuminemia, organ-stress trends, acid-base shifts - that collectively signal physiological deterioration, consistent with the clinically coherent DEATH drivers in Figure~\ref{fig:xai}.
+
+Finally, the two variants are complementary rather than redundant. \textbf{INTERVenE-Enc} is designed as the production predictor, providing the strongest single-pass accuracy with low-latency inference. \textbf{INTERVenE-Ar} instead prioritizes interpretability, generating complete abstraction trajectories with per-step risk curves that localize \emph{when}, and after \emph{which} events, risk increases---the capability that motivated the autoregressive design. This distinction is reflected in deployment characteristics: INTERVenE-Enc processes patients in $3.3$\,ms each on a single RTX A5000 (batch size 16; $302$ patients/s, allowing the full 8{,}562-patient test set to be evaluated in under 30\,seconds), whereas INTERVenE-Ar requires $255$\,ms per patient ($3.9$ patients/s; CPU inference is impractical), yielding an approximately $77\times$ latency difference and two distinct deployment niches.
+
+\section{Limitations}
+
+The central limitation is intrinsic to the representation. The KBTA layer is only as expressive as its underlying temporal abstraction knowledge (TAK) base: concepts without an explicit abstraction rule are absent from the model input. Consequently, extending INTERVenE to new diseases, patient populations, or healthcare settings requires constructing a new domain-specific TAK knowledge base rather than simply retraining on new labels. This is an expert-driven process involving the selection of relevant clinical variables and the definition of abstraction rules, making adaptation substantially more labor-intensive than for end-to-end models trained directly on raw observations. The diabetes knowledge base used here comprises 159 TAK abstraction definitions yielding a vocabulary of 506 named clinical concepts.
+
+A related limitation is granularity. Rule-based abstractions intentionally collapse clinically equivalent values into the same concept; for example, glucose measurements of 250\,mg/dL and 600\,mg/dL both map to the \emph{severe-hyperglycemia} state. However, the $\sigma$-based discretization ablation (Appendix Table~\ref{tab:abl-enc-all}) achieves comparable AUPRC and AUROC, suggesting that the proposed architecture is not intrinsically tied to KBTA and can operate over alternative structured discretizations when expert knowledge is unavailable.
+
+Beyond the representation, this study evaluates a single MIMIC-IV cohort. External validation, subgroup fairness analyses across demographics and care settings, and attribution robustness across random initializations remain important future directions. Finally, we report patient-level bootstrap confidence intervals rather than multi-seed variance: full training takes approximately 8--12 hours for INTERVenE-Enc and more than 24 hours for INTERVenE-Ar on a single RTX A5000, making multi-seed sweeps prohibitively expensive.
+
+\section{Conclusion}
+
+We presented INTERVenE, a Transformer family for temporal EHR modeling over knowledge-based temporal abstractions. INTERVenE-Enc achieves the strongest predictive performance on the MIMIC-IV diabetic cohort while providing faithful, concept-level explanations through gradient-decoupled sparse-transcoder attribution. INTERVenE-Ar complements it with autoregressive abstraction trajectories and per-step risk curves, enabling temporal inspection of how clinical evidence accumulates over an admission. Together, these results demonstrate that competitive predictive performance and clinically meaningful interpretability can be achieved within a single neuro-symbolic framework.
+
+\section*{Data and Code Availability}
+Complete source code for INTERVenE, all baselines, and the MIMIC-IV cohort pipeline are included in supplementary material; a public repository will be released upon acceptance. Both INTERVenE variants ($\sim$1.8M parameters) train on a single NVIDIA RTX~A5000 (24\,GB VRAM) or smaller; the KarmaLego pipeline runs CPU-only. The full pipeline requires no multi-GPU resources and fits within 25\,GB on disk.
+
+\section*{Acknowledgments}
+Acknowledgments and funding sources are omitted for anonymous review and will be added in the camera-ready version.
+
+\clearpage
+\bibliography{bib}
+
+%\input{appendix}
+
+\end{document}

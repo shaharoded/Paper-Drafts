@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="NEUTROPHILS_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of NEUTROPHILS (units 10e3/mL)</description>
+    <derived-from name="NEUTROPHILS_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="48h" interpolate="true" max-skip="1"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Severe Neutropenia" operator="and">
+            <attribute idx="0">
+                <allowed-value max="1.0"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Neutropenia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="1.0" max="1.5"/>
+            </attribute>
+        </rule>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value min="1.5" max="7.5"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Neutrophilia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.5" max="12"/>
+            </attribute>
+        </rule>
+        <rule value="Moderate Neutrophilia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="12" max="20"/>
+            </attribute>
+        </rule>
+        <rule value="Severe Neutrophilia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="20"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

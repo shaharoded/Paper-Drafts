@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<event name="KIDNEY_COMPLICATION_EVENT">
+    <categories>Complications</categories>
+    <description>Lab-derived AKI renal complication prediction target, defined as AKI Stage 2 or Stage 3.</description>
+    <derived-from>
+        <attribute name="CREATININE_SERUM_MEASURE" tak="raw-concept" idx="0" ref="C1"/>
+        <attribute name="CREATININE_REL_SERUM_MEASURE" tak="parameterized-raw-concept" idx="0" ref="R1"/>
+        <attribute name="KIDNEY_COMPLICATION" tak="raw-concept" idx="0" ref="O1"/>
+    </derived-from>
+    
+    <!-- 
+    Abstraction rules: constraint types allowed in <allowed-value>:
+    - equal="value"               → exact match
+    - min="value"                 → >= value
+    - max="value"                 → <= value
+    - min="val1" max="val2"       → range [val1, val2]
+    -->
+    <abstraction-rules>
+        <rule value="True" operator="or">
+            <attribute ref="R1">
+                <allowed-value min="2.0"/>  <!-- AKI Stage 2+ by creatinine ratio -->
+            </attribute>
+            <attribute ref="C1">
+                <allowed-value min="4.0"/>  <!-- AKI Stage 3 by severe absolute creatinine -->
+            </attribute>
+            <attribute ref="O1">
+                <allowed-value equal="True"/>  <!-- AKI Stage 2+ by observation code -->
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</event>

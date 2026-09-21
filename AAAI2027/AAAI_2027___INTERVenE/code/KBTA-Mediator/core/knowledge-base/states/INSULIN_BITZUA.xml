@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="INSULIN_BITZUA_STATE">
+    <categories>DrugAdministration</categories>
+    <description>Abstraction for the dosage and route of administration of regular insulin (IV by default)</description>
+    <derived-from name="INSULIN_BITZUA" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within good_after window; allow 1 outlier skip -->
+    <persistence good-after="24h" interpolate="false"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="IntraVenous Low" operator="and">
+            <attribute idx="0">
+                <allowed-value max="20"/>
+            </attribute>
+        </rule>
+        <rule value="IntraVenous Medium" operator="and">
+            <attribute idx="0">
+                <allowed-value min="20" max="40"/>
+            </attribute>
+        </rule>
+        <rule value="IntraVenous High" operator="and">
+            <attribute idx="0">
+                <allowed-value min="40"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

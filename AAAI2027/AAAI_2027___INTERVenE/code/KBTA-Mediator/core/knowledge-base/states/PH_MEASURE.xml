@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="PH_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of PH</description>
+    <derived-from name="PH_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="6h" interpolate="false"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Critical Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value max="7.0"/>
+            </attribute>
+        </rule>
+        <rule value="Severe Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.0" max="7.1"/>
+            </attribute>
+        </rule>
+        <rule value="Moderate Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.1" max="7.2"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.2" max="7.3"/>
+            </attribute>
+        </rule>
+        <rule value="Borderline Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.3" max="7.35"/>
+            </attribute>
+        </rule>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.35" max="7.45"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Alkalosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.45" max="7.55"/>
+            </attribute>
+        </rule>
+        <rule value="Severe Alkalosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="7.55"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

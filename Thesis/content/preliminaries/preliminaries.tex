@@ -1,0 +1,313 @@
+% Sections of Chapter 2 (Background). The chapter opening lives in
+% content/background/background.tex.
+\section{Clinical Setting and Prediction Task}
+
+\subsection{Inpatient Dysglycemia}
+
+Diabetes mellitus is a chronic disorder of glucose regulation. In the inpatient setting, the relevant clinical object is not the diagnosis but \emph{dysglycemia}: episodes of hyperglycemia (elevated blood glucose) or hypoglycemia (depressed blood glucose) occurring during the admission, whether or not diabetes was previously documented. Both are consequential. Sustained hyperglycemia is associated with infection, delayed healing, and metabolic decompensation up to diabetic ketoacidosis (DKA), while hypoglycemia is an acute event that can cause immediate neurological harm. Both are shaped by how insulin therapy is prescribed, titrated, and monitored during the stay, which is what makes the treatment process --- and not only the patient state --- a legitimate object of modeling.
+
+Throughout this thesis, an \emph{admission} is the unit of analysis. A patient may contribute several admissions; wherever the distinction matters, in particular when splitting data or computing confidence intervals, grouping is performed at the patient level to prevent leakage between related admissions.
+
+\subsection{Clinical Guidelines for Inpatient Insulin Management}
+
+A \emph{clinical guideline} (GL) is an evidence-based protocol prescribing how a clinical condition should be managed. Guidelines for inpatient diabetes care specify, among other things, how frequently blood glucose should be measured, how oral antidiabetic agents should be handled on admission, when basal and correction insulin should be administered, and how to respond to a documented hyperglycemic or hypoglycemic episode. Such recommendations share a common structure: they are \emph{procedural} (they prescribe actions), \emph{temporal} (the action must occur within some window, or at some frequency, or in some order relative to another action), and \emph{conditional} (the action is expected only when a triggering clinical situation holds).
+
+This structure is what makes adherence computable. A recommendation of the form ``administer correction insulin within $t$ hours of a glucose measurement above $\theta$'' can be evaluated automatically against a patient record, provided that both the triggering situation and the responding action are represented in a form supporting temporal reasoning. Section~\ref{sec:prelim-qa} defines that form.
+
+\subsection{Electronic Health Records and the OMOP Common Data Model}
+
+An \emph{electronic health record} (EHR) is the longitudinal record of a patient's care. For our purposes it consists of two parts. The first is a set of irregularly timed observations --- laboratory measurements, vital signs, medication administrations, procedures, and diagnoses --- each carrying a concept identifier, a timestamp, and possibly a value (numeric or categorical). The second is a set of static, admission-level attributes: demographics, admission type, and summaries of prior clinical history defined and extracted via ETL. EHR data is characteristically \emph{irregular} (observations arrive at patient-specific times), \emph{sparse} (most variables are unobserved at most times), and \emph{heterogeneous} (numeric, categorical, and event-typed variables coexist), and the fact that a measurement was taken at all is itself informative.
+
+The \emph{Observational Medical Outcomes Partnership Common Data Model} (OMOP CDM) is a standardized relational schema for such records, placing clinical facts in a small number of typed tables mapped to a shared concept vocabulary. Two datasets are used in this thesis. \textbf{MIMIC-IV} \citep{johnson2023mimiciv} is a public, de-identified critical-care database, used as a controlled benchmark for the methodological work. \textbf{Kineret} \citep{kineret-israel-largest-hospital-network-omop-common-data-model} is the OMOP-formatted data warehouse of Israel's largest hospital network, used for the real-world study. Unlike MIMIC-IV, Kineret was not mapped to an international coding system at the time of this work, so a dataset-specific concept index --- a many-to-one mapping from local codes to clinical concepts --- had to be constructed before abstraction could proceed.
+
+A custom extract--transform--load (ETL) procedure brings both datasets into the same shape: a common set of clinical concepts, a shared event-stream representation, and an equivalent static attribute vector. Coverage is not identical, since some concepts recorded in one source have no counterpart in the other, but the vast majority are shared. This alignment is what allows the same knowledge base, the same abstraction pipeline, and the same model definitions to be applied to both, so that differences in results reflect the settings and cohorts rather than the data engineering behind them.
+
+\subsection{The Prediction Task}
+\label{sec:prelim-task}
+
+Let an admission be represented by an irregularly sampled event stream
+\[
+E = \{(c_i, t_i, v_i)\}_{i=1}^{n},
+\]
+where $c_i$ is a clinical concept, $t_i$ the time of observation relative to admission, and $v_i$ an optional value, together with a static attribute vector $x \in \mathbb{R}^{d}$.
+
+Given an \emph{observation window} of the first $K$ hours and a total length of stay of $N$ hours, the task is to predict, from $E_{\le K} = \{(c_i,t_i,v_i) \in E : t_i \le K\}$ and $x$, whether each of a set of target outcomes occurs during the \emph{prediction window} $(K, N]$. We take $K = 48$ hours and bound admissions to $48\,\text{h} \le K < N \le 14$ days, so that every admission offers at least two days of observation while the prediction horizon stays within the clinically meaningful short term.
+
+Two conventions matter. First, an outcome already observed within $(0, K]$ does not count as a positive label, so that models are required to predict future events rather than to detect events they have already seen. Second, because several outcomes may occur in the same admission, the task is treated as a set of binary predictions rather than a single multi-class problem. A continuous length-of-stay target is additionally used as an auxiliary regression objective.
+
+\section{Knowledge-Based Temporal Abstraction}
+\label{sec:prelim-kbta}
+
+\subsection{From Time Points to Intervals}
+
+\emph{Knowledge-based temporal abstraction} (KBTA) \citep{shahar1997framework} is a formal framework for converting time-stamped clinical data into interval-level, clinically named concepts. Its output is a set of \emph{abstraction intervals}
+\[
+A = \{(a_j, s_j, e_j)\}_{j=1}^{m}, \qquad s_j \le e_j,
+\]
+where $a_j$ is a symbolic concept drawn from a curated ontology and $[s_j, e_j]$ is the interval over which it holds. A raw sequence of glucose measurements becomes, for example, \textsc{glucose:high} holding for eleven hours, followed by \textsc{glucose:decreasing} holding for four.
+
+The framework distinguishes several abstraction types:
+
+\begin{itemize}
+\item \textbf{Raw concepts} --- the primitive measured parameters, such as serum glucose or systolic blood pressure.
+\item \textbf{State abstractions} --- symbolic qualifications of a parameter's value over an interval, such as \textsc{low}, \textsc{normal}, or \textsc{high}, obtained by applying knowledge-defined thresholds. Deriving them requires both the discretization thresholds and a relevance duration for the underlying measurement.
+\item \textbf{Trend abstractions} --- the direction of change of a parameter over an interval, such as \textsc{increasing}, \textsc{stable}, or \textsc{decreasing}. Deriving them requires a definition of what constitutes a meaningful change and over what span, for instance a rise of five units within twelve hours.
+\item \textbf{Events} --- externally imposed occurrences with no intrinsic value to abstract, such as a medication administration, a procedure, or a diagnosed ketoacidosis episode.
+\item \textbf{Contexts} --- intervals during which a particular interpretation frame is in force, such as \emph{post-operative} or \emph{during insulin therapy}, which may alter how other abstractions are derived. Glucose is monitored far more frequently under a diabetes context than in a patient carrying no such diagnosis, for example, so a single reading is taken to remain informative for a shorter span, and the intervals derived from it are correspondingly tighter.
+\item \textbf{Patterns} --- composite concepts defined over the temporal arrangement of other abstractions. A pattern begins at an \emph{anchor}, the situation that makes some clinical response expected, and closes at the \emph{action} that answers it: a \textsc{high} glucose state adjacent to a meal event is an anchor requiring insulin, and the pattern it opens is closed by the insulin administration. The resulting interval therefore stretches from the anchor to the action, or closes at the anchor where no action was taken. Where the requirement comes from a clinical guideline, the pattern can additionally carry a \emph{score} reflecting how promptly the action followed its anchor, or the dosage administered, which is the subject of Section~\ref{sec:prelim-qa}.
+\end{itemize}
+
+Two knowledge parameters govern how intervals are formed. \emph{Thresholds} determine the mapping from values to symbolic states and may themselves be context-sensitive, depending on age, sex, comorbidity, or an active treatment. \emph{Relevance durations} (persistence) determine how long an observation may be assumed to hold before and after it was recorded, which is what allows two measurements to be joined into a single interval, or a gap to be left where the record is silent.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{temporal_abstraction.png}
+\caption{Temporal abstraction of a multivariate clinical record. On the left, each parameter is a series of irregularly timed point measurements. On the right, the same data has been abstracted into intervals: body-temperature readings are discretized against knowledge-defined thresholds into \textsc{hypothermia}, \textsc{normal}, and \textsc{fever} states, and the direction of change between them is abstracted into \textsc{increasing}, \textsc{decreasing}, and \textsc{stable} gradients. Duration becomes explicit, and each resulting symbol is a named clinical concept rather than a bin index.}
+\label{fig:temporal-abstraction}
+\end{figure}
+
+Figure~\ref{fig:temporal-abstraction} illustrates the transformation on a record of heart rate, pulse pressure, and body temperature. The point measurements on the left carry no notion of how long a condition held or in which direction it was moving; the intervals on the right carry both, and are labeled in terms a clinician already uses.
+
+The distinction from generic discretization is essential to this thesis. Equal-length binning (dividing the timeline into fixed-size intervals) and equal-frequency binning (splitting it so that each bin holds a similar number of observations) impose boundaries that are data-driven and unnamed. KBTA imposes clinically meaningful ones, derived from thresholds, relevance durations, and contextual rules, so that intervals reflect the semantics of the patient's state rather than an artifact of the binning strategy. Two consequences follow: duration becomes a first-class property of the representation, and every symbol is a concept a clinician can read --- which is what later makes an attribution over these symbols legible as a clinical statement.
+
+\subsection{TAK and the Temporal Mediator}
+
+Abstraction knowledge is expressed in the \emph{Temporal Abstraction Knowledge} (TAK) representation, which declares the concept ontology together with the thresholds, relevance durations, contexts, and pattern definitions that derive it. A TAK knowledge base contains one definition per concept, of the types listed above; it also accommodates a further type, the quality-assessment pattern, which encodes adherence to a clinical guideline and is deferred to Section~\ref{sec:prelim-qa}. The knowledge base used in this thesis was authored for it, in a custom schema, and covers the clinical semantics of inpatient diabetes care \citep{mediator-github}.
+
+The \emph{Temporal Mediator} \citep{shahar1997framework} is the reasoning engine that executes a TAK specification against a patient record and answers temporal queries over the result: given a raw event stream and a knowledge base, it returns the interval set $A$ defined above --- the transformation shown in Figure~\ref{fig:temporal-abstraction}. In this thesis the Mediator is the component that turns an OMOP-formatted admission into the abstracted representation on which every subsequent model operates. The engine used here is our own reimplementation of it \citep{mediator-github}, functionally a replica of the original but built around the TAK schema described above; the engineering is described in Chapter~\ref{chapter:comp_methods}.
+
+This body of knowledge is \emph{declarative}: it states what clinical concepts mean. The complementary procedural knowledge --- what should be done, and when --- is the subject of the next section.
+
+\section{Guideline Representation and Quality Assessment}
+\label{sec:prelim-qa}
+
+\subsection{Declarative and Procedural Knowledge}
+
+Formalizing a guideline requires two kinds of knowledge. \emph{Declarative knowledge} (``what is'') defines the clinical concepts a guideline refers to and is captured in TAK, as described above. \emph{Procedural knowledge} (``how to'') specifies the actions to be taken, their order, their repetition, and the conditions under which they apply. Guidelines are conventionally formalized as a hierarchy of nested plans in a dedicated specification language, an approach reviewed in Section~\ref{sec:rw-guidelines}.
+
+In this thesis both bodies of knowledge live in a single representation. The guideline is flattened into a set of independently checkable requirements, each expressed as a TAK construct in the schema of Section~\ref{sec:prelim-kbta} and evaluated by a single engine, which emits one scored pattern per occasion on which a requirement was triggered. The conventional two-formalism arrangement, and the reasons for departing from it, are taken up in Section~\ref{sec:rw-guidelines}.
+
+\subsection{Quality-Assessment Knowledge}
+
+Applying a guideline prospectively and assessing it retrospectively are different tasks. Assessment asks whether the actions recorded in a patient's history constitute a correct execution of the guideline. This requires a third body of knowledge, \emph{quality-assessment} (QA) knowledge \citep{supporting-episodic-application-clinical-guidelines}, which re-expresses the procedural content of a guideline in declarative form: for each recommendation, the temporal pattern that its correct execution would have left behind in the record.
+
+Such a pattern is a \emph{Quality-Assessment Temporal Pattern} (QATP). A QATP is written in TAK, extended with temporal fuzzy logic, and detected by the Mediator in the same pass that produces ordinary abstractions. Following the structure introduced in Section~\ref{sec:prelim-kbta}, it spans from the anchor --- the clinical situation under which the guideline requires an action --- to the action that satisfies it, and carries a score reflecting how the observed action compares with the one prescribed, in its timing, its frequency, or its dosage.
+
+A QATP therefore functions as an \emph{execution trace}. An anchor answered promptly and correctly yields a short interval scoring $1$; an anchor answered late or inadequately yields a longer interval and a proportionally lower score; an anchor never answered yields an interval that closes where the action should have been, scoring $0$. The QA definitions used here extend the same diabetes knowledge base, so that abstraction and assessment are performed by one engine in one pass.
+
+\subsection{Constraint Types}
+
+Each guideline action is categorized by the kind of requirement it imposes, and that category determines how its compliance is evaluated:
+
+\begin{itemize}
+\item \textbf{Cyclic} (periodic) --- an action expected to recur at a defined frequency, evaluated as the number of qualifying events within a fixed-length window, such as routine glucose monitoring.
+\item \textbf{Time} (temporal gap) --- a required separation between anchor and action, such as a minimum interval between doses or a maximum time from hyperglycemia to insulin administration.
+\item \textbf{Value} --- a required threshold or range for a measured parameter, most often a dose, such as keeping insulin dosage within an acceptable band during treatment.
+\end{itemize}
+
+These three types are also the three \emph{compliance aspects} along which a pattern's score is reported: a recommendation constrained along more than one aspect is scored separately on each, and the aspects are combined only during aggregation (Section~\ref{sec:prelim-qa-tree}).
+
+\subsection{Temporal Fuzzy Logic and Partial Compliance}
+
+Clinical practice rarely divides cleanly into compliant and non-compliant. An action performed slightly late is not equivalent to an action never performed, and a binary verdict discards that distinction. Adherence is therefore evaluated with \emph{temporal fuzzy logic}: each constraint is associated with a membership function $\mu : \mathbb{R} \to [0,1]$ mapping the observed timing, frequency, or value to a degree of compliance, where $1$ denotes full compliance and $0$ its absence.
+
+The membership functions used here are trapezoidal --- a core region in which compliance is complete, and sloped shoulders over which it decays. Suppose correction insulin is expected within $4$ hours of a hyperglycemic reading and the requirement is considered missed once $12$ hours have passed. Writing $t$ for the delay between anchor and action,
+
+\[
+\mu(t) =
+\begin{cases}
+1, & t \le 4, \\[4pt]
+\dfrac{12 - t}{12 - 4}, & 4 < t < 12, \\[6pt]
+0, & t \ge 12,
+\end{cases}
+\]
+
+so that insulin given after $8$ hours scores $0.5$ rather than counting as an outright failure. Cyclical, temporal-gap, and value constraints are all evaluated this way, which absorbs the ordinary variability of ward practice instead of penalizing it as a protocol breach.
+
+\subsection{From QATP Instances to a QA Profile}
+\label{sec:prelim-qa-tree}
+
+The Mediator's output is not yet a measure of adherence. It is a set of QATP instances, each consisting of a pattern name, a compliance aspect, a start and end time, and a numeric score --- one entry per occasion on which a guideline requirement was triggered. A single admission may raise the same requirement many times, and different requirements a different number of times, so the instances must be aggregated before they can be compared across admissions.
+
+Aggregation proceeds in stages, each collapsing one level of granularity:
+
+\begin{enumerate}
+\item Instances sharing an admission, pattern, compliance aspect, and calendar day are averaged into one score.
+\item Compliance aspects are collapsed within each admission, pattern, and day, so that a pattern constrained along two aspects does not count twice.
+\item Days are collapsed within each admission and pattern, giving one score per recommendation for the whole admission.
+\item Recommendations are averaged with equal weight, giving one overall score per admission.
+\end{enumerate}
+
+Each stage averages the scores it collapses, so that an admission raising a requirement twenty times is neither rewarded nor penalized relative to one raising it twice, and a frequently-evaluated recommendation cannot dominate a rarely-evaluated one. The intermediate levels are retained rather than discarded: we refer to the resulting per-admission collection --- the overall score, the per-recommendation scores, and the per-day and per-aspect scores beneath them --- as the admission's \emph{QA profile}.
+
+Two properties of this construction are used throughout the thesis. First, the scores are continuous and comparable across admissions, hospitals, and time periods, so adherence can be analyzed as a quantity rather than adjudicated by chart review. Second, the profile is decomposable, so a prediction attributed to ``adherence'' can be traced back to the specific recommendation, and to the day, responsible.
+
+The wider quality-assessment literature uses a richer scheme, aggregating up a weighted tree mirroring the guideline's plan hierarchy so that a critical recommendation contributes more than a peripheral one (Section~\ref{sec:rw-guidelines}). That refinement is not applied here --- requirements are treated as equally weighted --- and it is taken up in Appendix~\ref{appendix:future_work} as a direction for future work.
+
+\section{Time-Interval Mining and Pattern-Based Representations}
+\label{sec:prelim-tirp}
+
+\subsection{Interval Relations}
+
+Reasoning about intervals rather than points requires a vocabulary for how two intervals can be arranged. Allen's interval algebra \citep{allen1983maintaining} provides thirteen mutually exclusive and exhaustive relations between two intervals, seven of which are distinct up to inversion: \emph{before}, \emph{meets}, \emph{overlaps}, \emph{starts}, \emph{during}, \emph{finishes}, and \emph{equals}. They are the alphabet in which composite patterns are written --- both the guideline patterns of Section~\ref{sec:prelim-qa}, whose anchor and action stand in a prescribed relation, and the mined patterns described next.
+
+\subsection{Time-Interval Related Patterns}
+
+Given a database of abstracted admissions, a \emph{Time-Interval Related Pattern} (TIRP) is a set of symbolic intervals together with the Allen relation holding between every pair of them --- for example, a period of high-dose insulin administration \emph{before} a hypoglycemic episode. A TIRP's \emph{horizontal support} is the fraction of records in which it appears; a pattern is \emph{frequent} when this exceeds a minimum-support threshold.
+
+\textbf{KarmaLego} \citep{moskovitch2015karmalego} enumerates frequent TIRPs efficiently by extending patterns incrementally and pruning candidates whose support cannot reach the threshold. It begins where KBTA ends: the Mediator supplies the interval layer, and KarmaLego discovers recurring temporal structure across it. Because the number of candidate patterns grows sharply with sequence length, the \emph{Semantic Adjacency Criterion (SAC)} \citep{sac-time-intervals-mining} is applied as a filter, retaining only patterns whose constituent intervals are semantically related and discarding those in which intervening intervals break the relationship.
+
+\subsection{Temporal Probabilistic Profiles}
+
+Frequent patterns are variable in number and cannot be fed directly to a fixed-input classifier. The \emph{Temporal Probabilistic proFile} (TPF) \citep{sheetrit2019tpf} resolves this by summarizing, for a single patient, the distribution of the discovered patterns --- their relative cardinality or total duration within that patient's record --- as a fixed-length vector. Where TIRP-based classification uses a pattern's population-level support as a feature, TPF uses its prevalence \emph{within} the patient relative to other patients, which is what makes the resulting vector a profile of that individual's temporal behavior. These vectors serve as input to conventional machine-learning models and, in this thesis, as the symbolic baseline against which the transformer models are compared; as with the Mediator, the mining pipeline was reimplemented for this work \citep{karmalego-github}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{tpf_overview.png}
+\caption{The temporal-probabilistic profile pipeline \citep{sheetrit2019tpf}. Multivariate point measurements (1) are abstracted into symbolic state and gradient intervals (2); frequent time-interval related patterns are mined across the population (3); each patient is summarized by the distribution of those patterns within their own record (4); and the resulting profiles are compared, either to per-class aggregate profiles or to other patients, to produce a classification (5).}
+\label{fig:tpf-pipeline}
+\end{figure}
+
+Figure~\ref{fig:tpf-pipeline} places the components of this section in sequence, from the abstraction of Section~\ref{sec:prelim-kbta} through mining to a per-patient profile.
+
+\section{Transformer Models over Token Sequences}
+\label{sec:prelim-transformers}
+
+\subsection{Tokens, Embeddings, and Self-Attention}
+
+A transformer \citep{attention-is-all-you-need} operates on a sequence of discrete \emph{tokens} drawn from a fixed \emph{vocabulary}. Each token is mapped to a learned embedding vector, and the sequence of embeddings is transformed by a stack of blocks combining multi-head self-attention with a position-wise feed-forward network. Self-attention computes, for every position, a weighted sum over all positions in the sequence,
+\[
+\mathrm{Attention}(Q,K,V) = \mathrm{softmax}\!\left(\frac{QK^{\top}}{\sqrt{d_k}}\right)V ,
+\]
+where the queries $Q$, keys $K$, and values $V$ are linear projections of the input. The consequence relevant here is that the mechanism is permutation-invariant: order and timing enter only through what is added to the embeddings, never through attention itself.
+
+The vocabulary is a design choice, and for this thesis it is the central one. Applying a transformer to clinical data requires deciding what a token \emph{is} --- a measurement, a visit, a diagnosis code, or, as in this work, an abstraction concept.
+
+\subsection{Encoder and Decoder Formulations}
+
+The two formulations used here differ in their attention mask and in their training objective.
+
+An \textbf{encoder} \citep{bert-pre-training-deep-bidirectional-transformers-language-understanding} attends bidirectionally: every position sees every other. It produces a contextualized representation of the entire input sequence in a single forward pass, from which prediction heads read off the quantities of interest. It cannot generate a continuation, because each position has already seen the future. Bidirectional models are pretrained by \emph{masked language modeling} (MLM): a fraction of the tokens is replaced by a placeholder symbol and the model is trained to recover their identity from the surrounding context, which forces the representation at every position to encode what belongs there rather than merely copying it.
+
+A \textbf{decoder} \citep{language-models-are-unsupervised-multitask-learners} applies a causal mask, so that position $i$ attends only to positions $\le i$, and is trained to maximize the likelihood of the next token given its predecessors,
+\[
+\mathcal{L} = -\sum_{i} \log p_\theta(z_i \mid z_{<i}).
+\]
+At inference it generates autoregressively, sampling a token and feeding it back, which yields a full continuation of the sequence rather than a single verdict --- and, if a risk head is attached at each step, a readout of how predicted risk evolves along that continuation.
+
+\subsection{Encoding Irregular Time}
+
+Standard positional encodings represent a token's ordinal index, which is inadequate for clinical data where the gap between consecutive events may be minutes or days. \textbf{Time2Vec} \citep{kazemi2019time2vec} instead encodes a continuous timestamp $\tau$ as a vector whose first component is linear in $\tau$ and whose remaining components are periodic,
+\[
+\mathrm{t2v}(\tau)[k] =
+\begin{cases}
+\omega_k \tau + \varphi_k, & k = 0,\\[2pt]
+\mathcal{F}(\omega_k \tau + \varphi_k), & 1 \le k \le d-1,
+\end{cases}
+\]
+with learned frequencies $\omega_k$, learned phases $\varphi_k$, and a periodic activation $\mathcal{F}$. This lets the model represent both elapsed duration and recurrent rhythms such as measurement cycles.
+
+Time2Vec enters through the token embedding and therefore describes \emph{where} a token sits in time. A complementary mechanism acts inside attention itself: \emph{rotary position embeddings} (RoPE) \citep{su2024roformer} rotate the query and key vectors of each attention head by an angle proportional to position, so that their inner product depends on the difference between two positions rather than their absolute values. Attention thereby becomes explicitly relative, which suits clinical sequences in which the interval between two events matters more than their offset from admission. In this work the rotation angle is driven by elapsed time rather than by token index, making the relative encoding temporal rather than ordinal.
+
+\subsection{Conditioning on Static Context}
+
+Admission-level information --- the static feature vector and the QA profile --- is not a sequence and should not occupy sequence positions. It is injected instead through \emph{adaptive layer normalization}, in the AdaLN-Zero form \citep{peebles2023adaln0}: a small network maps the context vector $c$ to per-block scale and shift parameters that modulate the normalized activations,
+\[
+\mathrm{AdaLN}(h, c) = \gamma(c) \odot \mathrm{LayerNorm}(h) + \beta(c),
+\]
+with the modulated residual branch initialized to zero, so that training begins from an unmodulated model and conditioning is introduced gradually.
+
+\subsection{Reading Predictions Out of a Transformer}
+
+Neither formulation is a classifier on its own; both produce representations from which a task-specific \emph{head} --- a small network attached to one or more positions --- reads the quantity of interest. Which heads are attached, what they predict, and how they are trained are design decisions belonging to the method, and are given in Chapter~\ref{chapter:comp_methods}.
+
+\section{Explaining Model Predictions}
+\label{sec:prelim-xai}
+
+\subsection{Attribution and Its Granularity}
+
+Explaining a model's prediction means assigning responsibility for it to something. Post-hoc attribution methods --- gradient-based saliency, and model-agnostic approaches such as SHAP \citep{unified-approach-interpreting-model-predictions} and LIME \citep{why-should-i-trust-you-explaining-predictions-any-classifier} --- do this over the input features, estimating how much each contributed to a particular output. Two properties of the family matter more than the differences between its members. An attribution can be no more meaningful than the representation it is computed over: assigning responsibility to a raw glucose measurement says which variable mattered, but not when, for how long, or in what clinical context. And an attribution reflects the model's local sensitivity to an input, not the causal necessity of the concept behind it.
+
+\subsection{Sparse Transcoders}
+
+Attribution over a transformer's internal representations is complicated by the fact that individual neurons are typically polysemantic, responding to several unrelated inputs. \emph{Sparse transcoders} \citep{dunefsky2024transcoders} address this by learning a wider, sparsely activating layer that reproduces the behavior of a component of the trained model while decomposing its activations into a dictionary of features, of which only a few are active for any given input. Sparsity is enforced through the activation function, one common choice being JumpReLU \citep{rajamanoharan2024jumping}, a thresholded ReLU that suppresses activations below a learned cutoff. The result is a dictionary of directions in the model's representation space, each traceable back to the input tokens that drive it.
+
+\section{Evaluation Metrics and Statistical Tools}
+\label{sec:prelim-eval}
+
+\subsection{Discrimination under Class Imbalance}
+
+The target outcomes are rare, and rare outcomes make the choice of metric consequential. The \emph{receiver operating characteristic (ROC)} curve plots the true-positive rate against the false-positive rate, and the area under it (AUROC) is the probability that a random positive is ranked above a random negative. Because the false-positive rate has a large negative pool in its denominator, AUROC can remain high for a model of little practical use when positives are scarce. The \emph{precision-recall} curve plots precision against recall, and the area under it (AUPRC) is sensitive to exactly the regime that matters clinically --- how many of the flagged cases are genuine. AUPRC is therefore the primary metric, with AUROC and best $F_1$ reported as secondary measures. Where per-outcome results are aggregated, \emph{support-weighted} averaging weights each outcome by its number of positive cases, so that the summary is not dominated by the rarest.
+
+\subsection{Calibration}
+
+Discrimination concerns ranking; calibration concerns whether a predicted probability means what it says. A model is calibrated if, among cases assigned probability $p$, approximately a fraction $p$ experience the outcome. Calibration is assessed with reliability curves, which plot observed frequency against predicted probability within bins, and summarized by expected calibration error and the Brier score. It is reported separately because a model can discriminate well while being systematically over- or under-confident, and clinical use depends on the absolute number.
+
+\subsection{Uncertainty Estimation}
+
+Confidence intervals are obtained by bootstrap resampling: the test set is resampled with replacement many times, the metric is recomputed on each resample, and the interval is read off the resulting distribution. Resampling is performed at the \emph{patient} level rather than the admission level, since admissions of the same patient are not independent. Two models are considered meaningfully different when their intervals do not overlap.
+
+Bootstrapping characterizes the variability of a fixed model over the evaluation sample. The complementary source of variability --- the variance of the training procedure itself, estimated by retraining under several random seeds --- is not quantified here, because doing so is computationally impractical at the scale of this work: a single transformer run takes hours, and the seeds would multiply across every ablation and every experimental condition. Reported intervals should therefore be read as sampling uncertainty for the model that was trained, not as uncertainty over the training procedure that produced it.
+
+\subsection{Statistical Inference in Observational Clinical Studies}
+\label{sec:prelim-causal}
+
+Clinical practice data are observational: treatments are chosen by
+clinicians rather than assigned randomly. Consequently, observed
+differences in patient outcomes reflect both the effects of care and
+differences in the underlying patient populations. Statistical inference
+in observational studies therefore seeks to distinguish predictive
+associations from relationships that are consistent with a causal
+interpretation, while explicitly acknowledging that unmeasured
+confounding cannot be eliminated.
+
+\textbf{Association versus causal effects.}
+A statistical association between a clinical practice and an outcome does
+not imply that the practice caused the outcome. The principal challenge
+is \emph{confounding by indication}, whereby treatment decisions depend
+on patient characteristics that also influence prognosis. Under the
+assumptions of conditional exchangeability, positivity, and consistency,
+causal effects may be approximated by adjusting for measured baseline
+characteristics using propensity-score methods. One commonly used
+approach is \emph{inverse probability of treatment weighting} (IPTW),
+which constructs a weighted pseudo-population in which measured baseline
+characteristics are balanced between exposure groups
+\citep{rosenbaum1983central,austin2015moving}. Covariate balance is
+typically evaluated using standardized mean differences (SMD), providing
+an empirical assessment of whether adjustment was successful.
+
+\textbf{Regression under rare events and correlated predictors.}
+Clinical datasets frequently contain many correlated predictors and few
+events. Both properties obstruct ordinary logistic regression. Correlated
+predictors make individual coefficients unstable and hard to attribute,
+and are conventionally handled either by an $\ell_1$ penalty that shrinks
+many coefficients to zero \citep{tibshirani1996lasso} or by pruning the
+redundant predictors before fitting. Rare events cause a more basic
+failure: under \emph{separation}, where some predictor perfectly
+distinguishes the outcome in the observed data, the maximum-likelihood
+estimate diverges and unpenalized fitting does not converge at all.
+
+\emph{Bias-reduced} logistic regression \citep{firth1993bias} addresses
+the second problem by adding a Jeffreys-prior penalty to the likelihood.
+This removes the first-order small-sample bias of the maximum-likelihood
+estimator and yields finite estimates with valid Wald inference even
+under separation, without inducing sparsity --- so unlike an $\ell_1$
+penalty it performs no variable selection, and predictor reduction, where
+required, must be handled separately.
+
+Importantly, coefficients from either method represent conditional
+predictive associations rather than causal effects, making regression of
+this kind primarily a tool for screening and interpretation.
+
+\textbf{Statistical uncertainty.}
+Observed associations are subject to sampling variability and multiple
+testing. Confidence intervals quantify the uncertainty surrounding an
+estimated effect, whereas hypothesis tests evaluate its compatibility
+with the null hypothesis. When many hypotheses are examined
+simultaneously, false positives become increasingly likely; therefore,
+procedures controlling the false discovery rate (FDR), such as the
+Benjamini--Hochberg procedure, are commonly applied
+\citep{benjamini1995controlling}. Similarly, before--after comparisons of
+clinical practice evaluate changes associated with an intervention, but
+their causal interpretation remains limited because concurrent temporal
+changes may also influence the observed outcomes.

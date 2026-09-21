@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="POTASSIUM_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of POTASSIUM</description>
+    <derived-from name="POTASSIUM_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="24h" interpolate="false"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Life-Threatening Hypokalemia" operator="and">
+            <attribute idx="0">
+                <allowed-value max="2.5"/>
+            </attribute>
+        </rule>
+        <rule value="Severe Hypokalemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="2.5" max="3.0"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Hypokalemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="3.0" max="3.5"/>
+            </attribute>
+        </rule>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value min="3.5" max="5.0"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Hyperkalemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="5.0" max="5.5"/>
+            </attribute>
+        </rule>
+        <rule value="Moderate Hyperkalemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="5.5" max="6.0"/>
+            </attribute>
+        </rule>
+        <rule value="Severe Hyperkalemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="6.0" max="6.5"/>
+            </attribute>
+        </rule>
+        <rule value="Life-Threatening Hyperkalemia" operator="and">
+            <attribute idx="0">
+                <allowed-value min="6.5"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

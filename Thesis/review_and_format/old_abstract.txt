@@ -1,0 +1,54 @@
+ii
+Predicting Clinical Outcomes and Assessing the
+Effects of Diabetes Care Guidelines Compliance in
+Hospitals Using Time-Dependent Machine Learning
+and Deep Learning Methods
+Shahar Oded
+Master of Sciences Thesis
+Ben-Gurion University of the Negev
+2026
+Abstract
+NOT FINAL.Drafted from the AAAI and JAMIA abstracts. Rewrite
+once the Kineret predictive results are in — the final paragraph is written
+around numbers that do not exist yet.
+Inpatient hyperglycemia is common, harmful, and governed by clinical guide-
+lines whose adherence is rarely measured. This thesis addresses two con-
+nected problems: whether guideline adherence can be assessed automatically
+and at scale, and whether a model reasoning over clinically meaningful tem-
+poral abstractions can predict the complications those guidelines exist to
+prevent.
+iii
+Both rest on a single representation. A diabetes knowledge base, authored
+for this work, encodes the clinical semantics of inpatient care and the rec-
+ommendations of the Israeli national position paper as quality-assessment
+temporal patterns. One abstraction engine converts an OMOP-formatted
+record into knowledge-based temporal abstractions and, in the same pass,
+scores how far the recorded care departed from what the guideline required.
+The methodological study introducesINTERVenE, a transformer family
+operating natively on those intervals, with an autoregressive variant that gen-
+erates abstraction trajectories with per-step risk curves and a bidirectional
+variant for single-pass prediction. On 57,078 MIMIC-IV diabetic admissions,
+the encoder reaches a support-weighted AUPRC of 0.672, improving on the
+strongest neural baseline by 0.041 with non-overlapping confidence intervals.
+Sparse-transcoder attribution, computed on the deployed model through a
+gradient-decoupled hook, resolves every explanation to a named clinical con-
+cept. Ablations show that the architecture depends on the persistence of
+intervals rather than on their clinical naming: knowledge-based abstraction
+is an interpretability substrate obtained at essentially no cost in accuracy,
+not a predictive prerequisite.
+The clinical study applies the same machinery to 48,354 admissions across six
+Israeli general hospitals. Adherence divides not by clinical importance but
+by the kind of action required: discrete admission actions are near-universal,
+while recommendations calling for repeated insulin decisions across a stay
+score as low as 0.15, most often absent entirely. Adherence rose modestly
+after national implementation, with marked inter-hospital heterogeneity. Un-
+iv
+der propensity weighting, above-median adherence carried 44% lower odds
+of 30-day mortality and 82% lower odds of hyperglycemia, against a 20%
+increase in hypoglycemia — a lopsided trade-off, and the one these recom-
+mendations are designed to strike. The least-implemented recommendations
+proved to be among those most strongly associated with outcomes.
+Finally, the two halves are joined: the transformer is trained on the clinical
+cohort with and without the measured adherence profile as input, testing
+whether a quality-of-care signal carries predictive information beyond the
+record it was derived from.

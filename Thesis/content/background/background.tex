@@ -1,0 +1,33 @@
+% Chapter 2 merges the former Preliminaries and Related Work chapters. The
+% supervisor's structure guide requires all related work to sit inside the
+% Background chapter, so both files are now section-level inputs here.
+This chapter supplies the background the thesis rests on, in two parts. The
+first part is definitional: it fixes the concepts, notation, and machinery used
+throughout, organized from the data upward --- the clinical setting and
+prediction task, the abstraction of raw records into intervals, the scoring of
+guideline adherence over those intervals, the models that consume them, and the
+tools used to explain and evaluate their output. It is deliberately descriptive
+rather than comparative.
+
+The second part reviews the systems and studies built on that machinery, and
+what they leave unaddressed: automated support to guideline-based care and the
+retrospective assessment of adherence to it, temporal data mining, sequential
+modeling of electronic health records, and the explanation of clinical model
+predictions. The formal definitions of the first part are not restated there.
+
+\input{content/preliminaries/preliminaries}
+
+\clearpage
+The remainder of the chapter turns from machinery to the literature built on
+it. It proceeds in four parts, beginning with the single line of research
+supplying this thesis with both its abstraction layer and its adherence signal,
+running from the representation of clinical concepts, through the
+machine-interpretable representation of clinical guidelines, to the
+retrospective assessment of whether those guidelines were followed. It then
+turns to temporal data mining, whose pattern-based representations furnish the
+symbolic baseline of this work, and to transformer architectures over EHR data,
+which furnish the neural ones. It closes with explainable AI in clinical
+prediction, which addresses a standing tension in medical informatics between
+predictive performance and the transparency a clinical setting expects.
+
+\input{content/related_work/related_work}

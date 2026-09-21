@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="ASPARATE-AMINOTRANSFERASE_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of ASPARATE-AMINOTRANSFERASE</description>
+    <derived-from name="ASPARATE-AMINOTRANSFERASE_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="72h" interpolate="true" max-skip="1"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value max="40"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Elevation" operator="and">
+            <attribute idx="0">
+                <allowed-value min="40" max="100"/>
+            </attribute>
+        </rule>
+        <rule value="Moderate Elevation" operator="and">
+            <attribute idx="0">
+                <allowed-value min="100" max="300"/>
+            </attribute>
+        </rule>
+        <rule value="Severe Elevation" operator="and">
+            <attribute idx="0">
+                <allowed-value min="300" max="1000"/>
+            </attribute>
+        </rule>
+        <rule value="Massive Elevation" operator="and">
+            <attribute idx="0">
+                <allowed-value min="1000"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

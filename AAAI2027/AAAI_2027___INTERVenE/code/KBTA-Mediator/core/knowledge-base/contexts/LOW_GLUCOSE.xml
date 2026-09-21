@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<context name="LOW_GLUCOSE_CONTEXT">
+    <categories>Diagnosis</categories>
+    <description>LOW GLUCOSE context to mark time windows where insulin treatment is dangerous (risk for hypoglycemia)</description>
+    <derived-from>
+        <attribute name="HYPOGLYCEMIA_EVENT" tak="event" ref="A1"/>
+    </derived-from>
+
+    <!-- An instance of these will clip the context windows -->
+    <clippers>
+        <!-- Instance of non-low glucose immediately terminates the context window -->
+        <clipper name="NORMAL_GLUCOSE_IND" tak="raw-concept" clip-before="0s" clip-after="1s"/>
+        <clipper name="HIGH_GLUCOSE_IND" tak="raw-concept" clip-before="0s" clip-after="1s"/>
+    </clippers>
+
+    <abstraction-rules>
+        <rule value="True" operator="or">
+            <attribute ref="A1">
+                <allowed-value equal="True"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+    
+    <context-windows>
+        <!-- A low glucose diagnosis -->
+        <persistence value="True" good-before="0h" good-after="24h"/>
+    </context-windows>
+
+</context>

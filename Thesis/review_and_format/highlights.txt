@@ -1,0 +1,26 @@
+p1    /Highlight and Deep Learning Methods
+p1    /Highlight <none>
+p5    /Highlight and Deep Learning Methods
+p5    /Highlight <none>
+p5    /Highlight <none>
+p5    /Highlight <none>
+p6    /Highlight Both rest on a single representation. A diabetes knowledge base, authored
+p6    /Highlight <none>
+p6    /Highlight <none>
+p6    /Highlight <none>
+p6    /Highlight <none>
+p6    /Highlight <none>
+p6    /Highlight <none>
+p6    /Highlight after national implementation, with marked inter-hospital heterogeneity. Un-
+p7    /Highlight <none>
+p7    /Highlight <none>
+p7    /Highlight <none>
+p7    /Highlight cohort with and without the measured adherence profile as input, testing whether a quality-of-care signal carries predictive information beyond the record it was derived from.
+p27   /Highlight Preliminaries
+p53   /Highlight Related Work
+p67   /Highlight Method
+p91   /Highlight 4.2 Evaluation Methods
+p111  /Highlight Evaluation
+p132  /Highlight Discussion
+p143  /Square    <none>
+p179  /Highlight הטיפולבסוכרתבבתיחוליםבאמצעותשיטותלמידתמכונה ולמידהעמוקהתלויות־זמן

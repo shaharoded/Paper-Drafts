@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="BOLUS_BITZUA_STATE">
+    <categories>DrugAdministration</categories>
+    <description>Abstraction for the dosage and route of administration of BOLUS insulin</description>
+    <derived-from name="BOLUS_BITZUA" tak="raw-concept"/>
+    
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="8h" interpolate="false"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="SubCutaneous Low" operator="and">
+            <attribute idx="0">
+                <allowed-value max="10"/>
+            </attribute>
+        </rule>
+        <rule value="SubCutaneous Medium" operator="and">
+            <attribute idx="0">
+                <allowed-value min="10" max="20"/>
+            </attribute>
+        </rule>
+        <rule value="SubCutaneous High" operator="and">
+            <attribute idx="0">
+                <allowed-value min="20"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<state name="BICARBONATE_MEASURE_STATE">
+    <categories>Measurements</categories>
+    <description>Abstraction for the measurements of BICARBONATE</description>
+    <derived-from name="BICARBONATE_MEASURE" tak="raw-concept"/>
+
+    <!-- Concatenate adjacent equal states within these windows; allow 1 outlier skip -->
+    <persistence good-after="48h" interpolate="false"/>
+
+    <!-- Discretize and abstract -->
+    <abstraction-rules>
+        <rule value="Severe Metabolic Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value max="10"/>
+            </attribute>
+        </rule>
+        <rule value="Moderate Metabolic Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="10" max="15"/>
+            </attribute>
+        </rule>
+        <rule value="DKA-Relevant Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="15" max="18"/>
+            </attribute>
+        </rule>
+        <rule value="Mild Acidosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="18" max="22"/>
+            </attribute>
+        </rule>
+        <rule value="Normal" operator="and">
+            <attribute idx="0">
+                <allowed-value min="22" max="28"/>
+            </attribute>
+        </rule>
+        <rule value="Alkalosis" operator="and">
+            <attribute idx="0">
+                <allowed-value min="28"/>
+            </attribute>
+        </rule>
+    </abstraction-rules>
+</state>

@@ -1,0 +1,45 @@
+% =====================================================================
+% DRAFT-ONLY: open tasks before submission.
+%
+% Rendered only while \showtodostrue is set in main.tex. Carries no
+% thesis content. Flipping the switch to \showtodosfalse removes this
+% box and every inline \TODO{} marker at once.
+% =====================================================================
+\ifshowtodos
+\clearpage
+\thispagestyle{fancy}
+\begin{center}
+\fcolorbox{red}{red!4}{%
+\begin{minipage}{0.92\textwidth}
+\vspace{4pt}
+\begin{center}
+\textcolor{red}{\textbf{DRAFT --- OPEN TASKS BEFORE SUBMISSION}}
+\end{center}
+\vspace{2pt}
+\hrule
+\vspace{6pt}
+\footnotesize
+\singlespacing
+
+\textbf{Acknowledgements.} \texttt{Main\_pages/acknowledgements.tex} is still
+the template stub. It needs the funding source --- grant body and number, or a
+statement that the work received no specific grant --- pending confirmation
+from the supervisor.
+
+\vspace{4pt}
+\textbf{To flag to the supervisor.} Two points from his review were resolved
+against his suggestion. The citation style stays \emph{numeric}, because the
+department's template prescribes it explicitly where his structure guide asks
+for author--year. And the title keeps the machine-learning framing alongside
+his transformer framing, since the clinical study uses neither transformers nor
+deep learning.
+
+\vspace{4pt}
+Everything else is complete. Before producing the submission PDF, set
+\texttt{\char92 showtodosfalse} in \texttt{main.tex} to remove this page.
+
+\vspace{6pt}
+\end{minipage}}
+\end{center}
+\clearpage
+\fi

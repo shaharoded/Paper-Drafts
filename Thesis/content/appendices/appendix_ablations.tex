@@ -1,0 +1,104 @@
+The architectures deployed in Chapter~\ref{chapter:comp_methods} are the endpoints of the iterative design search described in Section~\ref{sec:method-optimization}. This appendix records that trail, including the arms that were discarded. Early experiments ran on a $10{,}000$-admission design subset; surviving recipes were then confirmed on the full training cohort. Intermediate rows report only the metrics tracked at the corresponding design point, so ``-'' marks a metric that was not evaluated there rather than a failure. Intermediate rows also reflect the configuration \emph{as it stood} at that point, not the deployed recipe with one component removed.
+
+\section{Decoder Ablations}
+\label{app:abl-ar}
+
+\begin{table}[htbp]
+\caption{INTERVenE-Ar architectural trail, stratified by sample size. Reading order: foundational $10$k build-up; $10$k component-drop ablations of the locked recipe; full-cohort build-up to the deployed recipe. Full-cohort figures are $95\%$ bootstrap CI half-widths ($2{,}000$ resamples); $10$k figures are point estimates. \emph{gen/GT} is the median generated-to-ground-truth length ratio.}
+\label{tab:abl-ar-all}
+\centering
+\singlespacing
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcccc}
+\toprule
+Recipe arm & Sample & AUROC$_w$ & AUPRC$_w$ & LoS MAE (h) & gen/GT \\
+\midrule
+Baseline decoder (no TTT aux / pool / gate)      & 10k  & $0.836$                    & $0.539$                    & -                       & $0.60$ \\
+\quad $+$ TTT aux head $+$ TTT-guided inference  & 10k  & $0.840$                    & $0.542$                    & -                       & $0.72$ \\
+\midrule
+\textbf{Locked recipe} $=$ above $+$ patient-pool aux & 10k  & $\mathbf{0.845}$      & $\mathbf{0.562}$           & $71.3$                  & $0.44$ \\
+\quad $-$ Phase-3 finetune (eval-only on P2)     & 10k  & $0.547$                    & $0.213$                    & $67.8$                  & $0.66$ \\
+\quad $-$ RoPE                                   & 10k  & $0.830$                    & $0.525$                    & $98.3$                  & $1.79$ \\
+\quad $-$ CBM                                    & 10k  & $0.834$                    & $0.534$                    & $71.0$                  & $1.09$ \\
+\quad $-$ soft kernel ($\tau{=}0.5$\,h)          & 10k  & $0.808$                    & $0.500$                    & $111.7$                 & $2.16$ \\
+\quad DD damping $\sqrt{\cdot}$                  & 10k  & $0.801$                    & $0.493$                    & $69.6$                  & $1.16$ \\
+\quad DD damping $\log$ (under-correct)          & 10k  & $0.797$                    & $0.503$                    & $95.7$                  & $1.79$ \\
+\midrule
+Prior canonical (ttt cap $0.30$, no DD weighting) & full & $0.832{\pm}0.007$         & $0.519{\pm}0.015$          & $147.7{\pm}1.9$         & $2.82$ \\
+\quad $+$ ttt cap $0.30{\to}0.60$                & full & $0.832{\pm}0.007$          & $0.562{\pm}0.013$          & $78.7{\pm}1.0$          & $1.06$ \\
+\quad $+$ DD-$p^{0.33}$ weighting \textbf{(deployed)} & full & $\mathbf{0.854{\pm}0.007}$ & $\mathbf{0.587{\pm}0.013}$ & $\mathbf{65.1{\pm}1.1}$ & $\mathbf{0.90}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The $10$k search established the core recipe: the \texttt{ttt} auxiliary head improved anticipation of the trajectory's end, the patient-pool auxiliary gave the largest discrimination gain, and the \texttt{ttt} inference gate restored realistic trajectory lengths at evaluation time. The component-drop arms identify Phase-3 fine-tuning as the dominant contributor by a wide margin; RoPE, curriculum-by-masking, the soft-kernel objective, and the damping function each contribute measurably to trajectory quality and predictive performance.
+
+DD-$p^{0.33}$ weighting raises the per-terminal-token class-imbalance ratio to the power $0.33$ and uses it as the language-model-head BCE positive weight. Against $\sqrt{\cdot}$ and $\log$ damping it gives the best compromise between over- and under-generation, restoring realistic trajectory lengths without costing predictive performance.
+
+\section{Encoder Ablations}
+\label{app:abl-enc}
+
+INTERVenE-Enc inherits the components validated in Table~\ref{tab:abl-ar-all} --- hierarchical token embeddings, Time2Vec, temporal RoPE, AdaLN-Zero conditioning, the per-outcome attention pool, and the soft-kernel objective. These are held fixed, so the encoder arms isolate only the additions specific to the bidirectional setting.
+
+\begin{table}[htbp]
+\caption{INTERVenE-Enc architectural trail. Reading order: $10$k design search; $10$k ablation of the locked recipe; full-cohort build-up to the deployed recipe, plus the two input-representation alternatives of Section~\ref{sec:method-ablations}. Conventions as in Table~\ref{tab:abl-ar-all}.}
+\label{tab:abl-enc-all}
+\centering
+\singlespacing
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llccc}
+\toprule
+Recipe arm & Sample & AUROC$_w$ & AUPRC$_w$ & LoS MAE (h) \\
+\midrule
+\textbf{Locked recipe ($10$k anchor)}                    & 10k  & $\mathbf{0.822}$  & $\mathbf{0.497}$  & $53.0 \pm 2.1$ \\
+\quad $+$ hierarchical MLM masking                       & 10k  & $0.820$           & $0.482$           & - \\
+\quad $+$ backbone LR factor $0.01 \to 0.1$              & 10k  & $0.813$           & $0.471$           & - \\
+\quad $-$ Phase-3 backbone learning$^\dagger$            & 10k  & $0.792$           & $0.429$           & $55.3 \pm 2.3$ \\
+\midrule
+Stripped baseline (full data, KBTA input)                & full & $0.901 \pm 0.005$ & $0.662 \pm 0.013$ & $46.1 \pm 0.9$ \\
+\quad $+$ inverse-prevalence pos-weight$^\dagger$        & full & $0.894 \pm 0.005$ & $0.638 \pm 0.013$ & $49.1 \pm 0.8$ \\
+\quad $+$ focal loss, $\gamma{=}1.0$                     & full & $0.901 \pm 0.005$ & $0.665 \pm 0.012$ & $44.7 \pm 0.8$ \\
+\quad $+$ CBM masking $p{=}0.15$ \textbf{(deployed)}     & full & $\mathbf{0.901 \pm 0.005}$ & $\mathbf{0.672 \pm 0.012}$ & $\mathbf{44.4 \pm 0.9}$ \\
+\midrule
+Deployed, std-bins input (KBTA replaced)                 & full & $0.901 \pm 0.005$ & $0.676 \pm 0.012$ & $47.6 \pm 0.9$ \\
+Deployed, de-intervaled input                            & full & $0.864 \pm 0.007$ & $0.593 \pm 0.015$ & $51.8 \pm 0.8$ \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\footnotesize $^\dagger$Non-overlapping bootstrap CIs against the $10$k anchor (backbone freeze) or against the stripped baseline (inverse-prevalence weighting). Focal-loss and std-bins rows sit within CI noise on AUPRC and AUROC; the std-bins LoS penalty of $+3.2$\,h is non-overlapping. Hierarchical MLM masking and the larger backbone learning-rate fraction were discarded after the $10$k search.
+\end{table}
+
+The $10$k search established the Phase-3 recipe: reducing the time-loss weight substantially improves discrimination, and hierarchical MLM masking gives no measurable benefit. The component-drop arms identify Phase-3 backbone learning as essential. On the full cohort, inverse-prevalence weighting degrades performance, focal loss has negligible effect, and curriculum-by-masking at $p{=}0.15$ is the only consistent improvement over the stripped baseline.
+
+The two input-representation arms carry the research claim of Section~\ref{sec:method-ablations}. Replacing KBTA with a standard-deviation discretization preserves AUPRC and AUROC while increasing length-of-stay error --- so KBTA is an interpretability substrate with a modest regression advantage, not a predictive prerequisite. Collapsing intervals to one-second point events, by contrast, degrades every metric sharply, with weighted AUPRC falling to $0.593$. The architecture therefore depends on continuous durations and state concurrency, not merely on the identity of the symbols.
+
+\section{Capacity and Head Count}
+\label{app:abl-capacity}
+
+\begin{table}[htbp]
+\caption{INTERVenE-Enc capacity and head-count ablations (full cohort, locked recipe except the dimension under test). Bold marks the deployed M-128 configuration. Size-sweep arms predate LoS tracking.}
+\label{tab:abl-enc-capacity}
+\centering
+\singlespacing
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccccc}
+\toprule
+Variant & embed\_dim & n\_head & head\_dim & Params & AUPRC$_w$ & AUROC$_w$ & LoS MAE (h) \\
+\midrule
+M-64                                  & 64   & 1 & 64 & 0.46M & $0.646$                    & $0.889$                    & -                       \\
+\textbf{M-128 (deployed)}             & 128  & 2 & 64 & 1.84M & $\mathbf{0.672 \pm 0.012}$ & $\mathbf{0.901 \pm 0.005}$ & $\mathbf{44.4 \pm 0.9}$ \\
+M-256                                 & 256  & 4 & 64 & 6.40M & $0.650$                    & $0.895$                    & -                       \\
+\midrule
+$h{=}8$ narrow heads (budget-preserving) & 128  & 8 & 16 & 1.84M & $0.659 \pm 0.013$       & $0.900 \pm 0.005$          & $46.6 \pm 0.9$          \\
+$h{=}8$ wide heads (parameter-spending)  & 512  & 8 & 64 & 25.0M & $0.676 \pm 0.012$       & $0.905 \pm 0.005$          & $45.2 \pm 0.9$          \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Capacity shows a clear inverted U, with M-128 giving the best accuracy--efficiency trade-off. Widening the model or adding heads beyond that point buys little despite far larger parameter budgets, and smaller models underfit. Even M-64, at $0.46$M parameters, outperforms the strongest neural baseline, which indicates that the headline improvements come from the architecture rather than from capacity.
+
+INTERVenE-Enc was not evaluated at STraTS's deployed shape ($\text{dim}{=}64$, $h{=}16$, $\text{head\_dim}{=}4$, ${\sim}86$K parameters). M-64 underfits and narrow heads at $\text{dim}{=}128$ cost both AUPRC and LoS, so combining the two would compound both losses. The intended comparison is each model at its own tuned configuration.
