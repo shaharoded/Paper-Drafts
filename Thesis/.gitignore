@@ -511,7 +511,6 @@ Temporary Items
 # End of https://www.toptal.com/developers/gitignore/api/latex,tex,visualstudiocode,macos
 
 # main.tex is the entry point -- tracked so the repo is compilable after clone.
-# The built outputs (main.pdf, main.tocheb) stay out.
+# main.pdf and README.pdf are the built outputs -- tracked so a reader on
+# GitHub can see the compiled thesis without a local TeX install.
 main.tocheb
-main.pdf
-README.pdf
