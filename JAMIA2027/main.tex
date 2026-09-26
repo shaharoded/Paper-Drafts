@@ -40,10 +40,11 @@
 % appearance and placed after punctuation.
 \usepackage[numbers,super,sort&compress]{natbib}
 
-% Continuous line numbering and double spacing assist peer review; both
-% are commented out for a clean reading copy.
-% \usepackage{lineno}\linenumbers
-% \usepackage{setspace}\doublespacing
+% Continuous line numbering and double spacing per JAMIA submission
+% requirements ("all submissions should be double-spaced"). Line numbers
+% assist peer review and are standard for the review copy.
+\usepackage{lineno}\linenumbers
+\usepackage{setspace}\doublespacing
 
 \usepackage[colorlinks=true,allcolors=black]{hyperref}
 
@@ -74,7 +75,14 @@
 Inpatient Diabetes Guideline: Adherence and Its Association with
 Hospitalization Complications Across Six Hospitals}
 
-\author[1]{Shahar Oded}
+% TODO(pre-submission): add degrees to each author (e.g., ", MD" / ", PhD" /
+% ", MSc"). JAMIA requires the degree of every co-author on the title page.
+\author[1,$\ast$]{Shahar Oded\thanks{\textbf{Corresponding author.}
+Shahar Oded, Medical Informatics Research Center, Ben-Gurion University of
+the Negev, Beer Sheva, Israel.
+Email: \href{mailto:shahar.oded@post.bgu.ac.il}{shahar.oded@post.bgu.ac.il}.
+Telephone: [TODO: +972-...].
+Postal address: [TODO: street, city, ZIP, country].}}
 \author[1]{Yuval Shahar}
 \author[1]{Erez Shalom}
 \author[2,3]{Amir Bashkin}
@@ -108,6 +116,14 @@ Jerusalem, Israel}
 
 \date{}
 \maketitle
+
+% JAMIA title page must state the exact body word count, excluding title
+% page, abstract, tables, figures, references, and acknowledgments.
+% Recount before submission with:
+%   texcount -inc -brief -sum=1,0,0,0 background.tex methods.tex \
+%            results.tex discussion.tex conclusion.tex
+{\centering\noindent\textbf{Word count (main text):} 3{,}969\par}
+\vspace{0.8em}
 
 % ---------------------------------------------------------------------
 % Draft-only task list (suppressed by \showtasksfalse; not part of the
