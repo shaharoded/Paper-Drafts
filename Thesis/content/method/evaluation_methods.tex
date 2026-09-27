@@ -71,6 +71,9 @@ Two STraTS configurations are retained because the comparison isolates what the 
 
 One asymmetry is deliberate. GRU-D and STraTS consume the raw event stream and are not given KBTA intervals: for them the abstraction would be a replaceable preprocessing step, whereas for INTERVenE it defines the vocabulary the architecture is built around, so the comparison would not be matched. KarmaLego+TPF is the one that does isolate the representation, consuming the identical interval stream and differing only in modeling it symbolically.
 
+\paragraph{Optimizer and training schedule.}
+The variables named in Chapter~\ref{chapter:comp_methods} take the following values in the reported runs. The soft-kernel decays are $\tau_{\mathrm{term}} = 12$\,h for terminal tokens and $\tau_{\mathrm{out}} = 48$\,h as the outcome-token initialization; the look-ahead horizon $H$ matches the label window ($336$\,h). The Phase-3 backbone runs at $\eta_r = 0.01$ of the head learning rate. The encoder's risk--time balance is $\lambda_{\text{time}} = 0.1$. AdamW uses weight decay $0.001$ and gradient clipping at $\mathrm{max\_norm} = 1.0$; Phase~1 and INTERVenE-Ar Phase~3 use the default betas $(0.9,\,0.999)$, and INTERVenE-Enc Phases~2--3 and INTERVenE-Ar Phase~2 use $(0.9,\,0.95)$. Phase~1 schedules the learning rate with ReduceLROnPlateau (factor $0.5$, patience $4$, minimum $10^{-6}$); Phases~2--3 use OneCycleLR. The physical batch size is $16$ with gradient accumulation over $4$ steps ($64$ effective); Phases~1--2 peak at $3\times10^{-4}$, and Phase~3 trains the task head at $10^{-4}$. Every phase is capped at $100$ epochs and halts when validation loss fails to improve by a relative margin of $0.001$ for $10$ consecutive epochs. Both variants were trained on a single NVIDIA RTX~A5000 (24\,GB) under PyTorch~2.4.1 with CUDA~12.4 and Python~3.11, without distributed training, using a fixed random seed of $42$; the Kineret models were trained inside the regulated cloud environment under the same software stack and seed, with the configuration selected on MIMIC-IV carried over unchanged.
+
 \subsection{Kineret}
 \label{sec:evalm-kineret-cohort}
 
@@ -98,6 +101,16 @@ The intervening year is excluded from the primary comparison. The implementation
 Ten complications are evaluated on this cohort: $30$-day mortality, hyperglycemia, severe hyperglycemia, hypoglycemia, severe hypoglycemia, hyperosmolality, ketoacidosis, infection, inpatient AKI / kidney complication, and inpatient MI / cardiovascular complication. All ten are emitted as abstractions by the same engine that scores adherence, so outcome ascertainment and exposure measurement draw on one explicit knowledge base --- which matters when the two are afterwards correlated. Thirty-day mortality is the exception, taken from linked death records. Operational definitions are in Appendix~\ref{appendix:outcomes}.
 
 The set is wider than the six predicted on MIMIC-IV because it answers a different requirement: that task needs outcomes with lab-derived onset times inside its horizon, whereas the clinical study needs the complications the guideline is meant to prevent. These same ten are the prediction targets for the Kineret models, so both analyses of this cohort address one endpoint set.
+
+\paragraph{Guideline patterns and knowledge base.}
+The national inpatient diabetes guideline is formalized as fourteen
+quality-assessment temporal patterns, and the diabetes knowledge base
+against which the abstraction engine operates comprises 174 declarative TAK
+units across eight families. Both artifacts --- the pattern encodings of the
+recommendations and the TAK repository consumed by the Mediator --- are
+described in full in Appendix~\ref{appendix:kb}, and are the authoritative
+statement of every threshold, relevance duration, and compliance rule used
+in this thesis.
 
 \subsection{The Prediction Task on Kineret}
 \label{sec:method-kineret-task}
@@ -158,7 +171,7 @@ Logistic regression and ss-STraTS are the comparators, both consuming the raw ev
 The three remaining MIMIC-IV baselines are not run. KarmaLego+TPF is neither practical nor necessary: pattern mining at this scale is not feasible inside the regulated environment, and the comparison it exists to support --- symbolic against neural modeling of the identical interval stream --- is already established on MIMIC-IV. GRU-D is omitted because one neural architecture over the raw event stream is enough to anchor the comparison, and STraTS fills that role. The pretrained STraTS configuration is omitted because no large-cohort pretraining stage is run on Kineret, for STraTS or for INTERVenE-Enc; including a pretrained arm for one model and not the other would break the symmetry the comparison depends on.
 
 \paragraph{Training.}
-Models are trained from scratch under the same three-phase schedule, rather than fine-tuned from the MIMIC-IV checkpoint. The cohorts differ in target set and in patient distribution, so a fine-tuned model would confound the architecture's contribution with the initialization's, and training from scratch keeps the arms comparable to one another. This is a scoping decision, not a judgment that transfer would fail: cross-cohort pretraining is the natural route to a model robust across hospital networks, and is taken up in Appendix~\ref{appendix:future_work}.
+Models are trained from scratch under the same three-phase schedule, rather than fine-tuned from the MIMIC-IV checkpoint. The cohorts differ in target set and in patient distribution, so a fine-tuned model would confound the architecture's contribution with the initialization's, and training from scratch keeps the arms comparable to one another. This is a scoping decision, not a judgment that transfer would fail: cross-cohort pretraining is the natural route to a model robust across hospital networks, and is taken up in Section~\ref{sec:future-work}.
 
 \section{Evaluation of the Knowledge Base}
 \label{sec:evalm-kb}

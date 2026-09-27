@@ -372,12 +372,17 @@
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 \mainmatter
 
-% User-editable chapter order and appendices are centralized here.
+% User-editable chapter order (appendices are loaded further below, AFTER
+% the bibliography, per supervisor's structure guidance: References print
+% between chapters and appendices).
 \input{thesis_chapters}
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~%
 \addtocontents{tocheb}{\protect\contentsline{chapter}{{ביבליוגרפיה}}{{\beginL\thepage\endL}}{}}
 \bibliography{bibliography/thesis}
+
+% Appendices after the bibliography.
+\input{thesis_appendices}
 
 \clearpage
 % no page numbering from now on

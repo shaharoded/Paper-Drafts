@@ -1,11 +1,37 @@
 % Chapter 6 merges the former Discussion and Conclusions chapters, in the
 % order the structure guide prescribes: Summary, Contributions, Limitations,
-% Conclusions. Future Work moved to Appendix F.
+% Future Work, Conclusions.
 This chapter summarizes what the thesis found, states what it contributes, sets
-out the limitations that qualify those contributions, and closes with the
-conclusions. Sections~\ref{sec:disc-methodological}--\ref{sec:disc-joint} are
-the summary and discussion: the methodological study, the clinical study, and
-what the two say together.
+out the limitations that qualify those contributions, sketches the natural
+extensions the work opens up, and closes with the conclusions.
+Sections~\ref{sec:disc-methodological}--\ref{sec:disc-joint} are the summary
+and discussion: the methodological study, the clinical study, and what the two
+say together.
+
+\paragraph{Recap of what is being discussed.}
+Before turning to what the results mean, a brief reminder of what the thesis
+contributed and where each contribution was tested. The methodological work
+introduced \textbf{INTERVenE}, a transformer family that reads knowledge-based
+temporal-abstraction (KBTA) intervals as its native token stream --- an
+autoregressive decoder (INTERVenE-Ar) that generates a full abstraction
+trajectory with per-step risk readouts, and a bidirectional encoder
+(INTERVenE-Enc) that yields single-pass joint risk and time-to-event
+prediction. Both variants share a hierarchical concept embedder, continuous
+time encoding, and static-context conditioning, and both are probed with
+gradient-decoupled sparse-transcoder attribution so explanations resolve to
+named clinical concepts. The clinical work formalized fourteen recommendations
+of the national inpatient diabetes guideline as quality-assessment temporal
+patterns over the same interval stream, so measurement and prediction read one
+representation. Three experiments carried the argument:
+Chapter~\ref{chapter:results} reports (i) the MIMIC-IV benchmark that compares
+INTERVenE against GRU-D, STraTS in two configurations, and KarmaLego+TPF on
+$57{,}078$ diabetic admissions; (ii) the Kineret adherence analysis across
+$48{,}354$ admissions in six Israeli general hospitals, before and after the
+national implementation effort, with propensity-weighted outcome regressions;
+and (iii) the Kineret seven-arm ladder that transfers INTERVenE-Enc to a
+second cohort, isolates the knowledge-base lift against $\sigma$-bin
+discretization, and tests whether the measured adherence signal helps
+prediction. The discussion that follows reads those three results together.
 
 \input{content/discussion/discussion}
 
@@ -117,6 +143,71 @@ thing an electronic record captures. Adherence is also expected to decline as a
 patient approaches death, when guideline-concordant management is deliberately
 de-escalated, which is why the mortality analyses that carry weight score
 adherence over a fixed early window rather than over the whole admission.
+
+\section{Future Work}
+\label{sec:future-work}
+
+Several directions follow from the thesis but were not pursued in it. Some
+address the limitations named above directly; others are extensions the work
+opens up rather than repairs.
+
+\textbf{Weighted aggregation up the guideline hierarchy.} Recommendations are
+currently averaged with equal weight, so a critical requirement counts the
+same as a peripheral one. The quality-assessment literature aggregates up a
+weighted tree mirroring the guideline's plan structure; adopting that would
+let the overall score reflect clinical priority rather than mere count.
+
+\textbf{Cross-cohort pretraining.} Both Kineret models were trained from
+scratch so that architecture and initialization would not be confounded. A
+model pretrained across hospital networks and fine-tuned per site is the
+natural route to something robust rather than fitted to one source, and it
+would test whether the knowledge base's cohort-specific advantage survives
+transfer. Building a large pretrained artifact in the spirit of HEART
+\citep{huang2024heart} would open fine-tuning to other diseases and care
+settings, and would be a step toward a general-purpose clinical
+representation over interval data.
+
+\textbf{Adherence as a model input at scale.} The null result here was
+measured on one cohort, at one evaluation window, with adherence entering as
+a mean per pattern. Richer encodings --- the per-day profile rather than its
+mean, or the compliance trajectory as a sequence --- were not tried, and
+whether a quality-of-care signal helps prediction is not settled by a single
+aggregation.
+
+\textbf{Mining candidate recommendations.} Because each recommendation is
+declared externally as a pattern rather than implemented in analysis code,
+evaluating a practice merely \emph{suspected} to matter costs no more than
+evaluating the fourteen scored here. KarmaLego offers a route to finding
+such candidates rather than guessing them: mine frequent interval patterns,
+rank them by feature importance over the TPF representation, and translate
+the survivors into TAK definitions that can then be scored and tested like
+any other recommendation. That inverts the usual question --- which
+practices earn a place in a guideline, and which current recommendations
+track no outcome at all. Any candidate found this way is a hypothesis for
+prospective evaluation, and a wide search would need more conservative
+multiplicity correction than was applied here.
+
+\textbf{Interval representation learning beyond healthcare.} INTERVenE is
+built around properties of interval sequences --- that a symbol holds over
+a span, that spans overlap --- rather than around anything specific to
+medicine. Comparing interval representations systematically, and testing
+the architecture on another interval domain such as industrial failure
+prediction or process monitoring, would move the claim from architecture
+engineering toward the representation question: why interval representations
+work, and when they are worth their cost.
+
+\textbf{Explainability as the primary object.} The attribution work here is
+a demonstration rather than a study. A systematic comparison of explanation
+quality between a semantic interval vocabulary and a non-semantic one --- the
+same $\sigma$-bin contrast, judged on interpretability rather than accuracy
+--- would test the central claim directly: that semantic vocabularies produce
+clinically meaningful explanations at no cost in predictive performance.
+
+\textbf{Prospective evaluation.} Everything in this thesis is retrospective.
+The measurement instrument is automated, component-level, and transferable,
+but whether surfacing these scores to a treating team changes practice ---
+and whether changed practice changes outcomes --- is a question only a
+prospective study can answer.
 
 \section{Conclusions}
 \label{sec:conclusions}
