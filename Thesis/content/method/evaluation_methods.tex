@@ -64,6 +64,13 @@ Six binary outcomes are predicted over hours $48$--$336$: death, kidney complica
 
 Every model receives the same static context vector and the same patient split; they differ only in their temporal representation. GRU-D and both STraTS configurations consume the raw event stream, while KarmaLego+TPF and both INTERVenE variants consume the derived interval stream.
 
+\paragraph{Baselines and matched protocol.}
+The four baseline models are described in Chapter~\ref{chapter:background}: GRU-D \citep{che2018recurrent} for the recurrent family, STraTS \citep{tipirneni2022strats} in two configurations for set-based attention over raw triplets --- \emph{STraTS (pre+ft)} with self-supervised forecasting pretraining followed by supervised fine-tuning, and \emph{ss-STraTS} trained end-to-end supervised from scratch --- and KarmaLego+TPF \citep{moskovitch2015karmalego,sheetrit2019tpf} for the symbolic family. All four were reimplemented and run under the protocol applied to INTERVenE: the same patient-level split, the same $48$-hour observation window, the same static context vector, validation-based early stopping, and a single held-out test evaluation. Differences in the reported results therefore reflect modeling rather than data handling or tuning effort.
+
+Two STraTS configurations are retained because the comparison isolates what the pretraining stage contributes on this cohort. For KarmaLego+TPF, patterns are mined on the training split only, using a class-balanced discovery subset, a reduced three-relation set, a $1$-minute tolerance, a $4$-hour maximum gap, and a minimum vertical support of $0.20$; each admission is then summarized by per-pattern count and duration statistics (Section~\ref{sec:prelim-tirp}), features are selected by $\chi^2$ with Benjamini--Hochberg control at $q < 0.05$, and $\ell_2$-regularized logistic-regression classifiers are tuned by grid search on the validation split. The mining pipeline is our own reimplementation \citep{karmalego-github}.
+
+One asymmetry is deliberate. GRU-D and STraTS consume the raw event stream and are not given KBTA intervals: for them the abstraction would be a replaceable preprocessing step, whereas for INTERVenE it defines the vocabulary the architecture is built around, so the comparison would not be matched. KarmaLego+TPF is the one that does isolate the representation, consuming the identical interval stream and differing only in modeling it symbolically.
+
 \subsection{Kineret}
 \label{sec:evalm-kineret-cohort}
 

@@ -247,21 +247,10 @@ The risk term is a multi-label BCE over the scored outcomes with per-outcome pos
 \paragraph{Inference.}
 One bidirectional pass yields, per admission and outcome, a risk probability $P = \sigma(\cdot)$ and a time estimate $T = \mathrm{softplus}(\cdot)$, with $P_{\text{RELEASE}} = 1 - P(\text{DEATH})$. No generation and no terminal forcing are involved, giving the encoder markedly lower inference latency than the decoder.
 
-\subsection{Baselines}
-
-Four baselines span the principal modeling paradigms for irregular clinical sequences (Chapter~\ref{chapter:background}).
-
-\textbf{GRU-D} \citep{che2018recurrent} is the recurrent approach, modeling elapsed time and missingness through learned decays over the raw event stream.
-
-\textbf{STraTS} \citep{tipirneni2022strats} is the set-based attention approach over raw observation triplets. Two configurations from the original codebase are evaluated. \textbf{STraTS (pre+ft)} runs the two-stage recipe: self-supervised forecasting pretraining on the unlabeled trajectory, then supervised fine-tuning, in which the classification head is stacked on top of the pretrained forecasting head so the supervised stage can use the forecasting bottleneck. \textbf{ss-STraTS} is the supervised-only configuration, trained end-to-end from scratch with the classification head placed directly on the backbone embedding. The two therefore share a backbone and hyperparameters but differ by one retained layer, which is why their parameter counts are not identical.
-
-Both are retained because the comparison isolates what the pretraining stage contributes. On this cohort it contributes nothing: the supervised-only configuration is the stronger of the two, and is the strongest neural baseline overall.
-
-\textbf{KarmaLego+TPF} is the symbolic baseline, and the only one operating on the same KBTA representation as INTERVenE. Patterns are mined on the training split only, using a class-balanced discovery subset, a reduced three-relation set, a $1$-minute tolerance, a $4$-hour maximum gap, and a minimum vertical support of $0.20$. Each admission is summarized by per-pattern count and duration statistics (Section~\ref{sec:prelim-tirp}). Features are selected by $\chi^2$ with Benjamini--Hochberg control at $q < 0.05$, and $\ell_2$-regularized logistic regression classifiers are tuned by grid search on the validation split. The mining pipeline is our own reimplementation \citep{karmalego-github}.
-
-All baselines were reimplemented, trained, and selected under the protocol applied to INTERVenE: the same patient-level split, the same $48$-hour observation window, the same static context vector, validation-based early stopping, and a single held-out test evaluation. Differences in the reported results therefore reflect modeling rather than data handling or tuning effort.
-
-One asymmetry is deliberate. GRU-D and STraTS consume the raw event stream and are not given KBTA intervals: for them the abstraction would be a replaceable preprocessing step, whereas for INTERVenE it defines the vocabulary the architecture is built around, so the comparison would not be matched. KarmaLego+TPF is the one that does isolate the representation, consuming the identical interval stream and differing only in modeling it symbolically.
+% The four baseline models (GRU-D, STraTS in two configurations, KarmaLego+TPF)
+% are described in the background chapter. The protocol they were run under and
+% the specific hyperparameters chosen for each are given with the MIMIC-IV
+% cohort in the evaluation-methods chapter (Section~\ref{sec:evalm-mimic-cohort}).
 
 \section{Optimization and Training Configuration}
 \label{sec:method-optimization}
