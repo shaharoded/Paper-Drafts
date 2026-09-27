@@ -233,10 +233,13 @@ both cohorts it was evaluated on. On MIMIC-IV that strength survived
 substituting automatically derived intervals for the curated ones, so the
 architecture is not dependent on hand-authored definitions; on the cohort the
 knowledge base was written for, the same substitution cost real accuracy, and
-the two results bound each other rather than settling the question. That the measured adherence signal adds no predictive
-information beyond the record it is derived from is not a failure of the
-measurement but what one should expect of a summary; whether following the
-guideline matters clinically is a separate question, which the
+the two results bound each other rather than settling the question. That the measured adherence signal barely moves the aggregate metrics is not
+a failure of the measurement but what one should expect of a summary of
+intervals the model already reads; the small residual per-outcome lift ---
+1--4 pp on the complications the guideline was written for, and only in the
+architecture whose attention can weight compliance patterns per outcome ---
+is exactly the pattern the design was set up to detect. Whether following
+the guideline matters clinically is a separate question, which the
 propensity-weighted analysis answers affirmatively.
 
 What stands is the clinical finding: the recommendations hardest to follow are
