@@ -93,7 +93,7 @@ The prediction window spans hours 48--336 after admission. Target complications 
 
 The core of INTERVenE is a structured alignment of discrete medical knowledge and continuous temporal dynamics. Raw temporal records are mapped to KBTA intervals using the Mediator temporal abstraction engine \citep{shahar1997framework}, which applies a diabetes-specific knowledge base to identify clinically meaningful states, trends, contexts and events.
 
-To handle variable durations effectively within a sequence model, each interval is converted into two discrete tokens: a \emph{START} and an \emph{END} timepoint. Each point is then tokenized into a dense representation via four hierarchical embedding layers: Raw Concept, TAK Abstraction Concept (e.g., glucose trend), Concept with Value, and finally Positional Role. For example, a high-glucose interval start token maps to \emph{GLUCOSE} $\rightarrow$ \emph{GLUCOSE\_STATE} $\rightarrow$ \emph{GLUCOSE\_STATE\_HIGH} $\rightarrow$ \emph{GLUCOSE\_STATE\_HIGH\_START}. By concatenating these hierarchical embeddings, we explicitly enforce semantic similarity. \emph{GLUCOSE\_STATE} and \emph{GLUCOSE\_TREND} inherently share the base representation of \emph{GLUCOSE}, while the START and END boundaries of the same interval share 3 out of 4 identical layers. 
+To represent variable durations, each interval contributes two timestamped tokens: \emph{START} and \emph{END}. Each boundary combines four hierarchical embeddings---Raw Concept, TAK Abstraction Concept, Concept with Value, and Positional Role---within one vector, without adding sequence positions. For example, a high-glucose interval start maps to \emph{GLUCOSE} $\rightarrow$ \emph{GLUCOSE\_STATE} $\rightarrow$ \emph{GLUCOSE\_STATE\_HIGH} $\rightarrow$ \emph{GLUCOSE\_STATE\_HIGH\_START}. Sharing embedding components encourages related representations: \emph{GLUCOSE\_STATE} and \emph{GLUCOSE\_TREND} share the \emph{GLUCOSE} embedding, while the START and END boundaries of the same interval share three of four embedding components.
 
 To model time, absolute timestamps are anchored to admission and encoded with Time2Vec, which learns linear and periodic temporal components \citep{kazemi2019time2vec}. Unlike standard Transformers, which combine token and positional information through element-wise addition, INTERVenE concatenates the four hierarchical concept embeddings with the Time2Vec representation. The resulting $5d$-dimensional vector is then linearly projected back to the model embedding dimension $d$, preserving concept identity and temporal information as distinct subspaces while allowing the projection layer to learn their interaction. Concretely, each boundary token $c_i$ is represented as
 
@@ -113,6 +113,8 @@ h_i^{(0)} =\;& W z_i + b
 
 where $\Vert$ denotes vector concatenation, $E_\ell(c_i^{(\ell)}) \in \mathbb{R}^{d}$ is the embedding of the $\ell$-th hierarchical concept associated with token $i$, and $\phi_{\mathrm{T2V}}(t_i-t_0) \in \mathbb{R}^{d}$ is the Time2Vec encoding of the elapsed time from the admission timestamp $t_0$ to the token timestamp $t_i$. The resulting $5d$-dimensional representation is linearly projected to the model embedding dimension $d$ before entering the Transformer. Temporal rotary position embeddings (RoPE) \citep{su2024roformer} are also applied within the attention layers. Finally, static patient context (e.g., age, sex) is injected directly into each Transformer block through AdaLN-Zero adaptive layer-normalization \citep{peebles2023adaln0}. The raw context attributes are linearly projected to $d_\text{model}$ before entering AdaLN-Zero; this projected vector acts as a global bias to shift the entire event manifold into a patient-specific subspace, utilizing context-dropout during training to regularize the shared latent space.
 
+Training batches group sequences of similar length to reduce padding, with each batch padded to its longest sequence and no fixed token-count cutoff. The encoder processes the observation sequence jointly; autoregressive decoding retains attention history and updates explicit open-interval state.
+
 This embedder, together with temporal-RoPE attention and AdaLN-Zero conditioning over SwiGLU blocks, forms a single backbone shared by both variants. They differ only in their attention mask - causal for INTERVenE-Ar, bidirectional for INTERVenE-Enc - and in their Phase-2/3 objectives, and both follow the same three-phase schedule that begins here. \textbf{Phase 1 (representation)} trains the embedder on a temporal next-token objective - a multi-hot BCE over the events falling in a short future window - augmented with a time-delta regression auxiliary,
 \begin{equation}
 \mathcal{L}_1 = \mathrm{BCE}_{\text{win}}\big(\hat{y}, y\big) + \lambda_{\Delta t}\,\mathrm{MSE}\big(\widehat{\Delta t}, \Delta t\big)
@@ -129,13 +131,19 @@ INTERVenE-Ar applies a causal mask and is trained to generate full abstraction t
   \tilde{y}_v(t) = \exp\big(-\Delta t_{tv} / \tau_v\big), \qquad \Delta t_{tv} \le H
 \end{equation}
 
-where $\Delta t_{tv} = t_v - t_t$ is the time gap to a future occurrence of $v$, $H$ is a hard look-ahead horizon, and $\tau_v$ is a per-class decay constant. Terminal tokens (DEATH/RELEASE) use a fixed $\tau = 12\,\text{h}$; outcome-class tokens are initialized at $\tau = 48\,\text{h}$ and remain learnable. The per-outcome risk head is trained on the same time-decayed soft labels using a separate per-outcome learnable $\tau_k$ within an outcome horizon $H_{\text{out}}$. Three staged auxiliaries shape the backbone: a stage-0 set comprising the $\Delta t$ regression, a masked set cross-entropy over all legal token classes at each non-padding step, and a \emph{time-to-terminal} (\texttt{ttt}) regression:
+where $\Delta t_{tv} = t_v - t_t$ is the time gap to a future occurrence of $v$, $H$ is a hard look-ahead horizon, and $\tau_v$ is a per-class decay constant. Terminal tokens (DEATH/RELEASE) use a fixed $\tau = 12\,\text{h}$; outcome-class tokens are initialized at $\tau = 48\,\text{h}$ and remain learnable. The outcome head is trained through pairwise ranking of positions with versus without an outcome within $H_{\text{out}}$, as determined by the temporal outcome targets. The combined objective is
 \begin{equation}
-\mathcal{L}_{\texttt{ttt}} = \mathrm{MSE}\big(\hat{\delta}_i, \log(1+\delta_i)\big)
+\begin{aligned}
+\mathcal{L}_{\mathrm{Ar},2} ={}& \mathcal{L}_{\mathrm{token}}
++ \lambda_{\mathrm{CE}}\mathcal{L}_{\mathrm{setCE}}
++ \lambda_{\Delta t}\mathcal{L}_{\mathrm{time}}\\
+&+ \lambda_{\mathrm{ttt}}\mathcal{L}_{\mathrm{ttt}}
++ \lambda_{\mathrm{rank}}\mathcal{L}_{\mathrm{rank}}.
+\end{aligned}
 \end{equation}
-where $\delta_i$ is the number of hours from position $i$ to the next terminal event, evaluated at every non-terminal position; and a stage-1 pairwise ranking loss (an AUROC proxy on the outcome head) that unlocks once the total validation loss plateaus. Each auxiliary weight is calibrated at activation and capped at a fixed fraction of the BCE. A curriculum-by-masking (CBM) routine atomically corrupts linked START/END interval pairs on the input side, teaching the model to tolerate the corrupted context it will later generate (implementation details in Appendix~\ref{app:implementation}).
+Here, $\mathcal{L}_{\mathrm{token}}$ is legality-masked, focal-weighted BCE on temporal soft targets. Set cross-entropy concentrates probability on legal target tokens; the timing auxiliary combines a binary time-advance gate with next-timestamp regression; and the time-to-terminal auxiliary regresses $\log(1+\delta_i)$, where $\delta_i$ is hours to the next terminal event. These three auxiliaries activate after token-only warmup, followed by outcome ranking when validation loss plateaus. Weights are calibrated once relative to the token loss; precise definitions and scheduling appear in Appendix~\ref{app:ar-phase2-loss}. Curriculum-by-masking (CBM) atomically corrupts linked START/END pairs on the input side to improve tolerance to corrupted context.
 
-\textbf{Phase 3 (risk-head alignment).} Phase 2 trains the risk head under teacher forcing, whereas inference reads it off free-running trajectories. Phase 3 closes this gap by fine-tuning on natural-distribution batches, with the backbone held at $0.01\times$ the head learning rate and per-outcome positive weighting to compensate class imbalance. A patient-level attention pool auxiliary trains in parallel: a learnable query per outcome attends over the backbone hidden states to produce a patient-level BCE signal, calibrated once after the first epoch. This phase gave the largest single lift in our ablation (Table~\ref{tab:abl-ar-all}).
+\textbf{Phase 3 (risk-head alignment).} Phase 3 fine-tunes the risk head under teacher forcing on natural-distribution batches using outcome BCE on time-decayed soft targets together with pairwise ranking, with the backbone held at $0.01\times$ the head learning rate and per-outcome positive weighting to compensate class imbalance. A patient-level attention pool auxiliary trains in parallel: a learnable query per outcome attends over the backbone hidden states to produce a patient-level BCE signal, calibrated once after the first epoch. This phase gave the largest single lift in our ablation (Table~\ref{tab:abl-ar-all}).
 
 \textbf{Inference.} The decoder is seeded with the first 48 hours (the task's $k{=}2$-day input window) and generates a free-running trajectory, reading the risk head at each step to produce a per-complication probability curve over time. A \texttt{ttt}-driven \emph{inference gate} uses the model's own time-to-terminal estimate to halt generation, re-calibrating trajectory length post hoc with no retraining. Patients that reach the length cap receive a forced terminal token (DEATH or RELEASE by highest logit), clamped to $\le 336$\,h.
 
@@ -143,7 +151,14 @@ where $\delta_i$ is the number of hours from position $i$ to the next terminal e
 
 INTERVenE-Enc replaces the causal mask with full bidirectional attention, trading trajectory generation for a faster, single-pass discriminative read-out.
 
-\textbf{Phase 2 (masked pretraining).} The backbone is pretrained with masked language modeling using \emph{atomic-interval masking}: roughly 15\% of eligible positions are selected, and linked interval START/END pairs are masked jointly with dedicated \texttt{[MASK\_INTERVAL\_*]} tokens: masking boundaries independently would allow the model to infer a masked boundary from its visible partner, reducing the task to near-trivial position lookup rather than genuine context reconstruction. The main loss is full-vocabulary cross-entropy at the masked positions. Two time-aware auxiliaries keep temporal structure in the hidden states: \texttt{t\_pos} regresses normalized time-since-admission at every position, and \texttt{t\_local} regresses the normalized local neighbor gap $\min(t-t_{\text{prev}},\, t_{\text{next}}-t)/24\text{h}$ at masked positions, forcing a masked token to retain its temporal placement once its concept identity is hidden. Auxiliary weights follow per-task fraction caps.
+\textbf{Phase 2 (masked pretraining).} The backbone is pretrained with masked language modeling using \emph{atomic-interval masking}: roughly 15\% of eligible positions are selected, and linked interval START/END pairs are masked jointly with dedicated \texttt{[MASK\_INTERVAL\_*]} tokens: masking boundaries independently would allow the model to infer a masked boundary from its visible partner, reducing the task to near-trivial position lookup rather than genuine context reconstruction. The combined objective is
+\begin{equation}
+\mathcal{L}_{\mathrm{Enc},2}
+= \mathcal{L}_{\mathrm{MLM}}
++ \lambda_{\mathrm{pos}}\mathcal{L}_{\mathrm{pos}}
++ \lambda_{\mathrm{local}}\mathcal{L}_{\mathrm{local}}.
+\end{equation}
+Here, $\mathcal{L}_{\mathrm{MLM}}$ is full-vocabulary cross-entropy at masked positions. The temporal auxiliaries are MSE losses: $\mathcal{L}_{\mathrm{pos}}$ predicts normalized time-since-admission at non-padding positions, while $\mathcal{L}_{\mathrm{local}}$ predicts the normalized gap to the nearest eligible unmasked event at masked positions, encouraging temporal placement to remain recoverable when concept identity is hidden. Auxiliary weights are zero during initial MLM-only training and subsequently calibrated relative to the main loss; target definitions and scheduling details appear in Appendix~\ref{app:enc-phase2-loss}.
 
 \textbf{Phase 3 (joint risk and time).} A task module attaches a per-outcome attention pool (the same mechanism as the Ar pool head) feeding a shared MLP and two heads, optimized jointly:
 \begin{equation}
@@ -185,14 +200,14 @@ Table~\ref{tab:headline} summarizes support-weighted headline metrics and Table~
   \resizebox{\columnwidth}{!}{%
   \begin{tabular}{lccccc}
     \toprule
-    Method & Params & AUPRC$_w$ & AUROC$_w$ & F1$_w$ & LoS (h) \\
+    Method & Params & AUPRC$_w$ (\%) & AUROC$_w$ (\%) & F1$_w$ (\%) & LoS (h) \\
     \midrule
-    KarmaLego+TPF   & 25.6k\,feat. & $0.587{\pm}0.012$ & $0.870{\pm}0.005$ & $0.571{\pm}0.010$ & $100.1{\pm}3.4$ \\
-    GRU-D           & 47.9k        & $0.626{\pm}0.014$ & $0.889{\pm}0.005$ & $0.609{\pm}0.011$ & $47.9{\pm}0.8$ \\
-    STraTS (pre+ft) & 92.7k        & $0.614{\pm}0.014$ & $0.890{\pm}0.005$ & $0.601{\pm}0.011$ & $48.6{\pm}0.9$ \\
-    ss-STraTS       & 86.5k        & $0.631{\pm}0.014$ & $0.895{\pm}0.005$ & $0.618{\pm}0.011$ & $48.5{\pm}0.9$ \\
-    INTERVenE-Ar    & 1.77M        & $0.587{\pm}0.013$ & $0.854{\pm}0.007$ & $0.569{\pm}0.011$ & $65.1{\pm}1.1$ \\
-    \textbf{INTERVenE-Enc} & 1.85M  & $\mathbf{0.672{\pm}0.012}$ & $\mathbf{0.901{\pm}0.005}$ & $\mathbf{0.628{\pm}0.011}$ & $\mathbf{44.4{\pm}0.9}$ \\
+    KarmaLego+TPF   & 25.6k\,feat. & $58.7{\pm}1.2$ & $87.0{\pm}0.5$ & $57.1{\pm}1.0$ & $100.1{\pm}3.4$ \\
+    GRU-D           & 47.9k        & $62.6{\pm}1.4$ & $88.9{\pm}0.5$ & $60.9{\pm}1.1$ & $47.9{\pm}0.8$ \\
+    STraTS (pre+ft) & 92.7k        & $61.4{\pm}1.4$ & $89.0{\pm}0.5$ & $60.1{\pm}1.1$ & $48.6{\pm}0.9$ \\
+    ss-STraTS       & 86.5k        & $63.1{\pm}1.4$ & $89.5{\pm}0.5$ & $61.8{\pm}1.1$ & $48.5{\pm}0.9$ \\
+    INTERVenE-Ar    & 1.77M        & $58.7{\pm}1.3$ & $85.4{\pm}0.7$ & $56.9{\pm}1.1$ & $65.1{\pm}1.1$ \\
+    \textbf{INTERVenE-Enc} & 1.85M  & $\mathbf{67.2{\pm}1.2}$ & $\mathbf{90.1{\pm}0.5}$ & $\mathbf{62.8{\pm}1.1}$ & $\mathbf{44.4{\pm}0.9}$ \\
     \bottomrule
   \end{tabular}%
   }
@@ -213,35 +228,35 @@ Table~\ref{tab:headline} summarizes support-weighted headline metrics and Table~
            & \emph{base MAE (h)} & 28.8   & 26.6   & 33.2   & 42.6   & 45.3   & 136.9 \\
     \midrule
     \multirow{3}{*}{KarmaLego + TPF}
-      & AUPRC   & $0.704 \pm 0.029$ & $0.776 \pm 0.014$ & $0.521 \pm 0.029$ & $0.211 \pm 0.031$ & $0.081 \pm 0.021$ & $0.477 \pm 0.029$ \\
-      & AUROC   & $0.910 \pm 0.012$ & $0.884 \pm 0.007$ & $0.847 \pm 0.012$ & $0.754 \pm 0.021$ & $0.734 \pm 0.030$ & $0.827 \pm 0.012$ \\
-      & Best-F1 & $0.674 \pm 0.025$ & $0.695 \pm 0.014$ & $0.532 \pm 0.021$ & $0.280 \pm 0.031$ & $0.155 \pm 0.029$ & $0.492 \pm 0.022$ \\
+      & AUPRC (\%) & $70.4 \pm 2.9$ & $77.6 \pm 1.4$ & $52.1 \pm 2.9$ & $21.1 \pm 3.1$ & $8.1 \pm 2.1$ & $47.7 \pm 2.9$ \\
+      & AUROC (\%) & $91.0 \pm 1.2$ & $88.4 \pm 0.7$ & $84.7 \pm 1.2$ & $75.4 \pm 2.1$ & $73.4 \pm 3.0$ & $82.7 \pm 1.2$ \\
+      & Best-F1 (\%) & $67.4 \pm 2.5$ & $69.5 \pm 1.4$ & $53.2 \pm 2.1$ & $28.0 \pm 3.1$ & $15.5 \pm 2.9$ & $49.2 \pm 2.2$ \\
     \midrule
     \multirow{3}{*}{GRU-D}
-      & AUPRC   & $0.729 \pm 0.029$ & $0.778 \pm 0.018$ & $0.559 \pm 0.032$ & $0.249 \pm 0.036$ & $0.128 \pm 0.032$ & $0.553 \pm 0.033$ \\
-      & AUROC   & $0.921 \pm 0.011$ & $0.899 \pm 0.007$ & $0.889 \pm 0.010$ & $0.817 \pm 0.018$ & $0.826 \pm 0.024$ & $\mathbf{0.896 \pm 0.010}$ \\
-      & Best-F1 & $0.678 \pm 0.027$ & $0.718 \pm 0.015$ & $0.582 \pm 0.022$ & $0.310 \pm 0.032$ & $0.218 \pm 0.044$ & $0.542 \pm 0.025$ \\
+      & AUPRC (\%) & $72.9 \pm 2.9$ & $77.8 \pm 1.8$ & $55.9 \pm 3.2$ & $24.9 \pm 3.6$ & $12.8 \pm 3.2$ & $55.3 \pm 3.3$ \\
+      & AUROC (\%) & $92.1 \pm 1.1$ & $89.9 \pm 0.7$ & $88.9 \pm 1.0$ & $81.7 \pm 1.8$ & $82.6 \pm 2.4$ & $\mathbf{89.6 \pm 1.0}$ \\
+      & Best-F1 (\%) & $67.8 \pm 2.7$ & $71.8 \pm 1.5$ & $58.2 \pm 2.2$ & $31.0 \pm 3.2$ & $21.8 \pm 4.4$ & $54.2 \pm 2.5$ \\
     \midrule
     \multirow{3}{*}{STraTS (pre+ft)}
-      & AUPRC   & $0.708 \pm 0.032$ & $0.768 \pm 0.018$ & $0.544 \pm 0.033$ & $0.282 \pm 0.040$ & $\mathbf{0.150 \pm 0.040}$ & $0.522 \pm 0.035$ \\
-      & AUROC   & $0.917 \pm 0.011$ & $0.896 \pm 0.007$ & $0.888 \pm 0.010$ & $0.846 \pm 0.015$ & $\mathbf{0.839 \pm 0.024}$ & $0.888 \pm 0.010$ \\
-      & Best-F1 & $0.672 \pm 0.027$ & $0.710 \pm 0.014$ & $0.561 \pm 0.022$ & $0.336 \pm 0.032$ & $\mathbf{0.245 \pm 0.047}$ & $0.529 \pm 0.026$ \\
+      & AUPRC (\%) & $70.8 \pm 3.2$ & $76.8 \pm 1.8$ & $54.4 \pm 3.3$ & $28.2 \pm 4.0$ & $\mathbf{15.0 \pm 4.0}$ & $52.2 \pm 3.5$ \\
+      & AUROC (\%) & $91.7 \pm 1.1$ & $89.6 \pm 0.7$ & $88.8 \pm 1.0$ & $84.6 \pm 1.5$ & $\mathbf{83.9 \pm 2.4}$ & $88.8 \pm 1.0$ \\
+      & Best-F1 (\%) & $67.2 \pm 2.7$ & $71.0 \pm 1.4$ & $56.1 \pm 2.2$ & $33.6 \pm 3.2$ & $\mathbf{24.5 \pm 4.7}$ & $52.9 \pm 2.6$ \\
     \midrule
     \multirow{3}{*}{ss-STraTS}
-      & AUPRC   & $0.726 \pm 0.032$ & $0.782 \pm 0.017$ & $0.566 \pm 0.031$ & $0.267 \pm 0.036$ & $0.123 \pm 0.028$ & $0.563 \pm 0.033$ \\
-      & AUROC   & $0.925 \pm 0.011$ & $0.902 \pm 0.007$ & $0.892 \pm 0.009$ & $\mathbf{0.847 \pm 0.015}$ & $0.833 \pm 0.025$ & $0.895 \pm 0.010$ \\
-      & Best-F1 & $0.695 \pm 0.026$ & $0.718 \pm 0.014$ & $0.575 \pm 0.022$ & $0.336 \pm 0.031$ & $0.230 \pm 0.040$ & $0.553 \pm 0.026$ \\
+      & AUPRC (\%) & $72.6 \pm 3.2$ & $78.2 \pm 1.7$ & $56.6 \pm 3.1$ & $26.7 \pm 3.6$ & $12.3 \pm 2.8$ & $56.3 \pm 3.3$ \\
+      & AUROC (\%) & $92.5 \pm 1.1$ & $90.2 \pm 0.7$ & $89.2 \pm 0.9$ & $\mathbf{84.7 \pm 1.5}$ & $83.3 \pm 2.5$ & $89.5 \pm 1.0$ \\
+      & Best-F1 (\%) & $69.5 \pm 2.6$ & $71.8 \pm 1.4$ & $57.5 \pm 2.2$ & $33.6 \pm 3.1$ & $23.0 \pm 4.0$ & $55.3 \pm 2.6$ \\
     \midrule
     \multirow{4}{*}{INTERVenE-Ar}
-      & AUPRC   & $0.701 \pm 0.035$ & $0.772 \pm 0.017$ & $0.588 \pm 0.032$ & $0.274 \pm 0.040$ & $0.120 \pm 0.033$ & $0.368 \pm 0.029$ \\
-      & AUROC   & $0.906 \pm 0.014$ & $0.884 \pm 0.009$ & $0.884 \pm 0.011$ & $0.814 \pm 0.020$ & $0.804 \pm 0.028$ & $0.752 \pm 0.015$ \\
-      & Best-F1 & $0.695 \pm 0.027$ & $0.702 \pm 0.014$ & $0.576 \pm 0.024$ & $0.365 \pm 0.033$ & $0.196 \pm 0.038$ & $0.383 \pm 0.023$ \\
+      & AUPRC (\%) & $70.1 \pm 3.5$ & $77.2 \pm 1.7$ & $58.8 \pm 3.2$ & $27.4 \pm 4.0$ & $12.0 \pm 3.3$ & $36.8 \pm 2.9$ \\
+      & AUROC (\%) & $90.6 \pm 1.4$ & $88.4 \pm 0.9$ & $88.4 \pm 1.1$ & $81.4 \pm 2.0$ & $80.4 \pm 2.8$ & $75.2 \pm 1.5$ \\
+      & Best-F1 (\%) & $69.5 \pm 2.7$ & $70.2 \pm 1.4$ & $57.6 \pm 2.4$ & $\mathbf{36.5 \pm 3.3}$ & $19.6 \pm 3.8$ & $38.3 \pm 2.3$ \\
       & MAE (h) & $28.0 \pm 3.0$    & $30.6 \pm 1.7$    & $41.4 \pm 2.9$    & $50.6 \pm 4.4$    & $60.4 \pm 7.5$    & $159.6 \pm 10.2$ \\
     \midrule
     \multirow{4}{*}{\textbf{INTERVenE-Enc}}
-      & AUPRC   & $\mathbf{0.790 \pm 0.028}$ & $\mathbf{0.818 \pm 0.014}$ & $\mathbf{0.629 \pm 0.032}$ & $\mathbf{0.308 \pm 0.042}$ & $0.144 \pm 0.036$ & $\mathbf{0.605 \pm 0.030}$ \\
-      & AUROC   & $\mathbf{0.944 \pm 0.009}$ & $\mathbf{0.911 \pm 0.007}$ & $\mathbf{0.901 \pm 0.010}$ & $0.840 \pm 0.017$ & $\mathbf{0.839 \pm 0.024}$ & $0.888 \pm 0.010$ \\
-      & Best-F1 & $\mathbf{0.737 \pm 0.025}$ & $\mathbf{0.733 \pm 0.014}$ & $\mathbf{0.603 \pm 0.024}$ & $\mathbf{0.363 \pm 0.035}$ & $0.234 \pm 0.042$ & $\mathbf{0.576 \pm 0.023}$ \\
+      & AUPRC (\%) & $\mathbf{79.0 \pm 2.8}$ & $\mathbf{81.8 \pm 1.4}$ & $\mathbf{62.9 \pm 3.2}$ & $\mathbf{30.8 \pm 4.2}$ & $14.4 \pm 3.6$ & $\mathbf{60.5 \pm 3.0}$ \\
+      & AUROC (\%) & $\mathbf{94.4 \pm 0.9}$ & $\mathbf{91.1 \pm 0.7}$ & $\mathbf{90.1 \pm 1.0}$ & $84.0 \pm 1.7$ & $\mathbf{83.9 \pm 2.4}$ & $88.8 \pm 1.0$ \\
+      & Best-F1 (\%) & $\mathbf{73.7 \pm 2.5}$ & $\mathbf{73.3 \pm 1.4}$ & $\mathbf{60.3 \pm 2.4}$ & $36.3 \pm 3.5$ & $23.4 \pm 4.2$ & $\mathbf{57.6 \pm 2.3}$ \\
       & MAE (h) & $18.4 \pm 2.4$    & $18.5 \pm 1.1$    & $25.7 \pm 2.0$    & $34.1 \pm 3.1$    & $38.8 \pm 4.7$    & $123.0 \pm 8.1$ \\
     \bottomrule
   \end{tabular}%
@@ -253,7 +268,7 @@ Table~\ref{tab:headline} summarizes support-weighted headline metrics and Table~
 
 INTERVenE-Enc achieves the strongest overall performance, improving the primary metric to a support-weighted AUPRC of $0.672$ ($+0.041$ over the strongest neural baseline, ss-STraTS, and $+0.085$ over KarmaLego; non-overlapping 95\% CIs). It also achieves the best AUROC$_w$, Best-F1$_w$, and LoS MAE, making it the strongest single-pass discriminative model in the comparison. INTERVenE-Ar attains competitive performance despite the substantially harder generative evaluation protocol, in which predictions are scored only after a full autoregressive rollout. Its strongest performance is observed on the dysglycemia outcomes (Appendix Fig.~\ref{fig:ar-trajectory}), while DEATH remains challenging because of the long prediction horizon and sparse terminal events.
 
-Per-outcome (Table~\ref{tab:per-outcome}), INTERVenE-Enc achieves the highest AUPRC on five of the six outcomes, with the largest improvements for KIDNEY ($0.790$ vs.\ $0.726$) and DEATH ($0.605$ vs.\ $0.563$), while tying STraTS on the rarest outcome (SEVERE HYPOGLYCEMIA; $2.7$\% prevalence, overlapping 95\% CIs). The auxiliary time head consistently improves event-time prediction, reducing MAE by $7$--$14$\,h relative to the median-time baseline across all outcomes.
+Per-outcome (Table~\ref{tab:per-outcome}), INTERVenE-Enc achieves the highest AUPRC on five of the six outcomes, with the largest improvements for KIDNEY ($0.790$ vs.\ $0.726$) and DEATH ($0.605$ vs.\ $0.563$). STraTS has the highest AUPRC point estimate for the rarest outcome (SEVERE HYPOGLYCEMIA; $2.7$\% prevalence), with overlapping 95\% CIs between STraTS and INTERVenE-Enc. INTERVenE-Enc consistently outperforms the median-time baseline in event-time prediction, reducing MAE by $7$--$14$\,h across all six outcomes.
 
 \paragraph{Calibration.}
 Both variants support per-outcome temperature scaling, fitted on the validation split and applied unchanged to the held-out test set. INTERVenE-Enc is well calibrated as emitted (support-weighted ECE $0.016$), with only a small improvement after scaling ($0.013$; Appendix Table~\ref{tab:calibration}). INTERVenE-Ar exhibits higher calibration error under its peak-detector readout ($\approx4$--$12\%$ ECE), but temperature scaling substantially improves the prevalent outcomes (e.g., DEATH: $0.050 \rightarrow 0.011$; Appendix Table~\ref{tab:ar-calibration}).

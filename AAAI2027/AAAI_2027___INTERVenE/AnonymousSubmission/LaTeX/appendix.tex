@@ -37,22 +37,22 @@ The architectures reported in the main paper are the endpoints of an iterative d
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{llcccc}
 \toprule
-Recipe arm & Sample & AUROC$_w$ & AUPRC$_w$ & LoS MAE (h) & gen/GT \\
+Recipe arm & Sample & AUROC$_w$ (\%) & AUPRC$_w$ (\%) & LoS MAE (h) & gen/GT \\
 \midrule
-Baseline decoder (no TTT aux / pool / gate)      & 10k  & $0.836$                    & $0.539$                    & -                       & $0.60$ \\
-\quad + TTT aux head + TTT-guided inference      & 10k  & $0.840$                    & $0.542$                    & -                       & $0.72$ \\
+Baseline decoder (no TTT aux / pool / gate)      & 10k  & $83.6$                    & $53.9$                    & -                       & $0.60$ \\
+\quad + TTT aux head + TTT-guided inference      & 10k  & $84.0$                    & $54.2$                    & -                       & $0.72$ \\
 \midrule
-\textbf{Locked recipe (10k retrain, anchor)} $=$ \textbf{above} $+$ \textbf{patient-pool aux}     & 10k  & $\mathbf{0.845}$           & $\mathbf{0.562}$           & $71.3$                  & $0.44$ \\
-\quad $-$ Phase-3 finetune (eval-only on P2)     & 10k  & $0.547$                    & $0.213$                    & $67.8$                  & $0.66$ \\
-\quad $-$ RoPE                                   & 10k  & $0.830$                    & $0.525$                    & $98.3$                  & $1.79$ \\
-\quad $-$ CBM                                    & 10k  & $0.834$                    & $0.534$                    & $71.0$                  & $1.09$ \\
-\quad $-$ soft kernel ($\tau{=}0.5$\,h)          & 10k  & $0.808$                    & $0.500$                    & $111.7$                 & $2.16$ \\
-\quad DD damping $\sqrt{}$                       & 10k  & $0.801$                    & $0.493$                    & $69.6$                  & $1.16$ \\
-\quad DD damping $\log$ (under-correct)          & 10k  & $0.797$                    & $0.503$                    & $95.7$                  & $1.79$ \\
+\textbf{Locked recipe (10k retrain, anchor)} $=$ \textbf{above} $+$ \textbf{patient-pool aux}     & 10k  & $\mathbf{84.5}$           & $\mathbf{56.2}$           & $71.3$                  & $0.44$ \\
+\quad $-$ Phase-3 finetune (eval-only on P2)     & 10k  & $54.7$                    & $21.3$                    & $67.8$                  & $0.66$ \\
+\quad $-$ RoPE                                   & 10k  & $83.0$                    & $52.5$                    & $98.3$                  & $1.79$ \\
+\quad $-$ CBM                                    & 10k  & $83.4$                    & $53.4$                    & $71.0$                  & $1.09$ \\
+\quad $-$ soft kernel ($\tau{=}0.5$\,h)          & 10k  & $80.8$                    & $50.0$                    & $111.7$                 & $2.16$ \\
+\quad DD damping $\sqrt{}$                       & 10k  & $80.1$                    & $49.3$                    & $69.6$                  & $1.16$ \\
+\quad DD damping $\log$ (under-correct)          & 10k  & $79.7$                    & $50.3$                    & $95.7$                  & $1.79$ \\
 \midrule
-Prior canonical (ttt cap $0.30$, no DD weighting)       & full & $0.832{\pm}0.007$          & $0.519{\pm}0.015$          & $147.7{\pm}1.9$         & $2.82$ \\
-\quad + ttt cap $0.30{\to}0.60$            & full & $0.832{\pm}0.007$          & $0.562{\pm}0.013$          & $78.7{\pm}1.0$          & $1.06$ \\
-\quad + DD-$p^{0.33}$ weighting \textbf{= Ar-final (deployed)} & full & $\mathbf{0.854{\pm}0.007}$ & $\mathbf{0.587{\pm}0.013}$ & $\mathbf{65.1{\pm}1.1}$ & $\mathbf{0.90}$ \\
+Prior canonical (ttt cap $0.30$, no DD weighting)       & full & $83.2{\pm}0.7$          & $51.9{\pm}1.5$          & $147.7{\pm}1.9$         & $2.82$ \\
+\quad + ttt cap $0.30{\to}0.60$            & full & $83.2{\pm}0.7$          & $56.2{\pm}1.3$          & $78.7{\pm}1.0$          & $1.06$ \\
+\quad + DD-$p^{0.33}$ weighting \textbf{= Ar-final (deployed)} & full & $\mathbf{85.4{\pm}0.7}$ & $\mathbf{58.7{\pm}1.3}$ & $\mathbf{65.1{\pm}1.1}$ & $\mathbf{0.90}$ \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -72,20 +72,20 @@ INTERVenE-Enc builds directly on the decoder backbone, inheriting the architectu
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llccc}
 \toprule
-Recipe arm & Sample & AUROC$_w$ & AUPRC$_w$ & LoS MAE (h) \\
+Recipe arm & Sample & AUROC$_w$ (\%) & AUPRC$_w$ (\%) & LoS MAE (h) \\
 \midrule
-\textbf{Locked recipe (10k retrain, anchor)}             & 10k  & $\mathbf{0.822}$  & $\mathbf{0.497}$  & $53.0 \pm 2.1$ \\
-\quad + hierarchical MLM masking                         & 10k  & $0.820$           & $0.482$           & - \\
-\quad + backbone LR factor $0.01 \to 0.1$                & 10k  & $0.813$           & $0.471$           & - \\
-\quad $-$ Phase-3 backbone learning$^\dagger$            & 10k  & $0.792$           & $0.429$           & $55.3 \pm 2.3$ \\
+\textbf{Locked recipe (10k retrain, anchor)}             & 10k  & $\mathbf{82.2}$  & $\mathbf{49.7}$  & $53.0 \pm 2.1$ \\
+\quad + hierarchical MLM masking                         & 10k  & $82.0$           & $48.2$           & - \\
+\quad + backbone LR factor $0.01 \to 0.1$                & 10k  & $81.3$           & $47.1$           & - \\
+\quad $-$ Phase-3 backbone learning$^\dagger$            & 10k  & $79.2$           & $42.9$           & $55.3 \pm 2.3$ \\
 \midrule
-Stripped baseline (full data, KBTA input)                & full & $0.901 \pm 0.005$ & $0.662 \pm 0.013$ & $46.1 \pm 0.9$ \\
-\quad + inverse-prevalence pos-weight$^\dagger$          & full & $0.894 \pm 0.005$ & $0.638 \pm 0.013$ & $49.1 \pm 0.8$ \\
-\quad + focal loss, $\gamma{=}1.0$                       & full & $0.901 \pm 0.005$ & $0.665 \pm 0.012$ & $44.7 \pm 0.8$ \\
-\quad + CBM masking $p{=}0.15$ \textbf{= Enc-final (deployed)} & full & $\mathbf{0.901 \pm 0.005}$ & $\mathbf{0.672 \pm 0.012}$ & $\mathbf{44.4 \pm 0.9}$ \\
+Stripped baseline (full data, KBTA input)                & full & $90.1 \pm 0.5$ & $66.2 \pm 1.3$ & $46.1 \pm 0.9$ \\
+\quad + inverse-prevalence pos-weight$^\dagger$          & full & $89.4 \pm 0.5$ & $63.8 \pm 1.3$ & $49.1 \pm 0.8$ \\
+\quad + focal loss, $\gamma{=}1.0$                       & full & $90.1 \pm 0.5$ & $66.5 \pm 1.2$ & $44.7 \pm 0.8$ \\
+\quad + CBM masking $p{=}0.15$ \textbf{= Enc-final (deployed)} & full & $\mathbf{90.1 \pm 0.5}$ & $\mathbf{67.2 \pm 1.2}$ & $\mathbf{44.4 \pm 0.9}$ \\
 \midrule
-Enc-final with std-bins input (KBTA replaced)            & full & $0.901 \pm 0.005$ & $0.676 \pm 0.012$ & $47.6 \pm 0.9$ \\
-Enc-final with de-intervaled input & full & $0.864 \pm 0.007$ & $0.593 \pm 0.015$ & $51.8 \pm 0.8$ \\
+Enc-final with std-bins input (KBTA replaced)            & full & $90.1 \pm 0.5$ & $67.6 \pm 1.2$ & $47.6 \pm 0.9$ \\
+Enc-final with de-intervaled input & full & $86.4 \pm 0.7$ & $59.3 \pm 1.5$ & $51.8 \pm 0.8$ \\
 \bottomrule
 \end{tabular}%
 }
@@ -106,14 +106,14 @@ The 10k design search established the Phase-3 training recipe, showing that redu
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lccccccc}
 \toprule
-Variant & embed\_dim & n\_head & head\_dim & Params & AUPRC$_w$ & AUROC$_w$ & LoS MAE (h) \\
+Variant & embed\_dim & n\_head & head\_dim & Params & AUPRC$_w$ (\%) & AUROC$_w$ (\%) & LoS MAE (h) \\
 \midrule
-M-64                                  & 64   & 1 & 64 & 0.46M & $0.646$                    & $0.889$                    & -                       \\
-\textbf{M-128 (Enc-final, deployed)}  & 128  & 2 & 64 & 1.84M & $\mathbf{0.672 \pm 0.012}$ & $\mathbf{0.901 \pm 0.005}$ & $\mathbf{44.4 \pm 0.9}$ \\
-M-256                                 & 256  & 4 & 64 & 6.40M & $0.650$                    & $0.895$                    & -                       \\
+M-64                                  & 64   & 1 & 64 & 0.46M & $64.6$                    & $88.9$                    & -                       \\
+\textbf{M-128 (Enc-final, deployed)}  & 128  & 2 & 64 & 1.84M & $\mathbf{67.2 \pm 1.2}$ & $\mathbf{90.1 \pm 0.5}$ & $\mathbf{44.4 \pm 0.9}$ \\
+M-256                                 & 256  & 4 & 64 & 6.40M & $65.0$                    & $89.5$                    & -                       \\
 \midrule
-h=8 narrow heads (budget-preserving)  & 128  & 8 & 16 & 1.84M & $0.659 \pm 0.013$          & $0.900 \pm 0.005$          & $46.6 \pm 0.9$          \\
-h=8 wide heads (parameter-spending)   & 512  & 8 & 64 & 25.0M & $0.676 \pm 0.012$          & $0.905 \pm 0.005$          & $45.2 \pm 0.9$          \\
+h=8 narrow heads (budget-preserving)  & 128  & 8 & 16 & 1.84M & $65.9 \pm 1.3$          & $90.0 \pm 0.5$          & $46.6 \pm 0.9$          \\
+h=8 wide heads (parameter-spending)   & 512  & 8 & 64 & 25.0M & $67.6 \pm 1.2$          & $90.5 \pm 0.5$          & $45.2 \pm 0.9$          \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -227,7 +227,45 @@ At each position $i$, a dynamic boolean mask $\mathbf{m}_i \in {0,1}^{V}$ is com
 The terminal BCE window is $H_\text{term}{=}168$\,h; the outcome risk-head horizon is $H_\text{out}{=}48$\,h (positive signal fires within 48\,h of an outcome event). Per-class decay $\tau_k$ is initialized at 48\,h for outcome tokens and 12\,h for terminal and default LM tokens; the terminal $\tau$ is frozen after an early diagnostic showed unconstrained widening, while the outcome $\tau$ remains learnable in Phases~2 and is frozen in Phase~3. Phase~2 pretraining trains on full patient trajectories and therefore sees post-48\,h tokens --- this is intentional, as the generative objective requires learning future sequence structure. Outcome labels (whether a complication occurs in hours 48--336) are introduced only in Phase~3; inference is seeded solely with the 0--48\,h input window, so no task-relevant label information is accessible during Phase~2 pretraining.
 
 \paragraph{Auxiliary curriculum.}
-Phases~2 and~3 apply a staged auxiliary unlock schedule: each auxiliary loss activates only after a minimum number of BCE-only warmup epochs and ramps to its configured fraction cap over a per-auxiliary ramp window. This governs the order and pace at which auxiliary losses become active --- it is a curriculum over loss composition, not a learning-rate warmup.
+Auxiliary activation and weighting are phase-specific and distinct from learning-rate warmup. The encoder Phase-2 schedule is specified below; the decoder's staged schedule is described in the main text.
+
+\paragraph{Encoder Phase-2 targets and weights.}
+\label{app:enc-phase2-loss}
+Let $t_i$ denote hours since admission. The position target is $t_i/336$, with MSE averaged over non-padding positions. For a masked position $i$, let $d_i$ be the smallest absolute time gap to an unmasked, non-padding event more than two seconds away. The local target is $\min(d_i/24,5)$; its MSE includes only masked positions with an eligible neighbor. Excluding near-simultaneous events avoids trivial local-gap targets.
+
+The supplied configuration uses four MLM-only epochs, followed by simultaneous activation of both temporal auxiliaries with no weight ramp. Each weight is calibrated once from the epoch-mean training losses at the end of warmup:
+\begin{equation}
+\lambda_a=\min\!\left(400,\frac{c_a\,\overline{\mathcal{L}}_{\mathrm{MLM}}}{\overline{\mathcal{L}}_a}\right),
+\quad a\in\{\mathrm{pos},\mathrm{local}\},
+\end{equation}
+where $c_{\mathrm{pos}}=0.40$ and $c_{\mathrm{local}}=0.15$. Calibration is deferred if the auxiliary loss is at most $10^{-8}$; its weight remains zero until calibration succeeds. Calibrated weights remain fixed thereafter. The fractions set relative contributions at calibration, subject to the weight ceiling of 400, rather than imposing a per-batch cap throughout training.
+
+\paragraph{Decoder Phase-2 losses and schedule.}
+\label{app:ar-phase2-loss}
+The token objective applies class-weighted focal BCE ($\gamma=0.5$) to temporal soft targets over legal classes at non-padding prediction steps. Positive-target and zero-target entries are averaged separately, with the latter weighted by $\operatorname{clip}(0.85N_+/N_-,0.03,0.30)$, where $N_+$ and $N_-$ are their respective counts (each bounded below by one).
+
+For legal classes $A_i$, positive-target classes $S_i\subseteq A_i$, and token logits $z_{iv}$, the set loss is
+\begin{equation}
+\mathcal{L}_{\mathrm{setCE}}=\operatorname{mean}_{i:S_i\ne\varnothing}
+\left[\log\sum_{v\in A_i}e^{z_{iv}}-\log\sum_{v\in S_i}e^{z_{iv}}\right].
+\end{equation}
+Let $u_i=t_i/336$ be normalized time and $b_i=\mathbf{1}[u_{i+1}-u_i>10^{-8}]$. The timing auxiliary is
+\begin{equation}
+\mathcal{L}_{\mathrm{time}}=\mathrm{BCE}(\hat b_i,b_i)
++\mathrm{MSE}_{i:b_i=1}(\hat u_{i+1},u_{i+1}),
+\end{equation}
+with both terms restricted to non-padding prediction steps. The gate distinguishes simultaneous from advancing timestamps; regression estimates the next normalized timestamp only for advancing steps. The terminal auxiliary is
+\begin{equation}
+\mathcal{L}_{\mathrm{ttt}}=\mathrm{MSE}_{i\in I_{\mathrm{term}}}
+\big(\hat\delta_i,\log(1+\delta_i)\big),
+\end{equation}
+where $I_{\mathrm{term}}$ contains non-terminal, non-padding prediction positions with an available future terminal event and $\delta_i$ is the gap in hours. For each outcome, positive and negative positions have temporal outcome targets greater than zero and equal to zero, respectively. The ranking loss averages $\log(1+\exp(r_n-r_p))$ over positive--negative outcome-logit pairs, then over outcomes with both classes present; at most 256 positive and 512 negative positions per outcome are sampled per batch.
+
+The supplied configuration uses four token-only epochs, then activates set cross-entropy, timing, and time-to-terminal losses together without ramps. Ranking unlocks after two validation checks without relative improvement of at least $10^{-3}$ and ramps linearly over three epochs. Each auxiliary's target weight is calibrated once as
+\begin{equation}
+\lambda_a^*=\min\!\left(10,\frac{c_a\,\overline{\mathcal{L}}_{\mathrm{token}}}{\overline{\mathcal{L}}_a}\right),
+\end{equation}
+using epoch-mean training losses immediately before activation, with $c_{\mathrm{CE}}=0.50$, $c_{\Delta t}=0.50$, $c_{\mathrm{ttt}}=0.60$, and $c_{\mathrm{rank}}=0.20$. Calibration is deferred while the raw auxiliary loss is at most $10^{-8}$. Weights remain zero before activation and calibration, and fixed after any ramp. These fractions govern calibration, not continuously enforced loss-contribution caps.
 
 \paragraph{Early stopping and actual convergence.}
 Each phase is capped at 100 epochs; training halts when the validation loss fails to improve by a minimum relative margin of $0.001$ for 10 consecutive epochs (patience searched over $5$--$15$). Actual convergence: both variants share the Phase~1 embedder, which ran 27 epochs (best checkpoint at epoch 22). INTERVenE-Enc Phase~2 ran 99 epochs (best at epoch 94); Phase~3 ran 49 epochs (best at epoch 44). INTERVenE-Ar Phase~2 ran 32 epochs (best at epoch 27); Phase~3 ran 70 epochs (best at epoch 65). The 2{,}000-resample patient-level bootstrap on the held-out test set serves as the per-metric uncertainty estimate in lieu of multi-seed retraining (see Limitations).

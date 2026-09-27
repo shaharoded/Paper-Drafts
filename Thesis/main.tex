@@ -86,16 +86,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % bibliography:
 
-% Numeric citation, as the department's thesis template prescribes. The
-% supervisor's structure guide asks for author-year instead; the template is
-% explicit on this point and takes precedence, so the author-year setup is kept
-% below should that be reversed.
-\usepackage[numbers,sort,compress,square]{natbib}
-\bibliographystyle{bibliography/unsrtnat_adjusted_for_bgu_thesis}
+% Author-year citations per supervisor's preference: names + dates are
+% clearer for readers and referees, and work better if the material is
+% later ported to a journal that permits author-year.
+\usepackage[authoryear,square]{natbib}
+\bibliographystyle{plainnat}
 
-% Author-year alternative:
-% \usepackage[authoryear,square]{natbib}
-% \bibliographystyle{plainnat}
+% Numeric alternative (unused; kept for reference):
+% \usepackage[numbers,sort,compress,square]{natbib}
+% \bibliographystyle{bibliography/unsrtnat_adjusted_for_bgu_thesis}
 
 %add bib to toc
 \usepackage[nottoc]{tocbibind}
