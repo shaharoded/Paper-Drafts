@@ -139,7 +139,7 @@ Scoring is retrospective and offline: the procedure issues no recommendation and
 
 \section{Predictive Model Development}
 
-Two modeling families are developed over the same abstracted records: a pattern-based vector-space approach summarizing each admission as a distribution over mined temporal patterns, and \textbf{INTERVenE}, a transformer family consuming the interval sequence directly. The former supplies the symbolic baseline; the latter is the methodological contribution.
+Two modeling families are developed over the same abstracted records: a pattern-based vector-space approach summarizing each admission as a distribution over mined temporal patterns, and \textbf{INTERVenE}, a new transformer family consuming the interval sequence directly. The former supplies the symbolic baseline; the latter is the methodological contribution.
 
 Figure~\ref{fig:architecture} shows the INTERVenE architecture end to end. The subsections that follow take it in order: how intervals become tokens, what the shared backbone does with them, and how the two variants diverge in their attention mask and their training objectives.
 
@@ -191,7 +191,7 @@ This is also the pathway through which an admission's QA profile enters as model
 
 \subsection{Phase 1: Representation Pretraining}
 
-Both variants begin by training the embedder alone, before any deep sequence model sits on top of it. The objective is a temporal next-token prediction: a multi-hot binary cross-entropy over the set of events falling within a short future window, augmented by a regression on the time to the next event,
+Both variants begin by training the embedder alone, before any deep sequence model sits on top of it. The objective is a temporal next-token prediction: a multi-hot binary cross-entropy (BCE) over the set of events falling within a short future window, augmented by a mean-squared-error (MSE) regression on the time to the next event,
 \begin{equation}
 \mathcal{L}_1 = \mathrm{BCE}_{\text{win}}\big(\hat{y}, y\big) + \lambda_{\Delta t}\,\mathrm{MSE}\big(\widehat{\Delta t}, \Delta t\big).
 \end{equation}
