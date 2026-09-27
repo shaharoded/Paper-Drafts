@@ -59,7 +59,7 @@ The methodological study establishes that a transformer over KBTA intervals is c
 
 What joins them is that adherence is computed over the same intervals the model reads. The Kineret experiment of Section~\ref{sec:evalm-kineret-task} closes that loop, and it is the one place where the thesis's two halves become a single question: does a measured quality-of-care signal carry predictive information beyond the clinical record it was derived from?
 
-That experiment has now been run as a closing addition (Section~\ref{sec:eval-kineret-models}), with every arm at the MIMIC-IV configuration and no tuning. Two results follow.
+That experiment has now been run as the final experiment that integrates the two key studies described previously (Section~\ref{sec:eval-kineret-models}), with every arm at the MIMIC-IV configuration and no tuning. Two results follow.
 
 The architecture transfers, and the knowledge base carries more predictive weight here than on MIMIC-IV. Substituting $\sigma$-bins costs $0.073$ AUPRC on Kineret but was within noise on MIMIC-IV. The knowledge base was authored on Kineret and transferred to MIMIC-IV, so the asymmetry is unsurprising: it is better matched to the cohort it was built for, where it also instantiates more fully --- eighteen of its concepts have no counterpart in the MIMIC-IV extract (Section~\ref{sec:method-preprocessing}). The MIMIC-IV finding therefore bounds what clinical knowledge contributes when ported to a new source, not what it contributes generally.
 
