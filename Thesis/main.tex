@@ -288,10 +288,21 @@
   \endgroup
 }
 
+% Advisor signature: if Main_pages/signature_yuval.png exists, place it
+% on top of the signature line so the printed page shows the actual
+% autograph. Otherwise the plain underline is drawn as before.
+\newcommand{\thesisadvisorautograph}{%
+  \IfFileExists{Main_pages/signature_yuval.png}{%
+    \makebox[3cm][l]{\raisebox{-0.4em}{\includegraphics[height=1.4em]{Main_pages/signature_yuval.png}}}%
+  }{%
+    \rule{3cm}{0.15mm}%
+  }%
+}
+
 \newcommand{\thesisadvisorsignatures}{%
   \begingroup
   \thesis@foradvisors{%
-    Signature of advisor: \( \rule{3cm}{0.15mm} \) \hfill Date: \( \rule{2.5cm}{0.15mm} \)\\
+    Signature of advisor: \thesisadvisorautograph \hfill Date: 28/09/2026\\
   }%
   \endgroup
 }
@@ -299,7 +310,7 @@
 \newcommand{\thesisadvisorsignatureshe}{%
   \begingroup
   \thesis@foradvisors{%
-    חתימת המנחה: \( \rule{3cm}{0.15mm} \) \hfill תאריך: \( \rule{2.5cm}{0.15mm} \)\\
+    חתימת המנחה: \thesisadvisorautograph \hfill תאריך: 28/09/2026\\
   }%
   \endgroup
 }
