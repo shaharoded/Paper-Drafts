@@ -33,6 +33,152 @@ Total                       & 174 & \\
 
 The Kineret concept index --- roughly $1{,}500$ local hospital codes mapped onto the concepts named above --- is not reproduced here. It is a site-specific lookup of no use outside that network, and it is the pipeline input described in Section~\ref{sec:method-preprocessing} rather than a result.
 
+\section{Assessed Guideline Recommendations}
+\label{app:kb-patterns}
+
+Fourteen quality-assessment temporal patterns (QATPs) were evaluated in the
+clinical study, corresponding to the components of the Israeli national
+inpatient hyperglycemia guideline \citep{hochberg2023inpatient}. Each pattern
+defines an applicability condition, so that it is scored only for admissions
+and time points at which the underlying recommendation applies, and one or
+more compliance aspects. Three aspect types are used: \emph{time}, whether a
+required action occurred within a required interval; \emph{cyclic}, whether a
+recurring action occurred at the required frequency; and \emph{value},
+whether an administered dose met the required magnitude. Insulin
+administration after hyperglycemia is a limiting case of the time aspect: it
+is defined by an overlap relation rather than by a delay, so no distance
+separates anchor from action for a membership function to grade, and the
+constraint is satisfied on existence alone --- scoring $1$ where the action
+is present and $0$ where it is not.
+
+Each aspect is scored by a trapezoidal membership function, so the reported
+values are continuous on $[0,1]$: full credit is given throughout the
+interval in which the recommendation is considered met, with linear partial
+credit on either side of it and zero beyond the outer bounds. Several
+trapezoids are deliberately open on one side --- full credit at or above a
+required count, for instance, with no penalty for exceeding it --- so that
+partial credit applies only where departing from the recommendation in that
+direction is meaningful. A recommendation carrying more than one aspect is
+reported under each aspect separately, which is why routine basal dosage
+appears twice in Table~\ref{tab:qatp-definitions} --- once for the frequency
+of administration and once for the dose administered. The knowledge base
+additionally contains a metformin continuation pattern; it is defined for
+detection only and carries no compliance function, so it yields no score
+and is not among the fourteen assessed components.
+
+\begin{table}[htbp]
+\centering
+\singlespacing
+\caption{Assessed guideline recommendations and their operational definitions
+in the knowledge base.}
+\label{tab:qatp-definitions}
+\small
+\begin{tabularx}{\textwidth}{
+>{\raggedright\arraybackslash}p{0.28\textwidth}
+l
+>{\raggedright\arraybackslash}X
+}
+\toprule
+Recommendation & Aspect & Operational definition \\
+\midrule
+
+Admission glucose monitoring & Cyclic &
+Glucose measured in each 24-hour window over the first days of admission:
+three days where diabetes is documented, two otherwise. Full credit at three
+or more measurements per window, decaying linearly to zero at none. \\
+
+Routine glucose monitoring & Cyclic &
+Glucose measured in each 24-hour window throughout the admission (evaluated
+to 14 days). While glucose is in a hyperglycemic or hypoglycemic state, full
+credit is given at three or more measurements per window. Under routine
+conditions the trapezoid peaks at at least one measurement per window. \\
+
+Glucose monitoring during corticosteroid therapy & Cyclic &
+Glucose measured in each 24-hour window over the first two days of
+corticosteroid treatment, with full credit at at least three measurements per
+window. \\
+
+BMI measurement on admission & Time &
+Body mass index or weight recorded within 48 hours of admission, decaying
+linearly to zero at 72 hours; a measurement recorded up to six months before
+admission is carried forward as relevant. \\
+
+Creatinine measurement on admission & Time &
+Serum creatinine measured within 48 hours of admission, decaying linearly to
+zero at 72 hours. Unlike BMI, no pre-admission measurement is carried
+forward, so the measurement must fall within the admission itself. \\
+
+Antidiabetic discontinuation on admission & Time &
+Prescribed antidiabetic agents carrying high hypoglycemia risk discontinued
+during the first 72 hours of admission, with credit decreasing linearly to
+zero if an agent was administered during that time. \\
+
+SGLT2 discontinuation on admission & Time &
+Prescribed SGLT2 inhibitors discontinued during admission. Any in-hospital
+administration scores $0$, and the absence of one scores $1$, assuming the
+patient was treated with the agent at home. \\
+
+Basal insulin continuation on admission & Time &
+Basal insulin administered within 36 hours of admission for patients
+established on basal insulin at home, decaying linearly to zero at 48
+hours. \\
+
+Insulin administration after hyperglycemia & Time &
+Any dose of reactive bolus or intravenous insulin administered overlapping a
+meal (2-hour window before or after the meal) while glucose is elevated. \\
+
+Antidiabetic discontinuation after hypoglycemia & Time &
+Prescribed antidiabetic agents withheld following a hypoglycemic event, with
+credit increasing over 72 hours and full credit sustained thereafter. \\
+
+Basal dose reduction after hypoglycemia & Value &
+Basal insulin dose reduced relative to the preceding dose following a
+hypoglycemic event, scored on the ratio of the new dose to the preceding one:
+any reduction receives full credit, declining to zero at an unchanged dose.
+Unlike the bolus pattern below, hypoglycemic events \emph{not} followed by a
+basal dose within 24 hours are scored as compliant rather than excluded,
+following the convention that a withheld action satisfies the
+recommendation. \\
+
+Bolus dose reduction after hypoglycemia & Value &
+Bolus insulin dose reduced following a hypoglycemic event, on the same dose
+ratio and membership function as the basal pattern above, but evaluated only
+where bolus insulin was actually administered within 24 hours of the event;
+events with no subsequent bolus are excluded from scoring rather than
+counted as compliant (assuming basal is routine and bolus is a reaction to
+an event). \\
+
+Routine basal dosage (frequency) & Cyclic &
+Basal insulin administered in each 24-hour window through the first 14 days
+of admission, evaluated in windows where hyperglycemia is present, with full
+credit between one and four administrations per window and declining credit
+beyond that range. \\
+
+Routine basal dosage (dose) & Value &
+Judged against body weight for patients not established on basal insulin at
+home: full credit between $0.2$ and $0.6$ units per kilogram, rising from
+zero below $0.2$ and declining to zero at $1.0$ units per kilogram, using a
+default weight of $81$~kg where no weight measurement is available. For
+patients already receiving basal insulin at home, the established dose is
+accepted as given and is not weight-normalized, assuming medical staff
+reacted to this dose and might have increased the hospital dose due to
+tolerance. \\
+
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The differing treatment of unanswered anchors in the two dose-reduction
+patterns is deliberate and reflects how the two insulins are used. Basal
+insulin is given routinely, so a hypoglycemic event with no basal dose in
+the following 24 hours represents the dose having been withheld, which
+satisfies the recommendation and scores $1$. Bolus insulin is given
+reactively, so the absence of a dose carries no information about whether a
+reduction was warranted, and those events are excluded from scoring rather
+than counted as compliant. This is the principal reason the two components
+report such different means ($0.87$ and $0.28$) despite sharing a membership
+function.
+
 \section{On the Absence of a Threshold-Discovery Table}
 \label{app:kb-thresholds}
 
