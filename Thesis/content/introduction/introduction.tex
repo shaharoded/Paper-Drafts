@@ -1,5 +1,19 @@
 \section{Motivation}
 
+This thesis is first and foremost a computational contribution: a new
+transformer family that predicts short-horizon clinical complications from a
+stream of knowledge-based temporal-abstraction (KBTA) intervals, with an
+explanation surface that resolves to named clinical concepts by construction.
+The domain in which it is evaluated --- hospitalized patients with diabetes
+or documented inpatient hyperglycemia --- brings with it a second,
+complementary contribution: a formalization of the national inpatient
+diabetes guideline as quality-assessment temporal patterns over the same
+interval stream, so that guideline adherence becomes measurable
+automatically and at national scale. The two contributions rest on one
+representation, so the thesis presents them together --- the predictive
+architecture first, and the clinical measurement work built over the same
+abstraction layer.
+
 Diabetes mellitus is a global epidemic, responsible for millions of deaths annually and for a steadily growing share of health-care expenditure worldwide \citep{idf-atlas-10th-edition-2021}. In Israel, people with diabetes make up more than 7\% of the population, yet they account for roughly one-third of total health-care spending \citep{israel-national-center-disease-control-diabetes-registry-report-2012-2022}. They occupy a disproportionate share of inpatient days and drive costly complications such as infection, acute kidney injury, cardiovascular events, and diabetic ketoacidosis \citep{summary-cost-diabetes-israel-2018}.
 
 Within the hospital, dysglycemia is not a static comorbidity but an actively managed process. Hyperglycemia and hypoglycemia during admission prolong length of stay and increase mortality risk, and both are largely a function of how insulin therapy is titrated day by day. Adherence to evidence-based insulin protocols, however, is inconsistent in routine internal-medicine practice. Recent Israeli interventions --- updated national guidelines, a mandatory diabetes e-learning module for clinical staff, and a new quality indicator for persistent hyperglycemia --- were introduced precisely to close that gap, but their real-world effect on treatment behavior and on patient outcomes has not been quantified at scale.
