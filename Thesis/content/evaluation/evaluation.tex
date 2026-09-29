@@ -96,15 +96,15 @@ All methods share the train/validation/test split, the $48$-hour observation win
   \footnotesize INTERVenE-Ar is evaluated from a free-running autoregressive rollout, with LoS MAE read from the terminal generated state. Its metrics therefore reflect a generative rollout rather than the single-pass discriminative evaluation used by the other models, and are reported for completeness rather than as a like-for-like comparison. Its locked configuration is given in Table~\ref{tab:abl-ar-all}.
 \end{table}
 
-INTERVenE-Enc achieves the strongest overall performance, raising the primary metric to a support-weighted AUPRC of $0.672$ --- $+0.041$ over the strongest neural baseline, ss-STraTS, and $+0.085$ over KarmaLego+TPF, both with non-overlapping $95\%$ confidence intervals (Table~\ref{tab:headline}). It also achieves the best AUROC$_w$, F1$_w$, and length-of-stay MAE, making it the strongest single-pass discriminative model in the comparison.
+INTERVenE-Enc achieved the strongest overall performance, raising the primary metric to a support-weighted AUPRC of $0.672$ --- $+0.041$ over the strongest neural baseline, ss-STraTS, and $+0.085$ over KarmaLego+TPF, both with non-overlapping $95\%$ confidence intervals (Table~\ref{tab:headline}). It also achieved the best AUROC$_w$, F1$_w$, and length-of-stay MAE, making it the strongest single-pass discriminative model in the comparison.
 
 Two results in the table are worth separating from that headline, and they answer the two orthogonal comparison axes named in Section~\ref{sec:evalm-mimic-cohort}. First, on the modeling-within-a-common-representation axis: KarmaLego+TPF --- the only baseline consuming the same interval stream --- is the weakest arm among the single-pass discriminative models, and its length-of-stay error is more than twice that of any neural baseline. The gap between it and INTERVenE-Enc is the one that isolates modeling from representation, since the two receive identical input, and it is the largest gap in the table across the single-pass arms. INTERVenE-Ar's numbers are close on the discrimination metrics --- identical AUPRC, and slightly lower AUROC and best-$F_1$ than KarmaLego+TPF --- but are read under a strictly harder contract (a free-running generative rollout evaluated only at the terminal state; see the table footnote), and so are not in the like-for-like bracket.
 
-Second, on the raw-vs-abstracted axis within the neural family: GRU-D and both STraTS configurations consume the raw event stream, while INTERVenE-Enc consumes KBTA intervals. INTERVenE-Enc improves on the strongest raw-stream neural baseline (ss-STraTS) by $+0.041$ AUPRC with non-overlapping confidence intervals, holding the sequence-model architectural budget in the same family. On this cohort the abstracted vocabulary therefore beats the raw stream inside the neural family, complementing the KarmaLego contrast on the first axis.
+Second, on the raw-vs-abstracted axis within the neural family: GRU-D and both STraTS configurations consumed the raw event stream, while INTERVenE-Enc consumed KBTA intervals. INTERVenE-Enc improved on the strongest raw-stream neural baseline (ss-STraTS) by $+0.041$ AUPRC with non-overlapping confidence intervals, holding the sequence-model architectural budget in the same family. On this cohort the abstracted vocabulary therefore beat the raw stream inside the neural family, complementing the KarmaLego contrast on the first axis.
 
-Second, pretraining does not help STraTS on this cohort: the supervised-only configuration outperforms the pretrained-and-fine-tuned one on AUPRC ($0.631$ against $0.614$), which is why both are retained and why ss-STraTS is treated as the reference neural baseline throughout.
+Second, pretraining did not help STraTS on this cohort: the supervised-only configuration outperformed the pretrained-and-fine-tuned one on AUPRC ($0.631$ against $0.614$), which is why both are retained and why ss-STraTS is treated as the reference neural baseline throughout.
 
-INTERVenE-Ar attains competitive performance despite a substantially harder evaluation protocol, in which predictions are scored only after a full autoregressive rollout. Its strongest results are on the dysglycemia outcomes; death remains difficult, for reasons the per-outcome breakdown makes clear.
+INTERVenE-Ar attained competitive performance despite a substantially harder evaluation protocol, in which predictions were scored only after a full autoregressive rollout. Its strongest results were on the dysglycemia outcomes; death remained difficult, for reasons the per-outcome breakdown makes clear.
 
 \subsection{Per-Outcome Results (RQ1b)}
 \label{sec:eval-per-outcome}
@@ -162,11 +162,11 @@ INTERVenE-Ar attains competitive performance despite a substantially harder eval
   \footnotesize INTERVenE-Ar's MAE corresponds to the peak predicted probability along the generated trajectory, matched to the nearest ground-truth event.
 \end{table}
 
-INTERVenE-Enc achieves the highest AUPRC on five of six outcomes (Table~\ref{tab:per-outcome}), with the largest improvements on kidney complication ($0.790$ against $0.726$) and death ($0.605$ against $0.563$). On the rarest outcome, severe hypoglycemia at $2.7\%$ prevalence, it ties STraTS with overlapping intervals --- the one place where scarcity of positives, rather than modeling, sets the ceiling.
+INTERVenE-Enc achieved the highest AUPRC on five of six outcomes (Table~\ref{tab:per-outcome}), with the largest improvements on kidney complication ($0.790$ against $0.726$) and death ($0.605$ against $0.563$). On the rarest outcome, severe hypoglycemia at $2.7\%$ prevalence, it tied STraTS with overlapping intervals --- the one place where scarcity of positives, rather than modeling, set the ceiling.
 
 The auxiliary time head consistently improves event-time prediction, reducing MAE by $7$--$14$ hours against the median-time baseline across all outcomes. This is a genuinely separate capability from ranking: a model can identify who will deteriorate without saying when, and the time head does both from one pass.
 
-INTERVenE-Ar's difficulty with death is visible here: its AUPRC of $0.368$ against the encoder's $0.605$ is the largest gap between the two variants in the table. The dysglycemia outcomes, which occur earlier and more often, are where the generative readout holds up. What separates the two variants is taken up in Section~\ref{sec:disc-methodological}.
+INTERVenE-Ar's difficulty with death is visible here: its AUPRC of $0.368$ against the encoder's $0.605$ was the largest gap between the two variants in the table. The dysglycemia outcomes, which occur earlier and more often, were where the generative readout held up. What separates the two variants is taken up in Section~\ref{sec:disc-methodological}.
 
 \subsection{Calibration (RQ1c)}
 
@@ -178,7 +178,7 @@ The asymmetry is expected. The encoder emits a probability directly, whereas the
 
 The two representation ablations of Section~\ref{sec:method-ablations} answer the question the headline comparison leaves open. Both hold the deployed encoder fixed and vary only the input; full results are in Table~\ref{tab:abl-enc-all}.
 
-Replacing the KBTA vocabulary with a standard-deviation discretization leaves discrimination essentially unchanged: AUPRC $0.676$ against $0.672$ and identical AUROC, with the only cost a length-of-stay increase of $3.2$ hours. Collapsing every interval to a one-second point event, by contrast, degrades everything --- AUPRC falls from $0.672$ to $0.593$ and length-of-stay error rises by $7.4$ hours.
+Replacing the KBTA vocabulary with a standard-deviation discretization left discrimination essentially unchanged: AUPRC $0.676$ against $0.672$ and identical AUROC, with the only cost a length-of-stay increase of $3.2$ hours. Collapsing every interval to a one-second point event, by contrast, degraded everything --- AUPRC fell from $0.672$ to $0.593$ and length-of-stay error rose by $7.4$ hours.
 
 Read together these say something specific, and it is not what the framing of the thesis might lead one to expect. The architecture depends on \emph{persistence} --- that a symbol holds over a span, and that spans overlap --- but not on the symbols being clinically named. KBTA is therefore an interpretability substrate rather than a predictive prerequisite. A structured discretization with no clinical semantics predicts just as well; what it cannot do is produce the explanations of the next section, because its features have no names to resolve to.
 
@@ -307,7 +307,7 @@ This matters for how the pre--post result should be used. A national mean is the
 \label{fig:adherence-mortality}
 \end{figure}
 
-Higher adherence is associated with lower $30$-day mortality (Figure~\ref{fig:adherence-mortality}). Survivors had a higher mean adherence score than those who died ($0.693$ against $0.652$, $P<.001$), and mortality fell across adherence strata from $11\%$ to roughly $3\%$. On the continuous score, each $0.1$-point increase carried $16.8\%$ lower odds of death (OR $0.832$; $95\%$ CI $0.811$--$0.853$), so the association is graded rather than threshold-like. Adjusting for age, sex, comorbidity burden, and hospital left it intact (adjusted OR $0.757$; $95\%$ CI $0.727$--$0.788$, per $1$-SD increase).
+Higher adherence was associated with lower $30$-day mortality (Figure~\ref{fig:adherence-mortality}). Survivors had a higher mean adherence score than those who died ($0.693$ against $0.652$, $P<.001$), and mortality fell across adherence strata from $11\%$ to roughly $3\%$. On the continuous score, each $0.1$-point increase was associated with $16.8\%$ lower odds of death (OR $0.832$; $95\%$ CI $0.811$--$0.853$), so the association was graded rather than threshold-like. Adjusting for age, sex, comorbidity burden, and hospital left it intact (adjusted OR $0.757$; $95\%$ CI $0.727$--$0.788$, per $1$-SD increase).
 
 As stated in Section~\ref{sec:evalm-mortality}, this is descriptive. Whole-admission adherence spans the entire stay and so does not strictly precede the outcome; the component-level analyses below enforce that ordering.
 
@@ -392,7 +392,7 @@ Inpatient AKI        & $0.018$  & 1.018 & 0.888 to 1.168 & 0.022 & .800 \\
 \end{tabular}
 \end{table}
 
-The overall-adherence analyses achieved satisfactory covariate balance, with maximum post-weighting SMD below $0.08$. Relative to the low-adherence group, above-median adherence carried $44\%$ lower odds of $30$-day mortality (OR $0.557$; $95\%$ CI $0.514$--$0.603$), $82\%$ lower odds of hyperglycemia (OR $0.175$), and $52\%$ lower odds of severe hyperglycemia (OR $0.485$), all with adjusted $P<.001$ --- against $20\%$ higher odds of hypoglycemia (OR $1.204$; $95\%$ CI $1.090$--$1.331$; Table~\ref{tab:iptw-overall}). Nothing survived correction for the remaining five outcomes.
+The overall-adherence analyses achieved satisfactory covariate balance, with maximum post-weighting SMD below $0.08$. Relative to the low-adherence group, above-median adherence was associated with $44\%$ lower odds of $30$-day mortality (OR $0.557$; $95\%$ CI $0.514$--$0.603$), $82\%$ lower odds of hyperglycemia (OR $0.175$), and $52\%$ lower odds of severe hyperglycemia (OR $0.485$), all with adjusted $P<.001$ --- against $20\%$ higher odds of hypoglycemia (OR $1.204$; $95\%$ CI $1.090$--$1.331$; Table~\ref{tab:iptw-overall}). Nothing survived correction for the remaining five outcomes.
 
 The asymmetry between those two directions is the substantive result. Following the guideline more closely is associated with both less hyperglycemia and more hypoglycemia, which is exactly the trade-off inpatient insulin management is designed around. But the two are not comparable in size: the reduction in hyperglycemic burden is roughly ninefold larger on the log-odds scale than the accompanying increase in hypoglycemia, and the increase in \emph{severe} hypoglycemia did not reach significance (OR $1.129$; adjusted $P=.096$). The trade-off is real and it is lopsided.
 
@@ -484,11 +484,11 @@ INTERVenE-Enc (KB $+$ QA)     & 0.802 [0.793, 0.811] & \textbf{0.535 [0.518, 0.5
 \label{fig:kineret-ladder}
 \end{figure}
 
-The architecture transfers. INTERVenE-Enc on knowledge-based abstractions leads every arm on AUROC, best F1 and onset error, at a support-weighted AUPRC of $0.527$ against $0.472$ for the best raw-stream baseline, with non-overlapping intervals. The KB\,$+$\,QA arm edges it on AUPRC alone, at $0.535$; the two are separated by less than their interval width, and Section~\ref{sec:eval-kineret-qa} takes that difference up.
+The architecture transferred. INTERVenE-Enc on knowledge-based abstractions led every arm on AUROC, best F1 and onset error, at a support-weighted AUPRC of $0.527$ against $0.472$ for the best raw-stream baseline, with non-overlapping intervals. The KB\,$+$\,QA arm edged it on AUPRC alone, at $0.535$; the two are separated by less than their interval width, and Section~\ref{sec:eval-kineret-qa} takes that difference up.
 
 The raw-stream / abstracted contrast on this ladder is arms~1--4 against arms~5--7: LogReg and ss-STraTS never see the Mediator's KBTA intervals, and when they are paired with QA (arms~2 and~4) the compliance signal enters only as an aggregated static context vector appended to their per-admission feature block, not as temporal tokens over the interval stream. Only INTERVenE-Enc reads intervals directly, and only arm~7 receives the compliance patterns as temporal tokens the encoder's attention can align with the abstraction sequence. The gap of $+0.055$ AUPRC between INTERVenE-Enc (KB) and ss-STraTS is therefore the Kineret analogue of the MIMIC-IV raw-vs-abstracted contrast, and the gap of $+0.073$ AUPRC between INTERVenE-Enc (KB) and INTERVenE-Enc ($\sigma$-bins) --- same architecture, same raw data, different abstraction layer --- is the analogue of the KarmaLego contrast, isolating the knowledge base itself rather than the modeling choice.
 
-The knowledge base matters more here than it did on MIMIC-IV. Replacing it with $\sigma$-bins costs $0.073$ AUPRC and drops the arm to the logistic-regression floor, whereas the same substitution on MIMIC-IV was within noise. On the data the knowledge base was authored for, the clinical knowledge is doing predictive work and not only interpretive work. What that does and does not license is taken up in Section~\ref{sec:disc-joint}.
+The knowledge base mattered more here than it did on MIMIC-IV. Replacing it with $\sigma$-bins cost $0.073$ AUPRC and dropped the arm to the logistic-regression floor, whereas the same substitution on MIMIC-IV was within noise. On the data the knowledge base was authored for, the clinical knowledge did predictive work rather than only interpretive work. What that does and does not license is taken up in Section~\ref{sec:disc-joint}.
 
 \subsection{Does the Adherence Signal Help?}
 \label{sec:eval-kineret-qa}
@@ -543,6 +543,6 @@ Infection             & 37   & 0.067 & 0.064 & 0.076 & 0.077 & 0.067 & 0.058 & \
 \label{fig:kineret-per-target}
 \end{figure}
 
-The aggregate ordering is carried by the two frequent glycemic outcomes, where the knowledge-based arms gain most: hyperglycemia $0.578$ against $0.486$ for ss-STraTS, severe hyperglycemia $0.513$ against $0.472$. Death is the only outcome where KB without QA leads outright ($0.645$).
+The aggregate ordering was carried by the two frequent glycemic outcomes, where the knowledge-based arms gained most: hyperglycemia $0.578$ against $0.486$ for ss-STraTS, severe hyperglycemia $0.513$ against $0.472$. Death was the only outcome where KB without QA led outright ($0.645$).
 
 Below roughly $200$ positives the arms stop separating. Infection ($37$ positives), MI / cardiovascular complication ($69$) and severe hypoglycemia ($111$) sit near their prevalence floors throughout, and the single largest swing in the table --- the $\sigma$-bin arm at $0.295$ on MI / cardiovascular complication against $0.564$ for logistic regression --- rests on $69$ events and should not be read as an ordering. Weighting all eight outcomes equally rather than by support lowers every figure --- macro AUPRC runs from $0.332$ to $0.403$ --- but leaves the ranking of the arms unchanged.
