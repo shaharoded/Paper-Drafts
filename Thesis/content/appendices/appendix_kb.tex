@@ -5,7 +5,7 @@ The knowledge base was built iteratively rather than derived in one pass, so the
 \section{The TAK Repository}
 \label{app:kb-artifacts}
 
-All domain knowledge is declared externally as XML units validated against a shared schema (\texttt{tak\_schema.xsd}) before the engine runs. The deployed repository holds $174$ units across the eight TAK families, together with the quality-assessment patterns encoding the national guideline. It is published with the Mediator engine \citep{mediator-github} and is the authoritative statement of every threshold, relevance duration, and trend limit used in this work.
+All domain knowledge is declared externally as XML units validated against a shared schema (\texttt{tak\_schema.xsd}) before the engine runs. The deployed repository holds $174$ units across the eight TAK families, together with the quality-assessment patterns encoding the national guideline. It is published with the Mediator engine \citep{mediator-github} under \path{core/knowledge-base/}, one subdirectory per TAK family (\path{raw-concepts/}, \path{parameterized-raw-concepts/}, \path{states/}, \path{trends/}, \path{events/}, \path{contexts/}, \path{local-patterns/}, \path{global-patterns/}), and is the authoritative statement of every threshold, relevance duration, and trend limit used in this work.
 
 \begin{table}[htbp]
 \centering
@@ -31,7 +31,7 @@ Total                       & 174 & \\
 \end{tabular}
 \end{table}
 
-The Kineret concept index --- roughly $1{,}500$ local hospital codes mapped onto the concepts named above --- is not reproduced here. It is a site-specific lookup of no use outside that network, and it is the pipeline input described in Section~\ref{sec:method-preprocessing} rather than a result.
+The Kineret concept index --- roughly $1{,}500$ local hospital codes mapped onto the concepts named above --- is not reproduced in-line here. It is a site-specific lookup and the pipeline input described in Section~\ref{sec:method-preprocessing} rather than a result, but it is published alongside the ETL pipeline that consumes it \citep{kineret-etl-github} under \path{index/}, split into \path{cohort_filters/} for the concept-id lists that define patient inclusion and \path{explorations/} for the code-to-concept mappings themselves, grouped by target table (\path{clinical_events/}, \path{drug_exposure/}, \path{measurement/}). The Kineret ETL repository additionally documents the notebook (\texttt{db\_load.ipynb}) that reads these files and turns the OMOP extract into the Mediator input consumed by the pipeline.
 
 \section{Assessed Guideline Recommendations}
 \label{app:kb-patterns}
