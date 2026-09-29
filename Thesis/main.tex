@@ -299,6 +299,15 @@
   }%
 }
 
+% Student signature: same treatment for Main_pages/shahar_signature.png.
+\newcommand{\thesisstudentautograph}{%
+  \IfFileExists{Main_pages/shahar_signature.png}{%
+    \makebox[3cm][l]{\raisebox{-0.4em}{\includegraphics[height=1.4em]{Main_pages/shahar_signature.png}}}%
+  }{%
+    \rule{3cm}{0.15mm}%
+  }%
+}
+
 \newcommand{\thesisadvisorsignatures}{%
   \begingroup
   \thesis@foradvisors{%
