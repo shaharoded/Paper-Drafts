@@ -21,6 +21,9 @@ To obtain precise event times, all target complications are defined directly fro
 
 By deriving outcome labels from timestamped physiological measurements whenever possible, the prediction task requires forecasting clinically meaningful deterioration rather than recovering broad administrative diagnoses.
 
+\paragraph{Abstraction rules and observation gaps.}
+Input abstractions followed concept-specific TAK definitions specifying state thresholds, persistence limits, and whether interpolation was enabled. Trend definitions specified a lookback window, a significant-variation threshold, and a maximum gap for joining observations. These explicit rules determine abstraction behavior under irregular sampling; they do not establish robustness to measurement perturbations.
+
 \section{Architectural Ablation Trail}
 \label{app:ablation-trail}
 
@@ -46,7 +49,7 @@ Baseline decoder (no TTT aux / pool / gate)      & 10k  & $83.6$                
 \quad $-$ Phase-3 finetune (eval-only on P2)     & 10k  & $54.7$                    & $21.3$                    & $67.8$                  & $0.66$ \\
 \quad $-$ RoPE                                   & 10k  & $83.0$                    & $52.5$                    & $98.3$                  & $1.79$ \\
 \quad $-$ CBM                                    & 10k  & $83.4$                    & $53.4$                    & $71.0$                  & $1.09$ \\
-\quad $-$ soft kernel ($\tau{=}0.5$\,h)          & 10k  & $80.8$                    & $50.0$                    & $111.7$                 & $2.16$ \\
+\quad Short-decay kernel ($\tau{=}0.5$\,h)          & 10k  & $80.8$                    & $50.0$                    & $111.7$                 & $2.16$ \\
 \quad DD damping $\sqrt{}$                       & 10k  & $80.1$                    & $49.3$                    & $69.6$                  & $1.16$ \\
 \quad DD damping $\log$ (under-correct)          & 10k  & $79.7$                    & $50.3$                    & $95.7$                  & $1.79$ \\
 \midrule
@@ -118,7 +121,7 @@ h=8 wide heads (parameter-spending)   & 512  & 8 & 64 & 25.0M & $67.6 \pm 1.2$  
 \end{tabular}
 \end{table*}
 
-\textbf{Capacity and heads (Table~\ref{tab:abl-enc-capacity}).} Model capacity exhibits a clear inverted-U, with the deployed M-128 configuration providing the best accuracy--efficiency trade-off. Increasing model width or attention-head count beyond this point yields little additional predictive benefit despite substantially larger parameter budgets, while smaller models underfit. Notably, even the M-64 configuration outperforms the strongest neural baseline (ss-STraTS), indicating that the headline improvements are driven primarily by the architecture rather than model capacity.
+\textbf{Capacity and heads (Table~\ref{tab:abl-enc-capacity}).} Model capacity exhibits a clear inverted-U, with the deployed M-128 configuration providing the best accuracy--efficiency trade-off. Increasing model width or attention-head count beyond this point yields little additional predictive benefit despite substantially larger parameter budgets, while smaller models underfit. The smaller M-64 encoder also exceeded the strongest reported neural baseline, suggesting that the gain was not confined to the deployed model size. All evaluated neural models were modest in absolute size---the deployed INTERVenE-Enc had fewer than two million parameters---but their differing parameter budgets prevent a clean attribution of gains. These comparisons do not isolate representation, architecture, or parameter count.
 
 \textbf{STraTS dimensional shape.} INTERVenE-Enc is not evaluated at STraTS's deployed shape (dim=64, h=16, head\_dim=4, $\sim$86K parameters): M-64 underfits and narrow heads at dim=128 both cost AUPRC and LoS, so combining them would compound both losses. The intended comparison is each model at its own tuned configuration.
 
@@ -220,6 +223,9 @@ All phases use AdamW with weight decay $0.001$ and gradient clipping at $\mathrm
 \paragraph{Batch size and learning rates.}
 The physical batch size is 16 with gradient accumulation over 4 steps (effective batch size 64). Phase~1 and Phase~2 use a peak LR of $3{\times}10^{-4}$; Phase~3 trains the task head at $10^{-4}$ with the backbone running at a fixed fraction ($0.1{\times}$ for INTERVenE-Enc, $0.01{\times}$ for INTERVenE-Ar). LR was selected from the range $[10^{-3},\,10^{-5}]$ based on validation loss behavior.
 
+\paragraph{Encoder time output.}
+The time head outputs non-negative hours via softplus; prediction and target are standardized only when computing the training loss, so inference requires no inverse normalization.
+
 \paragraph{Legality masking (INTERVenE-Ar Phase 2).}
 At each position $i$, a dynamic boolean mask $\mathbf{m}_i \in {0,1}^{V}$ is computed from the accumulated sequence state and applied to both the logits and the BCE targets, ensuring the model never receives gradient signal for illegal continuations. Illegality is determined by three stateful rules: (i) an interval \texttt{END} token is illegal if its corresponding \texttt{START} has not been seen; (ii) an interval \texttt{START} token is illegal if the same base or a conflicting value of the same concept is already open; (iii) meal tokens must follow a fixed cyclic order. The mask is derived deterministically from the TAK interval grammar at every training step and is recomputed autoregressively during generation.
 
@@ -273,16 +279,30 @@ Each phase is capped at 100 epochs; training halts when the validation loss fail
 \paragraph{Generation horizon (INTERVenE-Ar).}
 Autoregressive generation is bounded by two stopping criteria: a token budget of 2{,}000 and a temporal limit of 336 hours from admission. Generation also halts early upon emitting a terminal token (DEATH/RELEASE). In practice the temporal or terminal condition is binding; the token budget is a safety cap.
 
+\section{Learned Input Embedding Geometry}
+\label{app:embedding-geometry}
+
+We inspected the trained embedder from a saved INTERVenE-Enc Phase-3 checkpoint (epoch 38). Embeddings were extracted after projection and layer normalization, before the Transformer blocks, with a common admission timestamp and dropout disabled. Figure~\ref{fig:embedding-geometry} projects all 434 boundary tokens using UMAP (cosine metric, 15 neighbors, minimum distance 0.15, seed 19), highlighting glucose and serum-creatinine concepts.
+
+In the original embedding space, median cosine distances were 0.207 for matching START/END pairs, 0.220 for different values within the same state or trend concept, 0.305 for states and trends sharing a raw concept, and 0.442 for different raw concepts. Tokens with missing values were excluded from these summaries. This graded proximity was consistent with the hierarchy; it describes the trained representation without isolating the hierarchy's contribution from training.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{embedding_umap.pdf}
+  \caption{UMAP of trained input embeddings with timestamps held fixed. Glucose and serum-creatinine states and trends are highlighted against the boundary-token vocabulary (gray). Circles and triangles denote START and END tokens; connecting segments identify matching boundaries. Labels attach to START tokens; ``Missing trend value'' denotes a stored \texttt{nan} value. Original-space distances are summarized in the text.}
+  \label{fig:embedding-geometry}
+\end{figure*}
+
 \section{Sparse-Transcoder Interpretability}
 \label{app:xai}
 
-This appendix expands the interpretability analysis summarized in the main text. We train one JumpReLU transcoder \citep{rajamanoharan2024jumping} per INTERVenE-Enc block on activations captured from a 1{,}500-patient stratified subset of the test cohort. Each transcoder reconstructs its block's MLP output from an overcomplete sparse dictionary (16$\times$ expansion; 2{,}048 features per layer). Reconstruction quality is high (per-layer $R^2=0.97$--$0.995$), while sparsity remains between approximately 5--19\% active features. The transcoders are used only for attribution and are never substituted into the deployed network. Instead, a gradient-decoupled hook preserves the forward computation exactly while routing gradients through the sparse feature basis, yielding an input$\times$gradient decomposition of the deployed model's true risk logits. As with other gradient-based attribution methods, the resulting explanations describe local sensitivity rather than feature necessity.
+This appendix expands the exploratory attribution analysis summarized in the main text. We train one JumpReLU transcoder \citep{rajamanoharan2024jumping} per INTERVenE-Enc block on activations captured from a 1{,}500-patient stratified subset of the test cohort. Each transcoder reconstructs its block's MLP output from an overcomplete sparse dictionary (16$\times$ expansion; 2{,}048 features per layer). Reconstruction quality is high (per-layer $R^2=0.97$--$0.995$), while sparsity remains between approximately 5--19\% active features. The transcoders are used only for attribution and are never substituted into the deployed network. Instead, a gradient-decoupled hook preserves the forward computation exactly while routing gradients through the sparse feature basis, yielding activation$\times$gradient scores through the transcoder paths. These scores describe local model sensitivity; clinical names derive from the input tokens, rather than an established clinical interpretation of each latent feature.
 
 Attribution sums the signed gradient$\times$activation of an outcome's risk logit over all (layer, feature) pairs at each token, yielding the net contribution of each token to the predicted outcome, averaged here across 300 test patients. Interval \texttt{START}/\texttt{END} boundaries are collapsed so a single interval contributes one bar. Figure~\ref{fig:xai-all} reports the per-token drivers for all six outcomes (the main text presents the DEATH panel); across outcomes the drivers are clinically coherent and expressed entirely in named KBTA concepts.
 
 \begin{figure*}[!t]
   \centering
   \includegraphics[width=\textwidth]{xai_all_outcomes.png}
-  \caption{Per-token top risk drivers for all six forecast outcomes, recovered from INTERVenE-Enc by gradient-decoupled sparse-transcoder attribution and averaged over 300 test patients. Within each panel the bars are signed gradient$\times$activation contributions summed over layers and features; red tokens push the predicted risk up, blue push it down. All drivers are named KBTA concepts (states, trends, and events). x-axis scales are panel-specific, so bar lengths should be compared only within a panel.}
+  \caption{Per-token attribution scores for all six forecast outcomes, obtained from INTERVenE-Enc by gradient-decoupled sparse-transcoder attribution and averaged over 300 test patients. Within each panel the bars are signed gradient$\times$activation contributions summed over layers and features; red and blue denote positive and negative scores, respectively. All displayed tokens are named KBTA concepts (states, trends, and events). x-axis scales are panel-specific, so bar lengths should be compared only within a panel.}
   \label{fig:xai-all}
 \end{figure*}
