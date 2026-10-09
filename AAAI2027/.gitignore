@@ -1,0 +1,8 @@
+# Local review deliverables and temporary PDF previews
+/review/
+/AAAI_2027___INTERVenE/AnonymousSubmission/LaTeX/review-*.png
+/AAAI_2027___INTERVenE/AnonymousSubmission/LaTeX/*-review.txt
+/AAAI_2027___INTERVenE/AnonymousSubmission/LaTeX/main-full-paper.txt
+
+# Required external appendix references when compiling main.tex alone
+!/AAAI_2027___INTERVenE/AnonymousSubmission/LaTeX/technical-supplement.aux

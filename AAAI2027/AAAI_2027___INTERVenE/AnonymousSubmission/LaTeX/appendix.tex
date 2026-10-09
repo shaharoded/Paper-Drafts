@@ -1,4 +1,5 @@
 \appendix
+\setcounter{secnumdepth}{2}
 
 
 \begin{center}
@@ -121,7 +122,7 @@ h=8 wide heads (parameter-spending)   & 512  & 8 & 64 & 25.0M & $67.6 \pm 1.2$  
 \end{tabular}
 \end{table*}
 
-\textbf{Capacity and heads (Table~\ref{tab:abl-enc-capacity}).} Model capacity exhibits a clear inverted-U, with the deployed M-128 configuration providing the best accuracy--efficiency trade-off. Increasing model width or attention-head count beyond this point yields little additional predictive benefit despite substantially larger parameter budgets, while smaller models underfit. The smaller M-64 encoder also exceeded the strongest reported neural baseline, suggesting that the gain was not confined to the deployed model size. All evaluated neural models were modest in absolute size---the deployed INTERVenE-Enc had fewer than two million parameters---but their differing parameter budgets prevent a clean attribution of gains. These comparisons do not isolate representation, architecture, or parameter count.
+\textbf{Capacity and heads (Table~\ref{tab:abl-enc-capacity}).} Model capacity exhibits a clear inverted-U, with the deployed M-128 configuration providing the best accuracy--efficiency trade-off. Increasing model width or attention-head count beyond this point yields little additional predictive benefit despite substantially larger parameter budgets, while smaller models underfit. The smaller M-64 encoder also exceeded the strongest reported neural baseline, suggesting that the gain was not confined to the deployed model size. All evaluated neural models were modest in absolute size (the deployed INTERVenE-Enc had fewer than two million parameters), but their differing parameter budgets prevent a clean attribution of gains. These comparisons do not isolate representation, architecture, or parameter count.
 
 \textbf{STraTS dimensional shape.} INTERVenE-Enc is not evaluated at STraTS's deployed shape (dim=64, h=16, head\_dim=4, $\sim$86K parameters): M-64 underfits and narrow heads at dim=128 both cost AUPRC and LoS, so combining them would compound both losses. The intended comparison is each model at its own tuned configuration.
 
@@ -200,6 +201,7 @@ INTERVenE-Ar exhibits a wider range of fitted temperatures than the encoder ($T_
   \label{fig:ar-reliability}
 \end{figure*}
 
+\clearpage
 \section{Autoregressive Risk Trajectories}
 \label{app:ar-trajectories}
 The Ar variant emits a per-step risk curve over the generated trajectory. The risk head is evaluated at every generation step, producing a time-resolved signal that can express multiple risk peaks within an admission. Peak width is governed by the Phase-2 soft-kernel ($\tau=12$\,h for DEATH); absolute risk values should therefore be interpreted relative to $\tau$ rather than as binary decisions. Figure~\ref{fig:ar-trajectory} illustrates two representative test patients.
@@ -227,10 +229,11 @@ The physical batch size is 16 with gradient accumulation over 4 steps (effective
 The time head outputs non-negative hours via softplus; prediction and target are standardized only when computing the training loss, so inference requires no inverse normalization.
 
 \paragraph{Legality masking (INTERVenE-Ar Phase 2).}
+\label{app:legality-masking}
 At each position $i$, a dynamic boolean mask $\mathbf{m}_i \in {0,1}^{V}$ is computed from the accumulated sequence state and applied to both the logits and the BCE targets, ensuring the model never receives gradient signal for illegal continuations. Illegality is determined by three stateful rules: (i) an interval \texttt{END} token is illegal if its corresponding \texttt{START} has not been seen; (ii) an interval \texttt{START} token is illegal if the same base or a conflicting value of the same concept is already open; (iii) meal tokens must follow a fixed cyclic order. The mask is derived deterministically from the TAK interval grammar at every training step and is recomputed autoregressively during generation.
 
 \paragraph{Soft-kernel horizons and Phase 2 label exposure.}
-The terminal BCE window is $H_\text{term}{=}168$\,h; the outcome risk-head horizon is $H_\text{out}{=}48$\,h (positive signal fires within 48\,h of an outcome event). Per-class decay $\tau_k$ is initialized at 48\,h for outcome tokens and 12\,h for terminal and default LM tokens; the terminal $\tau$ is frozen after an early diagnostic showed unconstrained widening, while the outcome $\tau$ remains learnable in Phases~2 and is frozen in Phase~3. Phase~2 pretraining trains on full patient trajectories and therefore sees post-48\,h tokens --- this is intentional, as the generative objective requires learning future sequence structure. Outcome labels (whether a complication occurs in hours 48--336) are introduced only in Phase~3; inference is seeded solely with the 0--48\,h input window, so no task-relevant label information is accessible during Phase~2 pretraining.
+The terminal BCE window is $H_\text{term}{=}168$\,h; the outcome risk-head horizon is $H_\text{out}{=}48$\,h (positive signal fires within 48\,h of an outcome event). Per-class decay $\tau_k$ is initialized at 48\,h for outcome tokens and 12\,h for terminal and default LM tokens; the terminal $\tau$ is frozen after an early diagnostic showed unconstrained widening, while the outcome $\tau$ remains learnable in Phases~2 and is frozen in Phase~3. Phase~2 pretraining trains on full patient trajectories and therefore sees post-48\,h tokens, as the generative objective requires learning future sequence structure. Outcome labels (whether a complication occurs in hours 48--336) are introduced only in Phase~3; inference is seeded solely with the 0--48\,h input window, so no task-relevant label information is accessible during Phase~2 pretraining.
 
 \paragraph{Auxiliary curriculum.}
 Auxiliary activation and weighting are phase-specific and distinct from learning-rate warmup. The encoder Phase-2 schedule is specified below; the decoder's staged schedule is described in the main text.
@@ -282,14 +285,14 @@ Autoregressive generation is bounded by two stopping criteria: a token budget of
 \section{Learned Input Embedding Geometry}
 \label{app:embedding-geometry}
 
-We inspected the trained embedder from a saved INTERVenE-Enc Phase-3 checkpoint (epoch 38). Embeddings were extracted after projection and layer normalization, before the Transformer blocks, with a common admission timestamp and dropout disabled. Figure~\ref{fig:embedding-geometry} projects all 434 boundary tokens using UMAP (cosine metric, 15 neighbors, minimum distance 0.15, seed 19), highlighting glucose and serum-creatinine concepts.
+We inspected the trained embedder from a saved INTERVenE-Enc Phase-3 checkpoint (epoch 38). Embeddings were extracted after projection and layer normalization, before the Transformer blocks, with a common admission timestamp and dropout disabled. Figure~\ref{fig:embedding-geometry} shows boundary-token embeddings using UMAP (cosine metric, 15 neighbors, minimum distance 0.15, seed 19), highlighting glucose and serum-creatinine concepts.
 
-In the original embedding space, median cosine distances were 0.207 for matching START/END pairs, 0.220 for different values within the same state or trend concept, 0.305 for states and trends sharing a raw concept, and 0.442 for different raw concepts. Tokens with missing values were excluded from these summaries. This graded proximity was consistent with the hierarchy; it describes the trained representation without isolating the hierarchy's contribution from training.
+For named clinical state and trend values in the original embedding space, median cosine distances were 0.207 for matching START/END pairs, 0.220 for different values within the same state or trend concept, 0.305 for states and trends sharing a raw concept, and 0.442 for different raw concepts. This graded proximity was consistent with the hierarchy; it describes the trained representation without isolating the hierarchy's contribution from training.
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=\textwidth]{embedding_umap.pdf}
-  \caption{UMAP of trained input embeddings with timestamps held fixed. Glucose and serum-creatinine states and trends are highlighted against the boundary-token vocabulary (gray). Circles and triangles denote START and END tokens; connecting segments identify matching boundaries. Labels attach to START tokens; ``Missing trend value'' denotes a stored \texttt{nan} value. Original-space distances are summarized in the text.}
+  \caption{UMAP of trained input embeddings with timestamps held fixed. Glucose and serum-creatinine states and trends are highlighted against the boundary-token vocabulary (gray). Circles and triangles denote START and END tokens; connecting segments identify matching boundaries. Labels attach to START tokens. Original-space distances are summarized in the text.}
   \label{fig:embedding-geometry}
 \end{figure*}
 
@@ -302,7 +305,7 @@ Attribution sums the signed gradient$\times$activation of an outcome's risk logi
 
 \begin{figure*}[!t]
   \centering
-  \includegraphics[width=\textwidth]{xai_all_outcomes.png}
+  \includegraphics[width=\textwidth,trim=0 0 0 35bp,clip]{xai_all_outcomes.png}
   \caption{Per-token attribution scores for all six forecast outcomes, obtained from INTERVenE-Enc by gradient-decoupled sparse-transcoder attribution and averaged over 300 test patients. Within each panel the bars are signed gradient$\times$activation contributions summed over layers and features; red and blue denote positive and negative scores, respectively. All displayed tokens are named KBTA concepts (states, trends, and events). x-axis scales are panel-specific, so bar lengths should be compared only within a panel.}
   \label{fig:xai-all}
 \end{figure*}
