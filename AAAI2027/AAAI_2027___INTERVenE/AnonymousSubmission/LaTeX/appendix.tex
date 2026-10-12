@@ -6,15 +6,15 @@
   \Large\textbf{Appendix}
 \end{center}
 
-\section{Clinical Thresholds for Target Complications}
+\section{Clinical Thresholds and Input Abstraction Rules}
 \label{app:clinical-thresholds}
 
 To obtain precise event times, all target complications are defined directly from physiological measurements rather than diagnosis codes. The six outcomes predicted during the 48--336\,h prediction window are defined by the following clinical thresholds applied directly to raw MIMIC-IV laboratory values:
 
 \begin{itemize}
-    \item \textbf{Hyperglycemia:} A glucose measurement $\ge$ 250 mg/dL, OR a glucose measurement $\ge$ 180 mg/dL with a prior glucose measurement also $\ge$ 180 mg/dL (recurrent).
+    \item \textbf{Hyperglycemia:} A glucose measurement $\ge$ 250 mg/dL, OR a glucose measurement $\ge$ 180 mg/dL with the immediately preceding glucose measurement also $\ge$ 180 mg/dL, no more than 24 hours earlier (recurrent).
     \item \textbf{Severe Hyperglycemia:} A single glucose measurement $\ge$ 250 mg/dL.
-    \item \textbf{Hypoglycemia:} A glucose measurement $\le$ 54 mg/dL, OR a glucose measurement $\le$ 70 mg/dL with a prior measurement between 20 and 70 mg/dL (recurrent).
+    \item \textbf{Hypoglycemia:} A glucose measurement $\le$ 54 mg/dL, OR a glucose measurement $\le$ 70 mg/dL with the immediately preceding measurement between 20 and 70 mg/dL, no more than 24 hours earlier (recurrent).
     \item \textbf{Severe Hypoglycemia:} A single glucose measurement $\le$ 54 mg/dL.
     \item \textbf{Kidney Complication (Acute Kidney Injury):} A serum creatinine measurement $\ge$ 4.0 mg/dL (AKI Stage 3 criterion), OR a serum creatinine measurement that is $\ge$ 2.0 times the baseline creatinine measurement recorded at admission (AKI Stage 2+ criterion).
     \item \textbf{Death:} Defined by the patient's recorded time of death. To capture all relevant critical care mortality, this includes hospital mortality as well as 30-day post-discharge mortality where linked via state death records.
@@ -23,7 +23,42 @@ To obtain precise event times, all target complications are defined directly fro
 By deriving outcome labels from timestamped physiological measurements whenever possible, the prediction task requires forecasting clinically meaningful deterioration rather than recovering broad administrative diagnoses.
 
 \paragraph{Abstraction rules and observation gaps.}
-Input abstractions followed concept-specific TAK definitions specifying state thresholds, persistence limits, and whether interpolation was enabled. Trend definitions specified a lookback window, a significant-variation threshold, and a maximum gap for joining observations. These explicit rules determine abstraction behavior under irregular sampling; they do not establish robustness to measurement perturbations.
+Input abstractions followed concept-specific TAK definitions specifying state thresholds, persistence limits, and whether interpolation was enabled. Trend definitions specified a lookback window, a significant-variation threshold, and a maximum gap for joining observations.
+
+\subsection{Threshold Proximity and Abstraction Stability}
+\label{app:threshold-proximity}
+
+Knowledge-based state thresholds encoded clinically meaningful value ranges, while trends thresholded regression-estimated change over TAK-specific lookback windows. We assessed proximity to these fixed boundaries in the first 48 hours of all 57,078 admissions, using the TAK repository to resolve direct numeric inputs and excluding derived numeric concepts. The analysis covered 9.43 million observations across 25 state concepts and 7.97 million eligible windows across 22 trend concepts. State bands had half-widths of 5\% of the smaller adjacent cutoff spacing (the nearest spacing at outer cutoffs); trend bands used 5\% of the significant-variation threshold around either signed change boundary. For glucose, these corresponded to 178--182\,mg/dL around the state cutoff of 180, and estimated changes of 38--42 or $-42$--$-38$ around trend thresholds of $\pm40$. Overall, 8.34\% of state observations and 3.45\% of trend windows fell within these bands; 3.98\% of state observations matched a cutoff exactly (Figure~\ref{fig:threshold-proximity}).
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{threshold_proximity.pdf}
+  \caption{Proximity to TAK boundaries in the first 48 hours. Left: numeric observations within bands of $\pm5\%$ of local state-cutoff spacing; lighter bars show the subset exactly on a cutoff. Right: eligible regression windows within $\pm5\%$ of the trend-change threshold around either signed boundary. Windows with insufficient distinct timestamps were excluded from the trend denominator. Three insulin-dose concepts had no trend definition.}
+  \label{fig:threshold-proximity}
+\end{figure*}
+
+\paragraph{Sensitivity to perturbed values and missing observations.}
+We reran the unchanged Mediator state/trend implementations on 500 admissions sampled across joint quartiles of first-48-hour observation count and recorded terminal-event span. Numeric inputs received uniform perturbations bounded by $\pm1\%$ or $\pm5\%$ of local spacing at the nearest state cutoff, or independent removal with probability 5\% or 10\%, with two random realizations per condition. Interval agreement was matching-label duration divided by the union of baseline and altered coverage, accounting for label changes and lost or added coverage. Results were weighted by sampling strata; 95\% intervals used 2,000 admission-level bootstrap resamples (Table~\ref{tab:abstraction-stability}). Agreement remained high under small value perturbations; trends were more sensitive to observation removal. Assay-specific noise and structured missingness remained unevaluated.
+
+\begin{table}[!ht]
+  \centering
+  \small
+  \setlength{\tabcolsep}{3pt}
+  \caption{Sampled abstraction stability. Interval agreement (\%) with 95\% bootstrap intervals. Perturbation bounds are relative to local state-cutoff spacing.}
+  \label{tab:abstraction-stability}
+  \begin{tabular}{lcc}
+    \toprule
+    Condition & States & Trends \\
+    \midrule
+    Perturb $\pm1\%$ & 97.7 [97.5, 97.9] & 99.5 [99.4, 99.6] \\
+    Perturb $\pm5\%$ & 97.2 [97.0, 97.4] & 97.4 [97.2, 97.6] \\
+    Remove 5\% & 97.2 [97.1, 97.4] & 93.6 [93.3, 93.9] \\
+    Remove 10\% & 93.9 [93.7, 94.2] & 86.9 [86.5, 87.4] \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\clearpage
 
 \section{Architectural Ablation Trail}
 \label{app:ablation-trail}
@@ -62,7 +97,7 @@ Prior canonical (ttt cap $0.30$, no DD weighting)       & full & $83.2{\pm}0.7$ 
 \end{table*}
 
 \textbf{Decoder trail (Table~\ref{tab:abl-ar-all}).}
-The 10k design search established the core decoder recipe: the \texttt{ttt} auxiliary head improved trajectory-end anticipation, the patient-pool auxiliary provided the largest discrimination gain, and the \texttt{ttt} inference gate restored realistic trajectory lengths at evaluation time. Component-drop ablations identify Phase-3 fine-tuning as the dominant contributor, while RoPE, CBM, the soft-kernel loss, and the damping function each make measurable contributions to trajectory quality and predictive performance. Full-cohort confirmation shows that the deployed recipe substantially improves discrimination, trajectory fidelity (gen/GT), and LoS prediction over the prior canonical implementation. \textbf{DD-$p^{0.33}$ weighting} applies the per-terminal-token class-imbalance ratio (neg/pos) raised to the power $0.33$ as the LM-head BCE positive weight. Compared with $\sqrt{\cdot}$ and $\log$ damping, it provides the best compromise between over- and under-generation, restoring realistic trajectory lengths while preserving predictive performance.
+The 10k design search established the core decoder recipe: the \texttt{ttt} auxiliary head improved trajectory-end anticipation, the patient-pool auxiliary provided the largest discrimination gain, and the \texttt{ttt} inference gate restored realistic trajectory lengths at evaluation time. Component-drop ablations identify Phase-3 fine-tuning as the dominant contributor, while RoPE, CBM, the soft-kernel loss, and the damping function each make measurable contributions to trajectory quality and predictive performance. Full-cohort confirmation shows that the deployed recipe substantially improves discrimination, trajectory extent (gen/GT), and LoS prediction over the prior canonical implementation. \textbf{DD-$p^{0.33}$ weighting} applies the per-terminal-token class-imbalance ratio (neg/pos) raised to the power $0.33$ as the LM-head BCE positive weight. Compared with $\sqrt{\cdot}$ and $\log$ damping, it provides the best compromise between over- and under-generation, restoring realistic trajectory lengths while preserving predictive performance.
 
 \subsection{Encoder ablations}
 
@@ -203,6 +238,8 @@ INTERVenE-Ar exhibits a wider range of fitted temperatures than the encoder ($T_
 
 \clearpage
 \section{Autoregressive Risk Trajectories}
+
+INTERVenE-Ar targets complication forecasting rather than exact reconstruction of the observed future. Irregular sampling and observation gaps can produce different token sequences for clinically similar trajectories. We therefore evaluated complication prediction and generated trajectory extent, reporting the generated-to-ground-truth length ratio in Table~\ref{tab:abl-ar-all}. The training objective emphasizes sparse complication events rather than uniformly weighting trajectory reconstruction; token-level accuracy and broader clinical trajectory quality remain unevaluated.
 \label{app:ar-trajectories}
 The Ar variant emits a per-step risk curve over the generated trajectory. The risk head is evaluated at every generation step, producing a time-resolved signal that can express multiple risk peaks within an admission. Peak width is governed by the Phase-2 soft-kernel ($\tau=12$\,h for DEATH); absolute risk values should therefore be interpreted relative to $\tau$ rather than as binary decisions. Figure~\ref{fig:ar-trajectory} illustrates two representative test patients.
 
@@ -215,6 +252,13 @@ The Ar variant emits a per-step risk curve over the generated trajectory. The ri
 
 \section{Implementation Details}
 \label{app:implementation}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{hierarchy_tokenization.pdf}
+  \caption{Hierarchical boundary-token embedding. (A) Each interval contributes START and END tokens. (B) Connections denote shared hierarchy entries: the state boundary pair shares $E_1$--$E_3$, while glucose state and trend share $E_1$. Here $t_0$ is admission time and $t_c$ the trend start. (C) The four embedding lookups and Time2Vec vector are concatenated and projected into one input vector per boundary token. The hierarchy adds no sequence positions.}
+  \label{fig:hierarchy-tokenization}
+\end{figure*}
 
 \paragraph{Computing infrastructure.}
 Both INTERVenE variants were trained on a single NVIDIA RTX~A5000 (24\,GB VRAM) using PyTorch 2.4.1+cu124, CUDA 12.4 (cuDNN 9.1.0), and Python 3.11. All experiments use a fixed random seed of 42. The full pipeline (all three phases) runs without multi-GPU or distributed training.
