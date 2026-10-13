@@ -22,8 +22,11 @@ To obtain precise event times, all target complications are defined directly fro
 
 By deriving outcome labels from timestamped physiological measurements whenever possible, the prediction task requires forecasting clinically meaningful deterioration rather than recovering broad administrative diagnoses.
 
-\paragraph{Abstraction rules and observation gaps.}
-Input abstractions followed concept-specific TAK definitions specifying state thresholds, persistence limits, and whether interpolation was enabled. Trend definitions specified a lookback window, a significant-variation threshold, and a maximum gap for joining observations.
+\paragraph{State and trend interval construction.}
+\label{app:abstraction-construction}
+TAK rules assigned state labels to observed values at measurement time. Observations with the same state label were merged under the configured persistence and interpolation rules; state endpoints were limited by persistence after the last merged measurement and the next measurement time.
+
+For trends, at measurement time $t_i$, an OLS slope $s_i$ was fitted to observations in the trailing window $[t_i-w,t_i]$. For the TAK significant-variation threshold $\delta$, the label was Increasing when $s_iw\ge\delta$, Decreasing when $s_iw\le-\delta$, and Steady otherwise. Insufficient or degenerate windows were labeled Steady. It applied forward to $[t_i,t_{i+1})$ only when $0<t_{i+1}-t_i\le g$, where $g$ was the TAK maximum gap. Larger gaps were omitted; the final point produced no interval or artificial duration. Contiguous intervals with identical labels were merged. In both cases, labels were determined at the starting measurement; subsequent observations governed persistence or termination.
 
 \subsection{Threshold Proximity and Abstraction Stability}
 \label{app:threshold-proximity}
@@ -50,10 +53,10 @@ We reran the unchanged Mediator state/trend implementations on 500 admissions sa
     \toprule
     Condition & States & Trends \\
     \midrule
-    Perturb $\pm1\%$ & 97.7 [97.5, 97.9] & 99.5 [99.4, 99.6] \\
-    Perturb $\pm5\%$ & 97.2 [97.0, 97.4] & 97.4 [97.2, 97.6] \\
-    Remove 5\% & 97.2 [97.1, 97.4] & 93.6 [93.3, 93.9] \\
-    Remove 10\% & 93.9 [93.7, 94.2] & 86.9 [86.5, 87.4] \\
+    Perturb $\pm1\%$ & 97.7 [97.5, 97.9] & 99.6 [99.5, 99.6] \\
+    Perturb $\pm5\%$ & 97.2 [97.0, 97.4] & 97.9 [97.8, 98.1] \\
+    Remove 5\% & 97.2 [97.1, 97.4] & 92.8 [92.5, 93.1] \\
+    Remove 10\% & 93.9 [93.7, 94.2] & 85.6 [85.2, 86.1] \\
     \bottomrule
   \end{tabular}
 \end{table}
