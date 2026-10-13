@@ -1,6 +1,28 @@
 \appendix
 \setcounter{secnumdepth}{2}
 
+% Appendix-only float placement: keep small floats with text and top-align
+% unavoidable float pages instead of spreading their contents vertically.
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+\setcounter{dbltopnumber}{3}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\dblfloatpagefraction}{0.8}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{12pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\setlength{\@dblfptop}{0pt}
+\setlength{\@dblfpsep}{12pt}
+\setlength{\@dblfpbot}{0pt plus 1fil}
+\makeatother
+
+
 
 \begin{center}
   \Large\textbf{Appendix}
@@ -33,9 +55,9 @@ For trends, at measurement time $t_i$, an OLS slope $s_i$ was fitted to observat
 
 Knowledge-based state thresholds encoded clinically meaningful value ranges, while trends thresholded regression-estimated change over TAK-specific lookback windows. We assessed proximity to these fixed boundaries in the first 48 hours of all 57,078 admissions, using the TAK repository to resolve direct numeric inputs and excluding derived numeric concepts. The analysis covered 9.43 million observations across 25 state concepts and 7.97 million eligible windows across 22 trend concepts. State bands had half-widths of 5\% of the smaller adjacent cutoff spacing (the nearest spacing at outer cutoffs); trend bands used 5\% of the significant-variation threshold around either signed change boundary. For glucose, these corresponded to 178--182\,mg/dL around the state cutoff of 180, and estimated changes of 38--42 or $-42$--$-38$ around trend thresholds of $\pm40$. Overall, 8.34\% of state observations and 3.45\% of trend windows fell within these bands; 3.98\% of state observations matched a cutoff exactly (Figure~\ref{fig:threshold-proximity}).
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
   \centering
-  \includegraphics[width=\textwidth]{threshold_proximity.pdf}
+  \includegraphics[width=\textwidth,height=0.46\textheight,keepaspectratio]{threshold_proximity.pdf}
   \caption{Proximity to TAK boundaries in the first 48 hours. Left: numeric observations within bands of $\pm5\%$ of local state-cutoff spacing; lighter bars show the subset exactly on a cutoff. Right: eligible regression windows within $\pm5\%$ of the trend-change threshold around either signed boundary. Windows with insufficient distinct timestamps were excluded from the trend denominator. Three insulin-dose concepts had no trend definition.}
   \label{fig:threshold-proximity}
 \end{figure*}
@@ -61,7 +83,6 @@ We reran the unchanged Mediator state/trend implementations on 500 admissions sa
   \end{tabular}
 \end{table}
 
-\clearpage
 
 \section{Architectural Ablation Trail}
 \label{app:ablation-trail}
@@ -71,7 +92,7 @@ The architectures reported in the main paper are the endpoints of an iterative d
 \subsection{Decoder ablations}
 
 % --- Decoder: consolidated architectural trail (single table) ---
-\begin{table*}[h]
+\begin{table*}[!t]
 \caption{INTERVenE-Ar architectural trail, stratified by sample size. Reading order: foundational 10k build-up; 10k component-drop ablations of the locked recipe; full-cohort build-up to the deployed recipe. \texttt{-} = not measured at that design stage. Intermediate rows reflect the configuration \emph{as it stood} at each design point, not the deployed recipe with one component removed. Full-cohort: 95\% bootstrap CI half-widths (2{,}000-resample); 10k: point estimates. \emph{gen/GT}: median generated/ground-truth length ratio.}
 \label{tab:abl-ar-all}
 \centering
@@ -107,7 +128,7 @@ The 10k design search established the core decoder recipe: the \texttt{ttt} auxi
 INTERVenE-Enc builds directly on the decoder backbone, inheriting the architectural components validated in Table~\ref{tab:abl-ar-all} (hierarchical token embeddings, Time2Vec, temporal RoPE, AdaLN-Zero conditioning, the per-outcome attention pool, and the soft-kernel BCE). These components are therefore held fixed; the encoder ablations isolate only the additions specific to the bidirectional setting: Phase-3 risk--time loss balancing, Phase-3 backbone learning, the forward-addition trail of inverse-prevalence weighting, focal loss and CBM masking, and the input-representation alternative.
 
 % --- Encoder: consolidated architectural trail (single table) ---
-\begin{table*}[h]
+\begin{table*}[!t]
 \caption{INTERVenE-Enc architectural trail, stratified by sample size. Reading order: 10k design search; 10k ablation of the locked recipe; full-cohort build-up to the deployed recipe plus one input-representation alternative. \texttt{-} = not measured at that design stage. CI and intermediate-row conventions as in Table~\ref{tab:abl-ar-all}.}
 \label{tab:abl-enc-all}
 \centering
@@ -140,7 +161,7 @@ Enc-final with de-intervaled input & full & $86.4 \pm 0.7$ & $59.3 \pm 1.5$ & $5
 The 10k design search established the Phase-3 training recipe, showing that reducing the time-loss weight substantially improves discrimination while hierarchical MLM masking provides no measurable benefit. Component-drop ablations identify Phase-3 backbone learning as essential, whereas the full-cohort study shows that inverse-prevalence weighting degrades performance, focal loss has negligible effect, and CBM masking ($p{=}0.15$) provides the only consistent improvement over the stripped baseline. Finally, replacing KBTA with a standard-deviation discretization preserves AUPRC and AUROC but increases LoS error, supporting the use of KBTA for interpretability while retaining a modest regression advantage. Crucially, collapsing the intervals into 1-second point events sharply degrades performance across all metrics (weighted AUPRC dropping to $0.593$), demonstrating that the architecture explicitly relies on capturing continuous temporal durations and state concurrency rather than acting as a simple point-event detector.
 
 % --- Encoder: capacity + heads (sweet-spot table) ---
-\begin{table*}[h]
+\begin{table*}[!t]
 \caption{INTERVenE-Enc capacity and head-count ablations (full cohort, locked recipe except the dimension under test). Bold = deployed M-128/h=2 configuration. CI conventions as in Table~\ref{tab:abl-ar-all}; size-sweep arms predated LoS tracking (\texttt{-}).}
 \label{tab:abl-enc-capacity}
 \centering
@@ -173,7 +194,7 @@ Calibration is evaluated without retraining: locked checkpoints remain unchanged
 
 Per-outcome temperatures $T_k$ are fit by LBFGS on the validation split and applied unchanged to the held-out test split. Rank-based metrics are unaffected by the monotonic scaling.
 
-\begin{table}[h]
+\begin{table}[!htbp]
   \caption{Enc per-outcome $T_k$ (validation fit) and ECE before/after scaling (test split). $T_k{=}1$ = perfectly calibrated; $T_k{>}1$ = over-confident. Last row: support-weighted aggregate.}
   \label{tab:calibration}
   \centering
@@ -209,7 +230,7 @@ INTERVenE-Enc is well calibrated as emitted, with temperatures close to unity ($
 
 Calibration follows the same protocol, using the per-patient maximum outcome probability over the generated trajectory (the same readout used for the headline metrics). Temperatures are fit on the validation split and applied unchanged to the held-out test split.
 
-\begin{table}[h]
+\begin{table}[!htbp]
   \caption{Ar per-outcome $T_k$ (validation fit) and ECE before/after scaling (test split). $T_k{<}1$ = over-confident; $T_k{>}1$ = under-confident. Readout: per-patient max $P_\text{outcome}$ over generated positions.}
   \label{tab:ar-calibration}
   \centering
@@ -239,7 +260,6 @@ INTERVenE-Ar exhibits a wider range of fitted temperatures than the encoder ($T_
   \label{fig:ar-reliability}
 \end{figure*}
 
-\clearpage
 \section{Autoregressive Risk Trajectories}
 
 INTERVenE-Ar targets complication forecasting rather than exact reconstruction of the observed future. Irregular sampling and observation gaps can produce different token sequences for clinically similar trajectories. We therefore evaluated complication prediction and generated trajectory extent, reporting the generated-to-ground-truth length ratio in Table~\ref{tab:abl-ar-all}. The training objective emphasizes sparse complication events rather than uniformly weighting trajectory reconstruction; token-level accuracy and broader clinical trajectory quality remain unevaluated.
@@ -256,7 +276,7 @@ The Ar variant emits a per-step risk curve over the generated trajectory. The ri
 \section{Implementation Details}
 \label{app:implementation}
 
-\begin{figure*}[t]
+\begin{figure*}[!t]
   \centering
   \includegraphics[width=\textwidth]{hierarchy_tokenization.pdf}
   \caption{Hierarchical boundary-token embedding. (A) Each interval contributes START and END tokens. (B) Connections denote shared hierarchy entries: the state boundary pair shares $E_1$--$E_3$, while glucose state and trend share $E_1$. Here $t_0$ is admission time and $t_c$ the trend start. (C) The four embedding lookups and Time2Vec vector are concatenated and projected into one input vector per boundary token. The hierarchy adds no sequence positions.}
@@ -336,12 +356,12 @@ We inspected the trained embedder from a saved INTERVenE-Enc Phase-3 checkpoint 
 
 For named clinical state and trend values in the original embedding space, median cosine distances were 0.207 for matching START/END pairs, 0.220 for different values within the same state or trend concept, 0.305 for states and trends sharing a raw concept, and 0.442 for different raw concepts. This graded proximity was consistent with the hierarchy; it describes the trained representation without isolating the hierarchy's contribution from training.
 
-\begin{figure*}[t]
+\begin{figure}[!htbp]
   \centering
-  \includegraphics[width=\textwidth]{embedding_umap.pdf}
+  \includegraphics[width=\columnwidth]{embedding_umap.pdf}
   \caption{UMAP of trained input embeddings with timestamps held fixed. Glucose and serum-creatinine states and trends are highlighted against the boundary-token vocabulary (gray). Circles and triangles denote START and END tokens; connecting segments identify matching boundaries. Labels attach to START tokens. Original-space distances are summarized in the text.}
   \label{fig:embedding-geometry}
-\end{figure*}
+\end{figure}
 
 \section{Sparse-Transcoder Interpretability}
 \label{app:xai}
