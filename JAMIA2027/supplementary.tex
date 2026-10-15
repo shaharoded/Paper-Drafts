@@ -10,6 +10,7 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{array}
 \usepackage{makecell}
 \usepackage{xcolor}
@@ -41,7 +42,8 @@ comorbidity index, threshold acquisition, score aggregation, and software.
 Appendix~\ref{app:definitions} defines the ten complications.
 Appendix~\ref{app:patterns} defines the fourteen assessed guideline
 recommendations. Table~\ref{tab:firth-summary} summarizes the bias-reduced
-regression models.
+regression models. The final section gives an exploratory description of daily
+adherence-score trajectories.
 
 % =====================================================================
 \section{Data Preparation, Knowledge Acquisition, and Software}
@@ -257,20 +259,31 @@ additionally contains a metformin continuation pattern; it is defined for
 detection only and carries no compliance function, so it yields no score and
 is not among the fourteen assessed components.
 
-\begin{table}[t]
-\centering
-\caption{Assessed guideline recommendations and their operational definitions
-in the knowledge base.}
-\label{tab:pattern-definitions}
+\setlength{\LTleft}{0pt plus 1fill}
+\setlength{\LTright}{0pt plus 1fill}
 \small
-\begin{tabularx}{\textwidth}{
->{\raggedright\arraybackslash}p{0.28\textwidth}
-l
->{\raggedright\arraybackslash}X
+\begin{longtable}{
+>{\raggedright\arraybackslash}p{0.23\textwidth}
+>{\centering\arraybackslash}p{0.08\textwidth}
+>{\raggedright\arraybackslash}p{0.59\textwidth}
 }
+\caption{Assessed guideline recommendations and their operational definitions
+in the knowledge base.}\label{tab:pattern-definitions}\\
 \toprule
 Recommendation & Aspect & Operational definition \\
 \midrule
+\endfirsthead
+\caption[]{Assessed guideline recommendations and their operational definitions
+in the knowledge base (continued).}\\
+\toprule
+Recommendation & Aspect & Operational definition \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\footnotesize Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
 
 Admission glucose monitoring & Cyclic &
 Glucose measured in each 24-hour window over the first days of admission:
@@ -354,8 +367,7 @@ given and is not weight-normalized, assuming medical staff reacted to this
 dose and might have increased the hospital dose due to tolerance. \\
 
 \bottomrule
-\end{tabularx}
-\end{table}
+\end{longtable}
 
 The differing treatment of unanswered anchors in the two dose-reduction
 patterns is deliberate and reflects how the two insulins are used. Basal
@@ -401,7 +413,29 @@ Severe hypoglycemia  & 1686  & 1207 & 851  & 22 & 0 \\
 \end{tabularx}
 \end{table}
 
+\section{Daily Trajectories of Adherence Scores}
+
+We examined whether admission-level adherence scores reflected consistently
+similar daily performance or were driven by a small number of low-scoring days.
+Among admission--pattern pairs with at least three scored days (226,568 pairs),
+36.1\% had a minimum daily score at least 90\% of their mean, whereas 32.9\%
+had a minimum below 60\% of their mean, indicating substantial heterogeneity
+in within-admission stability. Both trajectory types occurred at every
+hospital, although their frequency varied; for insulin after hyperglycemia,
+the share with a low-scoring day ranged from 30\% to 60\% across hospitals.
+Length of stay had only weak inverse correlations with mean daily adherence
+(Spearman $\rho=-0.110$) and within-admission variability
+($\rho=-0.064$); the latter suggests little relationship between stay length
+and score variability despite its small $P$ value in this large sample. Daily
+trajectories were therefore mixed: roughly one-third were nearly flat, while a
+similar share of admission--pattern averages concealed one or more low-scoring
+days.
+
+% =====================================================================
+
 \bibliographystyle{unsrtnat}
 \bibliography{references}
 
 \end{document}
+
+
