@@ -11,6 +11,7 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{longtable}
+\usepackage{caption}
 \usepackage{array}
 \usepackage{makecell}
 \usepackage{xcolor}
@@ -382,9 +383,8 @@ different means (0.87 and 0.28) despite sharing a membership function.
 % =====================================================================
 \section{Summary of the Bias-Reduced Regression Models}
 
-\begin{table}[t]
-\centering
-\caption{Summary of the bias-reduced (Firth) regression models.
+\begin{center}
+\captionof{table}{Summary of the bias-reduced (Firth) regression models.
 Positive-event counts are shown for each observation-window definition.
 Retained features denote predictors that remained significant after false
 discovery rate correction and pruning of highly correlated features. Robust
@@ -411,7 +411,7 @@ Severe hyperglycemia & 10019 & 4328 & 2376 & 28 & 8 \\
 Severe hypoglycemia  & 1686  & 1207 & 851  & 22 & 0 \\
 \bottomrule
 \end{tabularx}
-\end{table}
+\end{center}
 
 \section{Daily Trajectories of Adherence Scores}
 
