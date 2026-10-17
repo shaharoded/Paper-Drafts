@@ -1,0 +1,117 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Principal findings}
+
+Adherence to the national inpatient hyperglycemia recommendations improved
+after their introduction, and higher adherence was consistently associated with
+lower mortality and reduced hyperglycemic complications. Adherence was not
+uniform: near-universal implementation was observed for several admission and
+medication-management actions, whereas the largest gaps were concentrated in
+insulin management. This pattern separates recommendations satisfied by a single
+discrete action, such as ordering a laboratory test or discontinuing a
+medication on admission, from those requiring repeated insulin decisions
+across the hospitalization. The improvement was significant but modest, its $P$
+value reflecting the number of admissions rather than the size of the effect,
+and it was accompanied by substantial inter-hospital heterogeneity that the data
+do not explain.
+
+The clearest outcome signal was for 30-day mortality. The propensity-weighted
+estimate is primary, being the only one whose exposure window---a fixed
+early-admission period---is guaranteed to precede the outcome. Two descriptive
+estimates agree in direction: whole-admission adherence adjusted for baseline
+characteristics, and a graded fall in mortality across the adherence range. A
+graded association is harder to explain by a simple difference in case mix,
+though it shares the whole-admission timing concern noted below. Because the
+three use different exposure definitions, they corroborate direction rather
+than magnitude.
+
+The glycemic findings show a favorable risk profile. Greater adherence bought a
+large reduction in hyperglycemic burden---roughly ninefold larger on the
+log-odds scale than the accompanying rise in hypoglycemia---at the cost of a
+small increase in mild hypoglycemia and no detectable increase in severe
+hypoglycemia, which is the balance the recommendations are intended to strike.
+The same asymmetry appears at component level, where insulin following
+hyperglycemia tracked lower severe hyperglycemia alongside more hypoglycemia.
+Since nonsignificance is not evidence of absence, the severe-hypoglycemia
+result shows no signal of harm at this sample size rather than establishing
+none exists.
+
+Adherence features ranked among the strongest retained predictors alongside
+established clinical variables---the practical requirement for treating them
+as monitorable quality targets. These findings have no direct precedent: the
+position paper was issued in 2023, and no prior study has measured adherence
+to it at this scale.
+
+\subsection{Implications}
+
+The most actionable pattern in these results is a convergence. The
+recommendations showing the largest implementation gaps---insulin following
+hyperglycemia, and the frequency and dose components of routine basal
+insulin---are also among those most consistently associated with subsequent
+outcomes after balancing measured baseline characteristics. The components
+where practice departs most from the guideline are therefore not peripheral
+ones, and this identifies them as natural targets for decision support: they
+are repeated insulin decisions distributed across a hospitalization,
+precisely the kind of task where a prompt at the point of care can plausibly
+help, and unlike the admission recommendations they are not already at
+ceiling.
+
+This should not be read as an attribution of fault. A low adherence score
+records that the action expected by the guideline is absent from the record,
+not that the decision was wrong. Ward-level judgment---a patient not eating, an
+imminent procedure, a deliberate decision to tolerate higher glucose in a frail
+patient---is frequently the correct reason for a departure, and none of it is
+recoverable from records collected for clinical rather than research purposes.
+The measure is a population-level statistic, as is the inter-hospital variation
+reported here. What the work offers is a
+measurement instrument---an automated, component-level and transferable way to
+ask which of a guideline's recommendations were followed and which track
+outcomes---rather than a decision-support system.
+
+Nothing restricts the approach to recommendations a guideline already contains.
+Because each is declared externally as a pattern rather than implemented in
+analysis code, a practice merely suspected to matter costs no more to evaluate
+than the patterns scored here. That inverts the question: one could ask which
+candidate practices earn a place in a guideline, and---more
+uncomfortably---which current recommendations do not track outcomes at all.
+Such candidates would be hypotheses for prospective evaluation, and a wide
+search would need more conservative multiplicity correction than applied
+here.
+
+\subsection{Limitations}
+
+The design is observational, and none of the estimates should be read as causal
+effects. Residual confounding remains throughout: weighting balances only
+measured covariates, and unmeasured factors---real-time illness severity above
+all, and decisions to limit or de-escalate treatment---cannot be excluded.
+Direction was not uniform across outcomes, reflecting differences in indication
+and applicability.
+
+The mortality analyses divide by exposure definition. The component-level and
+propensity-weighted models score adherence over a fixed early-admission window,
+so exposure strictly precedes outcome. The adjusted estimate instead averages
+adherence over the whole admission and is descriptive: because 30-day mortality
+is predominantly an end-of-admission event, and guideline-concordant management
+is frequently de-escalated in patients on a deteriorating trajectory, that
+average incorporates the period immediately preceding death, where adherence
+may reflect the course of care rather than determine it. Dichotomizing
+adherence at the median, as the weighting requires, discards dose-response
+information and costs power.
+
+Adherence and outcomes were ascertained during the same hospitalization, and
+detecting glycemic events depends on glucose being measured; routine glucose
+monitoring was therefore excluded from the glycemic models, though residual
+detection effects may remain for other monitoring recommendations. The
+pre--post comparison is uncontrolled, so secular trends in inpatient care
+cannot be separated from the implementation itself, and the non-mortality
+models do not account for the competing risk of death, which biases those
+endpoints conservatively. The findings come from adult inpatients in Israeli
+general hospitals under a single national guideline, so the adherence levels
+observed and the components that proved most consequential may differ
+elsewhere. Finally, the data are assembled from hospital admissions rather than
+from a longitudinal record, so chronic diagnoses managed in the community may
+be incompletely captured; ascertaining eligibility and glycemic outcomes from
+glucose measurements rather than diagnosis codes limits the consequences, but
+the comorbidity score and the proportion of hyperglycemic admissions carrying a
+documented diagnosis are both likely understated.

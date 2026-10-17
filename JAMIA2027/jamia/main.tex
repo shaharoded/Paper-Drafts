@@ -1,0 +1,147 @@
+% =====================================================================
+% JAMIA 2027 -- Research and Applications
+%
+% Journal of the American Medical Informatics Association (Oxford UP).
+% Submission constraints encoded by this template:
+%   * Main text  : 4,000 words maximum (Background and Significance
+%                  through Conclusion; excludes abstract, references,
+%                  tables, and figure legends)
+%   * Abstract   : structured, 250 words maximum, with the headings
+%                  Objective / Materials and Methods / Results /
+%                  Discussion / Conclusion
+%   * Tables     : 4 maximum        * Figures: 6 maximum
+%   * References : unlimited, numbered in order of first appearance
+%
+% This file deliberately uses the stock `article' class so that it
+% compiles in any TeX distribution. To typeset with Oxford's official
+% class instead, install oup-authoring-template and replace the
+% \documentclass line below with:
+%   \documentclass[unnumsec,webpdf,contemporary,large]{oup-authoring-template}
+% then delete the geometry/titlesec/abstract blocks, which that class
+% supplies itself.
+% =====================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[hypcap=false]{caption}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{authblk}
+
+% JAMIA uses numbered citations set as superscripts, ordered by first
+% appearance and placed after punctuation.
+\usepackage[numbers,super,sort&compress]{natbib}
+
+% Continuous line numbering and double spacing per JAMIA submission
+% requirements ("all submissions should be double-spaced"). Line numbers
+% assist peer review and are standard for the review copy.
+\usepackage{lineno}\linenumbers
+\usepackage{setspace}\doublespacing
+
+\usepackage[colorlinks=true,allcolors=black]{hyperref}
+
+% JAMIA sets primary headings in full capitals.
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.6em}{\MakeUppercase}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection.}{0.6em}{}
+
+\renewcommand{\abstractname}{ABSTRACT}
+
+\setlength{\emergencystretch}{3em}
+\begin{document}
+
+% ---------------------------------------------------------------------
+% Title and authors
+% ---------------------------------------------------------------------
+\title{\bfseries Automated, Component-Level Assessment of a National
+Inpatient Diabetes Guideline: Adherence and Its Association with
+Hospitalization Complications Across Six Hospitals}
+
+\author[1,$\ast$]{Shahar Oded,~BSc\thanks{\textbf{Corresponding author.}
+Shahar Oded, Medical Informatics Research Center, Ben-Gurion University of
+the Negev.
+Postal address: Honi Hameagel~7, Tel Aviv, Israel, 6266307.
+Telephone: +972-54-484-5432.
+Email: \href{mailto:shahar6771@gmail.com}{shahar6771@gmail.com}.}}
+\author[1]{Yuval Shahar,~MD,~PhD}
+\author[1]{Erez Shalom,~PhD}
+\author[2,3]{Amir Bashkin,~MD}
+\author[4,5]{Leonard Saiegh,~MD}
+\author[6]{Dror Cantrell,~MD}
+\author[7]{Irit Wirsansky,~MD}
+\author[2,8]{Muhamad Badarne,~MD}
+\author[9]{Irena Barash,~MD}
+\author[10,11]{Avivit Cahn,~MD}
+\author[4,7]{Irit Hochberg,~MD,~PhD}
+
+\affil[1]{Medical Informatics Research Center, Ben-Gurion University of the
+Negev, Beer Sheva, Israel}
+\affil[2]{Azrieli Faculty of Medicine, Bar-Ilan University, Safed, Israel}
+\affil[3]{Endocrinology and Diabetes Unit, Galilee Medical Center,
+Nahariya, Israel}
+\affil[4]{Bruce Rappaport Faculty of Medicine, Technion--Israel Institute
+of Technology, Haifa, Israel}
+\affil[5]{Endocrinology Institute, Bnai Zion Medical Center, Haifa, Israel}
+\affil[6]{Internal Medicine Department C, Shamir Medical Center,
+Beer Yaakov, Israel}
+\affil[7]{Endocrinology Unit, Hillel Yaffe Medical Center, Hadera, Israel}
+\affil[8]{Endocrinology and Diabetes Service, Tzafon Medical Center,
+Ramat Poriya, Israel}
+\affil[9]{Internal Medicine Department C, Barzilai Medical Center,
+Ashkelon, Israel}
+\affil[10]{Internal Medicine Department A, Hadassah Ein Kerem, Jerusalem,
+Israel}
+\affil[11]{Faculty of Medicine, Hadassah Hebrew University Hospital,
+Jerusalem, Israel}
+
+\date{}
+\maketitle
+
+% JAMIA title page must state the exact body word count, excluding title
+% page, abstract, tables, figures, references, and acknowledgments.
+% Recount before submission with:
+%   texcount -inc -brief -sum=1,0,0,0 background.tex methods.tex \
+%            results.tex discussion.tex conclusion.tex
+{\centering\noindent\textbf{Word count (main text):} 3{,}954\par}
+\vspace{0.8em}
+\vspace{0.5em}
+\noindent
+\textbf{Keywords:} inpatient diabetes; guideline adherence; temporal
+abstraction; electronic health records; propensity score
+
+
+
+% ---------------------------------------------------------------------
+% Structured abstract (250 words max)
+% ---------------------------------------------------------------------
+\input{abstract}
+
+% ---------------------------------------------------------------------
+% Main text (4,000 words max)
+% ---------------------------------------------------------------------
+\input{background}
+\input{methods}
+\input{results}
+\input{discussion}
+\input{conclusion}
+
+% ---------------------------------------------------------------------
+% End matter
+% ---------------------------------------------------------------------
+\input{statements}
+
+\bibliographystyle{jamia}
+\bibliography{references}
+
+\clearpage
+\input{figure-legends}
+
+\end{document}

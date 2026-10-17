@@ -1,0 +1,16 @@
+# Generated builds and upload copies
+/medrxiv/build/
+/jamia/build/
+/jamia/submission/
+/medrxiv/original-main.txt
+__pycache__/
+*.pyc
+
+# Local supplementary exports and repository snapshots
+/jamia/supplementary-data/*
+!/jamia/supplementary-data/README.md
+
+# One-time migration/export experiments; not used by the final build
+/organize_manuscript.py
+/export_concept_index.py
+/repack_zip.ps1

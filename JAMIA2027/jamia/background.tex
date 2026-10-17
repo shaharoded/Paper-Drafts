@@ -1,0 +1,74 @@
+\section{Background and Significance}
+\label{sec:background}
+
+Diabetes mellitus affects approximately 537 million adults worldwide, a figure
+projected to reach 783 million by 2045.\citep{idf-atlas-10th-edition-2021} In
+Israel, the national registry documents a steadily growing patient population
+and a corresponding burden on the health system,\citep{israel-national-center-disease-control-diabetes-registry-report-2012-2022,
+summary-cost-diabetes-israel-2018} concentrated in hospital care:
+approximately 40\% of patients admitted to Israeli general hospitals have
+diabetes.\citep{hochberg2023inpatient}
+
+In hospital the clinically relevant object is not the diagnosis but the
+glycemic state during the admission. Hyperglycemia arising in hospital is
+associated with infection, delayed healing, metabolic decompensation and
+increased mortality, and occurs in patients with and without documented
+diabetes. Its counterpart, hypoglycemia, is acute, harmful, and largely
+iatrogenic---a consequence of the insulin used to correct the first problem.
+Inpatient glycemic management is therefore a balancing act shaped less by any
+single decision than by how monitoring, medication management and insulin
+dosing are carried out repeatedly across a stay. That makes the treatment
+process itself, not only the patient's state, worth measuring.
+
+In September 2023 the Israel Endocrine Society, the Israel Diabetes Association
+and the National Diabetes Council issued a national position paper on inpatient
+diabetes care,\citep{hochberg2023inpatient} specifying how often glucose
+should be measured, how oral antidiabetic agents should be handled on
+admission, when basal and correction insulin should be given, and how to
+respond to glycemic episodes. Recommendations of this kind are checkable in
+principle because they are procedural, temporal and conditional: an action is
+expected, within some window or at some frequency, when a triggering situation
+holds. Establishing whether they were followed is harder, having conventionally
+required chart review, which does not scale past modest single-institution
+samples---too small to separate one ward's practice from the effect of a
+guideline, and far too small to observe how practice shifts when a guideline is
+introduced nationally.
+
+Informatics supplies the machinery to do this automatically. Knowledge-based
+temporal abstraction and the Temporal Mediator \citep{shahar1997framework} turn
+time-stamped clinical data into named interval concepts; Asbru
+\citep{shahar1997asbru, shahar1998asgaard} expresses a guideline's procedural
+content as a hierarchy of execution plans; and Picard
+\citep{shalom2016architecture} combines the two to generate real-time
+recommendations and adherence reports. Deployed in MobiGuide,\citep{peleg2022mobiguide} it raised clinicians' guideline compliance from
+41\% to 93\%---direct evidence that adherence is malleable, and therefore worth
+measuring. Retrospective assessment required a third body of knowledge:
+\emph{quality-assessment} knowledge \citep{ben2024supporting} re-expresses that
+procedural content declaratively, as the temporal pattern correct execution
+would have left in the record, with a membership function grading partial
+compliance rather than a binary verdict. Such systems have been validated
+against simulated scenarios \citep{shalom2015multiple} and applied
+institutionally to long-term management at a geriatric hospital.\citep{shalom2024implementation}
+
+This study adopts that formulation of adherence but not the systems that
+introduced it, and departs from them in three respects. In
+\emph{representation}, procedural and declarative knowledge are encoded in a
+single schema evaluated by one engine, and the resulting knowledge base is
+itself a transferable contribution. In \emph{scale}, adherence is measured
+across six hospitals spanning a national implementation rather than within one
+institution. In \emph{purpose}, prior work evaluates care \emph{against} the
+guideline, which serves as the reference standard; here each recommendation is
+treated as a hypothesis to be tested against what subsequently happened to the
+patient. Adherence thus becomes an explanatory variable: the question is not
+whether the guideline was applied correctly, but which of its recommendations
+demonstrably matter.
+
+\section{Objective}
+\label{sec:objective}
+
+We set out to determine, across a national hospital network spanning the
+introduction of an inpatient hyperglycemia guideline, how completely each of
+its individual recommendations was implemented and whether that changed after
+the guideline was issued; whether adherence is associated with subsequent
+complications once measured patient characteristics are accounted for; and
+which individual recommendations carry that association.

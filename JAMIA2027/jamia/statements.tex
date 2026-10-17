@@ -1,0 +1,88 @@
+% =====================================================================
+% JAMIA end matter. Oxford orders these sections: Author Contributions,
+% Supplementary Material, Acknowledgments, Funding, Conflicts of
+% Interest, Data Availability.
+% =====================================================================
+
+\section*{Author Contributions}
+\textbf{Shahar Oded:} conceptualization, methodology, software, validation,
+formal analysis, data curation, visualization, writing---original draft.
+\textbf{Yuval Shahar:} conceptualization, methodology, supervision, funding
+acquisition, writing---review and editing.
+\textbf{Erez Shalom:} resources, project administration, writing---review and
+editing.
+\textbf{Amir Bashkin}, \textbf{Leonard Saiegh}, \textbf{Dror Cantrell},
+\textbf{Irit Wirsansky}, \textbf{Muhamad Badarne}, \textbf{Irena Barash}, and
+\textbf{Avivit Cahn:} conceptualization, investigation, writing---review and
+editing.
+\textbf{Irit Hochberg:} conceptualization, methodology, validation,
+resources, supervision, writing---review and editing.
+
+\section*{Supplementary Material}
+Supplementary material is available at \emph{Journal of the American Medical
+Informatics Association} online. Appendix~S1 details data preparation, the
+concept index, the modified Charlson comorbidity index, threshold
+acquisition, score aggregation, and software. Appendix~S2 gives the
+operational definitions of all ten complications. Appendix~S3 gives the
+operational definitions of the fourteen assessed guideline recommendations.
+Table~S2 summarizes the bias-reduced regression models. The curated concept
+indices, the Mediator source code and knowledge base, and the extraction
+pipeline are supplied in the separate supplementary ZIP archive.
+
+\section*{Acknowledgments}
+This study would not have been possible without the Kineret project team, who
+built and maintain the harmonized multicenter data warehouse on which it
+rests. Transforming the records of a national hospital network into a common
+data model, and sustaining the infrastructure and governance that make it
+usable for research, represents a substantial body of work in its own right;
+the authors are grateful for that effort and for the team's support in
+accessing the data and extracting the study cohort. The authors also thank
+the Helsinki committee coordinators at the participating centers for their
+assistance throughout the approval process.
+
+Generative AI tools were used as a writing assistant and to support
+methodological research and code adaptation. Every design choice, analysis
+step, and interpretation was directed and verified by the corresponding
+author and, in turn, by the co-authors.
+
+\section*{Funding}
+This research was funded by the Israeli Ministry of Science and Technology
+Kineret Grant No.~0006850 (Governmental Project No.~1001701806), the Israeli
+National Health Policy Grant No.~2020/284, the Israel Precision Medicine
+Partnership (IPMP) Grant No.~3543/21, and the European Union's Horizon Europe
+research and innovation programme under Grant Agreement No.~101156210
+[CARAMEL]. The funders had no role in study design, data collection and
+analysis, decision to publish, or preparation of the manuscript.
+
+\section*{Conflicts of Interest}
+Several of the authors contributed to the national position paper whose
+implementation is assessed in this study. The authors declare no competing
+financial interests or personal relationships that could have appeared to
+influence the work reported in this paper.
+
+\section*{Data Availability}
+The abstraction engine, the knowledge base of temporal-abstraction and
+quality-assessment definitions, and the analysis notebooks are publicly
+available in the Mediator repository,\citep{mediator-github} and the
+extraction and cohort-construction pipeline in a companion repository.\citep{kineret-etl-github} The curated concept indices mapping the source
+vocabulary onto the concepts named in the knowledge base are provided as
+the supplementary ZIP archive, alongside copies of both code repositories.
+
+All processing and analysis were performed inside a closed hospital computing
+environment. The code released here is a replica of that pipeline; no source
+data, intermediate datasets, or unaggregated outputs leave that environment,
+and the results reported in this paper are exported aggregate statistics. The
+underlying patient-level electronic health record data cannot be shared, as
+it comprises identifiable clinical records governed by the approvals under
+which it was obtained.
+
+\section*{Ethics Approval}
+The study was approved by the institutional Helsinki committee of each
+participating center under a common protocol (NHR-0152-23): Galilee Medical
+Center (NHR-0152-23), Hillel Yaffe Medical Center (HYMC-0074-24), Shamir
+Medical Center (ASF-0117-24), Tzafon Medical Center (POR-0047-24), Barzilai
+University Medical Center (BRZ-0059-24), and Bnai Zion Medical Center
+(BNZ-0067-24). Recruitment was approved for up to 30,000 participants across
+all centers combined. A full waiver of informed consent was granted, since
+the study extracts records from a de-identified repository with no patient
+contact.
