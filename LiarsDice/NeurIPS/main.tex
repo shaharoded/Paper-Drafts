@@ -117,7 +117,7 @@ Conditioned on the most likely opponent type, the adaptive agent selects a pre-t
 \end{figure}
 
 \section{Experimental Setup}
-All agents play full matches until one player loses all dice. Each pairwise evaluation uses 200 games per opponent pairing (unless stated otherwise), split evenly across player positions. We report aggregate win rate, position conditioned win rate, opponent identification accuracy, and qualitative behavioral statistics. Learning-based agents are trained offline and frozen during evaluation. PPO uses a learning rate of $3\times 10^{-4}$, discount factor $\gamma=0.99$, batch size 128, and entropy coefficient 0.05. The generalist PPO is trained for approximately $1.15$M environment steps; each adaptive response policy is trained for up to $500{,}000$ steps against its reference opponent. The opponent classifier is trained for 50 epochs on trajectories collected from baseline-agent play and reaches 83.9\% validation accuracy.
+All agents play full matches until one player loses all dice. The fixed-policy tournament uses 200 games per ordered agent pairing, giving 400 games across both role assignments for each distinct pair. Other evaluations use the sample sizes stated in their respective sections. We report aggregate win rate, position conditioned win rate, opponent identification accuracy, and qualitative behavioral statistics. Learning-based agents are trained offline and frozen during evaluation. PPO uses a learning rate of $3\times 10^{-4}$, discount factor $\gamma=0.99$, batch size 128, and entropy coefficient 0.05. The generalist PPO is trained for approximately $1.15$M environment steps; each adaptive response policy is trained for up to $500{,}000$ steps against its reference opponent. The opponent classifier is trained for 50 epochs on trajectories collected from baseline-agent play and reaches 83.9\% validation accuracy.
 
 \section{Results}
 \subsection{Fixed-Policy Benchmark}
@@ -133,7 +133,7 @@ Agent & Win \% & P0 Win \% & P1 Win \% \\
 \midrule
 PPO generalist & \textbf{93.14} & 90.54 & \textbf{95.73} \\
 Bayesian       & 92.36 & \textbf{95.63} & 89.10 \\
-MCCFR          & 45.42 & 45.71 & 45.12 \\
+MCCFR          & 45.42 & 45.12 & 45.71 \\
 \bottomrule
 \end{tabular}
 \caption{Condensed fixed-policy benchmark. PPO is the strongest fixed policy overall, while role-conditioned results show that fixed strategies remain position-sensitive.}
@@ -167,7 +167,7 @@ Table~\ref{tab:adaptive_summary} highlights both the strength and the limitation
 
 \subsection{Evaluation Against LLM-Based Opponents}
 
-We additionally evaluate the adaptive agent against three OpenAI's LLM-based opponents:
+We additionally evaluate the adaptive agent against three LLM-based opponents from OpenAI:
 \texttt{gpt-4o-mini}, \texttt{gpt-4.1-mini}, and \texttt{gpt-5.4-nano}. This serves as an out-of-distribution stress test, since these opponents were not included in the reference set used for opponent classification or specialist policy training. Each matchup consists of 50 full games, split evenly across player positions.
 
 \begin{table}[t]

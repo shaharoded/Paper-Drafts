@@ -2,7 +2,8 @@
 
 Moved from `Adaptive-Strategy-Learning-in-Liar-s-Dice/overleaf/workshop-paper`.
 
-- `AAAI/`: AAAI workshop draft; `main.tex` builds the main paper. The detailed supplementary source is retained as `appendix.tex`, as in the original project, and is not included in the main PDF.
+- `AAAI/`: AAAI workshop draft; `main.tex` builds the main paper. The compiled PDF includes `appendix.tex` and the selected 23-agent pairwise and role-conditioned tables in `tournament-23.tex`.
+- `AAAI-Anonymous/`: anonymous AAAI submission with supplementary material and a separate source-only code archive.
 - `NeurIPS/`: NeurIPS workshop draft using the supplied `neurips_2026.sty`; `main.tex` includes `appendix.tex` by default.
 
 Both subprojects are self-contained, with their own bibliography and figure assets. Open the desired subfolder in Overleaf and select `main.tex` as the main document.

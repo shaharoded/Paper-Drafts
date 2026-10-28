@@ -1,0 +1,11 @@
+numpy
+gymnasium
+stable-baselines3
+sb3-contrib
+torch
+tensorboard
+pandas
+matplotlib
+rich
+tqdm
+openai
