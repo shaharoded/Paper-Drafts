@@ -1,0 +1,73 @@
+\NeedsTeXFormat{LaTeX2e}%
+\ProvidesPackage{aaai27}[2027/06/03 Local AAAI-27 workshop compatibility style]%
+\typeout{Local compatibility style for AAAI-27-like formatting. Replace with official aaai27.sty before submission.}%
+
+\newif\ifaaai@submission
+\aaai@submissionfalse
+\DeclareOption{submission}{\aaai@submissiontrue}
+\DeclareOption{draft}{\relax}
+\ProcessOptions\relax
+
+\setlength\topmargin{-0.25in}
+\setlength\oddsidemargin{-0.25in}
+\setlength\evensidemargin{-0.25in}
+\setlength\textheight{9.0in}
+\setlength\textwidth{7.0in}
+\setlength\columnsep{0.375in}
+\setlength\headheight{0pt}
+\setlength\headsep{0pt}
+\setlength\footskip{0pt}
+\pagestyle{empty}
+\thispagestyle{empty}
+
+\parindent 10pt
+\parskip 0pt
+\topsep 4pt plus 1pt minus 2pt
+\partopsep 1pt plus 0.5pt minus 0.5pt
+\itemsep 0.5pt plus 1pt minus 0.5pt
+\parsep 2pt plus 1pt minus 0.5pt
+
+\def\affiliations#1{\gdef\@affiliations{#1}}
+\gdef\@affiliations{}
+\def\equalcontrib{\textsuperscript{*}}
+
+\renewcommand{\maketitle}{%
+  \twocolumn[\begin{@twocolumnfalse}
+  \begin{center}
+    {\LARGE\bfseries \@title\par}
+    \vskip 0.5em
+    \ifaaai@submission
+      {\large Anonymous Submission\par}
+    \else
+      {\large \@author\par}
+      \vskip 0.5em
+      {\normalsize \@affiliations\par}
+      \vskip 0.25em
+      {\normalsize \textsuperscript{*}Equal contribution\par}
+    \fi
+  \end{center}
+  \vskip 1.0em
+  \end{@twocolumnfalse}]%
+}
+
+\renewenvironment{abstract}{%
+  \centerline{\bf Abstract}%
+  \vspace{0.5ex}%
+  \begin{quote}\small
+}{%
+  \end{quote}%
+  \vspace{1ex}%
+}
+
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-2.0ex plus -0.5ex minus -0.2ex}%
+  {1.0ex plus 0.2ex}%
+  {\large\bfseries\centering}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-1.5ex plus -0.4ex minus -0.2ex}%
+  {0.8ex plus 0.2ex}%
+  {\normalsize\bfseries}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-1.0ex plus -0.3ex minus -0.2ex}%
+  {0.5ex plus 0.2ex}%
+  {\normalsize\bfseries}}

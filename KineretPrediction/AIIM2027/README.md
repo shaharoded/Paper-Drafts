@@ -8,10 +8,10 @@ adherence signal of the JBI/JAMIA paper into a seven-arm ladder.
 
 ## Story arc
 
-- **AAAI companion** ([`AAAI2027/`](../AAAI2027/)) introduces INTERVenE-Enc
+- **AAAI companion** ([`AAAI2027/`](../../INTERVenE/AAAI2027/)) introduces INTERVenE-Enc
   and demonstrates it on MIMIC-IV. On that cohort, KBTA carries
   interpretability but not accuracy (σ-bin ablation within noise).
-- **JBI companion** ([`JBI2027/`](../JBI2027/)) measures adherence to a
+- **JBI companion** ([`JBI2027/`](../../KineretClinicalStudy/JBI2027/)) measures adherence to a
   national inpatient-hyperglycemia guideline across six Israeli hospitals
   and reports above-median-adherence outcome associations.
 - **This paper** puts INTERVenE-Enc on the Kineret data and asks whether
