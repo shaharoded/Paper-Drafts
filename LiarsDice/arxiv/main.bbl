@@ -1,0 +1,81 @@
+\begin{thebibliography}{12}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{Brown et~al.(2020)Brown, Bakhtin, Lerer, and
+  Gong}]{brown2020combining}
+Brown, N.; Bakhtin, A.; Lerer, A.; and Gong, Q. 2020.
+\newblock Combining deep reinforcement learning and search for
+  imperfect-information games.
+\newblock \emph{Advances in neural information processing systems}, 33:
+  17057--17069.
+
+\bibitem[{Brown et~al.(2019)Brown, Lerer, Gross, and Sandholm}]{brown2019deep}
+Brown, N.; Lerer, A.; Gross, S.; and Sandholm, T. 2019.
+\newblock Deep counterfactual regret minimization.
+\newblock In \emph{International conference on machine learning}, 793--802.
+  PMLR.
+
+\bibitem[{He et~al.(2016)He, Boyd-Graber, Kwok, and
+  Daum{\'e}~III}]{he2016opponent}
+He, H.; Boyd-Graber, J.; Kwok, K.; and Daum{\'e}~III, H. 2016.
+\newblock Opponent modeling in deep reinforcement learning.
+\newblock In \emph{International conference on machine learning}, 1804--1813.
+  PMLR.
+
+\bibitem[{Heinrich and Silver(2016)}]{heinrich2016deep}
+Heinrich, J.; and Silver, D. 2016.
+\newblock Deep Reinforcement Learning from Self-Play in Imperfect-Information
+  Games.
+\newblock \emph{arXiv preprint arXiv:1603.01121}.
+
+\bibitem[{Jing et~al.(2024)Jing, Liu, Li, Zang, Fu, Fu, Xing, and
+  Cheng}]{jing2024opponent}
+Jing, Y.; Liu, B.; Li, K.; Zang, Y.; Fu, H.; Fu, Q.; Xing, J.; and Cheng, J.
+  2024.
+\newblock Opponent modeling with in-context search.
+\newblock \emph{Advances in Neural Information Processing Systems}, 37:
+  61549--61591.
+
+\bibitem[{Kawamura, Mizukami, and Tsuruoka(2017)}]{kawamura2017neural}
+Kawamura, K.; Mizukami, N.; and Tsuruoka, Y. 2017.
+\newblock Neural fictitious self-play in imperfect information games with many
+  players.
+\newblock In \emph{Workshop on Computer Games}, 61--74. Springer.
+
+\bibitem[{Lanctot et~al.(2009)Lanctot, Waugh, Zinkevich, and Bowling}]{mccfr}
+Lanctot, M.; Waugh, K.; Zinkevich, M.; and Bowling, M. 2009.
+\newblock Monte Carlo sampling for regret minimization in extensive games.
+\newblock \emph{Advances in neural information processing systems}, 22.
+
+\bibitem[{Lanctot et~al.(2017)Lanctot, Zambaldi, Gruslys, Lazaridou, Tuyls,
+  P{\'e}rolat, Silver, and Graepel}]{lanctot2017unified}
+Lanctot, M.; Zambaldi, V.; Gruslys, A.; Lazaridou, A.; Tuyls, K.; P{\'e}rolat,
+  J.; Silver, D.; and Graepel, T. 2017.
+\newblock A unified game-theoretic approach to multiagent reinforcement
+  learning.
+\newblock \emph{Advances in neural information processing systems}, 30.
+
+\bibitem[{Rosman, Hawasly, and Ramamoorthy(2016)}]{rosman2016bayesian}
+Rosman, B.; Hawasly, M.; and Ramamoorthy, S. 2016.
+\newblock Bayesian policy reuse.
+\newblock \emph{Machine Learning}, 104(1): 99--127.
+
+\bibitem[{Yu, Jiang, and Lu(2024)}]{yu2024opponent}
+Yu, X.; Jiang, J.; and Lu, Z. 2024.
+\newblock Opponent modeling based on subgoal inference.
+\newblock \emph{Advances in Neural Information Processing Systems}, 37:
+  60531--60555.
+
+\bibitem[{Yu et~al.(2022)Yu, Jiang, Zhang, Jiang, and Lu}]{yu2022model}
+Yu, X.; Jiang, J.; Zhang, W.; Jiang, H.; and Lu, Z. 2022.
+\newblock Model-based opponent modeling.
+\newblock \emph{Advances in Neural Information Processing Systems}, 35:
+  28208--28221.
+
+\bibitem[{Zinkevich et~al.(2007)Zinkevich, Johanson, Bowling, and
+  Piccione}]{cfr}
+Zinkevich, M.; Johanson, M.; Bowling, M.; and Piccione, C. 2007.
+\newblock Regret minimization in games with incomplete information.
+\newblock \emph{Advances in neural information processing systems}, 20.
+
+\end{thebibliography}

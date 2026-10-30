@@ -1,0 +1,208 @@
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage[preprint]{aaai2027}  % DO NOT CHANGE THIS
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx}  % DO NOT CHANGE THIS
+\urlstyle{rm}  % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS
+\usepackage{caption}  % DO NOT CHANGE THIS
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{verbatim}
+\frenchspacing  % DO NOT CHANGE THIS
+\pdfinfo{
+/TemplateVersion (2027.1)
+/Title (Call Their Bluff: Adaptive Policy Selection in Liar’s Dice)
+/Author (Iftach Shoham, Shahar Oded, Gilad Katz)
+}
+\setcounter{secnumdepth}{0} % May be changed to 1 or 2 if section numbers are desired.
+
+\title{Call Their Bluff: Adaptive Policy Selection in Liar’s Dice}
+
+\author{
+Iftach Shoham\textsuperscript{\rm 1}\equalcontrib,
+Shahar Oded\textsuperscript{\rm 1}\equalcontrib,
+Gilad Katz\textsuperscript{\rm 1}
+}
+\affiliations{
+\textsuperscript{\rm 1}Department of Computer and Information Science, Ben-Gurion University of the Negev\\
+\{iftachs, odedshah, giladkz\}@post.bgu.ac.il
+}
+
+\begin{document}
+
+\maketitle
+
+
+
+\begin{abstract}
+Imperfect information games require agents to act under hidden state, stochastic outcomes, and strategic deception. We study opponent adaptation in Liar's Dice, an interpretable domain for sequential bidding and bluffing. Our empirical benchmark compares rule based heuristics, a Bayesian probability model, a Monte Carlo CFR baseline, a population trained Masked PPO policy, and an adaptive policy selection architecture that combines online opponent type inference with a portfolio of PPO response policies. The adaptive agent improves performance to 97.8\% across 5,800 matches in a closed-set evaluation over recurring reference opponent types, despite imperfect online identification. Rather than proposing a general game solver, our results show when type conditioned policy reuse can improve over fixed policies in a controlled multiagent setting.
+\end{abstract}
+
+
+
+
+\section{Introduction}
+
+Liar’s Dice is a compact imperfect information game in which agents make sequential decisions under private information, stochastic outcomes, and strategic deception. Each player observes only their own dice and must reason about both the hidden dice of others and the behavioral tendencies that shape future bids and challenges. These properties make Liar’s Dice a useful benchmark for studying adaptive decision making in multiagent systems: it is small enough to support controlled experimentation, yet rich enough to expose the limits of fixed strategies under opponent heterogeneity.
+
+The central question in this paper is how agents should trade off worst case robustness against opponent specific exploitation. Much prior work on imperfect information games emphasizes strategies that approximate Nash equilibrium or equilibrium-like behavior, using methods such as Counterfactual Regret Minimization (CFR)~\cite{cfr} or reinforcement learning with self-play and abstraction~\cite{heinrich2016deep}. Such approaches are valuable because they seek policies that are difficult to exploit. However, in practical multiagent environments, opponents are rarely worst case optimizers: they often follow systematic heuristics, exhibit biased risk preferences, or repeat recognizable bluffing patterns. In these cases, a policy that can infer and exploit opponent regularities may outperform a single globally robust policy.
+
+In this work, adaptation is studied in a closed-set sense: the agent is evaluated against recurring opponent types represented in an offline policy library, rather than against arbitrary unseen strategic agents. This setting allows us to isolate whether opponent-type inference and specialist policy reuse can improve empirical performance when opponents exhibit stable behavioral structure.
+
+
+We investigate this trade-off through a systematic empirical study of Liar’s Dice agents. Our evaluation compares hand-crafted heuristics, a Bayesian probability model, an approximate game-theoretic MCCFR policy, a population trained PPO generalist, and an adaptive agent that performs online opponent type inference and selects from a portfolio of opponent specific response policies. Rather than presenting Liar’s Dice only as a game solving problem, we frame it as a controlled testbed for opponent modeling, policy reuse, and adaptation under partial observability.
+
+Our contributions are as follows:
+\begin{itemize}
+
+\item \textbf{Adaptive policy selection architecture:} We evaluate a modular adaptive agent that performs online opponent type inference and selects from opponent specific Masked-PPO response policies trained offline. The goal is not to learn a universal game solving policy, but to test whether type conditioned policy reuse improves performance when opponents exhibit recurring behavioral structure.
+
+
+\item \textbf{Empirical benchmark study:} We implement and compare a diverse set of Liar's Dice agents, including heuristic policies, a likelihood-based Bayesian agent, an approximate MCCFR policy, and a population trained PPO generalist. This tournament provides a controlled empirical benchmark for studying robustness and exploitation under imperfect information.
+
+
+\item \textbf{Behavioral and generalization insights:} We analyze how fixed and adaptive policies differ in bidding, challenge behavior, positional effects, latency, and multiagent transfer. The results show that the PPO generalist reaches a 93.14\% win rate among fixed agents, the Bayesian baseline reaches 92.36\%, and the adaptive architecture reaches 97.8\% across the full evaluation pool despite imperfect online identification.
+\end{itemize}
+Our results show that fixed policies can be highly effective but remain locally exploitable against particular opponents and player roles. The adaptive agent helps close this gap by using opponent identity as an explicit decision variable. This finding supports a workshop-relevant perspective on multiagent learning: empirical strength in realistic strategic settings may require not only equilibrium-inspired robustness, but also mechanisms for recognizing and reusing specialized responses to recurring opponent behaviors.
+
+
+\section{Preliminaries and Problem Setting}
+Liar's Dice is an imperfect information game with private dice, sequential public bids, and challenge actions. A bid states that at least a given quantity of dice across all players show a chosen face; subsequent bids must strictly increase the claim, and a challenge reveals all dice and resolves the round. This structure exposes three properties central to adaptive multiagent learning: hidden state, stochastic outcomes, and opponent dependent deception. We focus primarily on full two player matches with five dice per player, while retaining a small multiagent transfer study to probe whether learned representations scale beyond the training setting.
+
+We evaluate agents under the same information constraints available to a human player: private dice, public dice counts, the current bid, and public action history. The main empirical question is not whether Liar's Dice can be solved in general, but whether opponent-conditioned policy reuse improves over fixed policies when opponents exhibit recurring behavioral structure. Detailed game rules, heuristic-agent definitions, and MCCFR implementation details are provided in the supplementary material.
+
+
+\section{Methodology}
+\subsection{Agent Population}
+We implement a diverse evaluation population spanning rule based heuristics, probability-driven play, approximate equilibrium play, and learned policies. Heuristic agents cover conservative and aggressive bidding, minimum- and maximum-raise preferences, frequency based openings, threshold challenge rules, stochastic bidding, and deliberately irregular behaviors. The Bayesian agent evaluates each bid using a binomial likelihood over unobserved dice and challenges when the estimated probability of truth falls below a turn dependent threshold. The MCCFR agent is trained offline with simplified information sets and serves as an approximate game-theoretic baseline rather than a fully converged equilibrium policy.
+
+The population trained RL baseline is a Masked-PPO policy. The action mask removes illegal bids and unavailable challenges, while the observation encodes private face counts, remaining dice, the current bid, and a short window of recent actions. Training uses a two-stage curriculum: first against fixed opponents of increasing complexity, then against a league sampled with loss weighted opponent probabilities. The resulting PPO policy is frozen at evaluation time and receives no explicit opponent identity.
+
+\subsection{Adaptive Policy-Selection Agent}
+The main contribution is a modular adaptive agent that separates \emph{opponent inference} from \emph{response execution}. It maintains a belief over a finite set of reference opponent types, each corresponding to one policy in the evaluation population. A neural sequence classifier processes the observed action trajectory and outputs a distribution over opponent types. Predictions are smoothed over time to avoid unstable policy switching.
+
+Conditioned on the most likely opponent type, the adaptive agent selects a pre-trained Masked-PPO response policy from a portfolio of specialists. Each specialist is trained offline against one reference opponent and then frozen. At test time, no gradient updates, regret updates, or online planning are performed; adaptivity comes only from updating the inferred opponent type and switching the selected response policy. This design intentionally tests a limited but practical form of adaptation: whether type conditioned policy reuse can exploit recurring opponent structure without claiming general open set game solving.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.98\textwidth]{images/overview.png}
+    \caption{Overview of the adaptive agent. 
+    At each decision point, the agent (1) observes the game state and history, (2) infers the opponent's strategy among a set of known types, (3) selects the corresponding pre-trained policy optimized against that type, and (4) acts according to this policy to maximize the probability of winning the match.}
+    \label{fig:adaptive_agent_overview}
+\end{figure*}
+
+\section{Experimental Setup}
+All agents play full matches until one player loses all dice. The fixed-policy tournament uses 200 games per ordered agent pairing, giving 400 games across both role assignments for each distinct pair. Other evaluations use the sample sizes stated in their respective sections. We report aggregate win rate, position conditioned win rate, opponent identification accuracy, and qualitative behavioral statistics. Learning-based agents are trained offline and frozen during evaluation. PPO uses a learning rate of $3\times 10^{-4}$, discount factor $\gamma=0.99$, batch size 128, and entropy coefficient 0.05. The generalist PPO is trained for approximately $1.15$M environment steps; each adaptive response policy is trained for up to $500{,}000$ steps against its reference opponent. The opponent classifier is trained for 50 epochs on trajectories collected from baseline-agent play and reaches 83.9\% validation accuracy.
+
+\section{Results}
+\subsection{Fixed-Policy Benchmark}
+Table~\ref{tab:fixed_benchmark} summarizes the strongest fixed agents.
+The PPO generalist obtains the best aggregate win rate among fixed policies, closely followed by the Bayesian agent. The approximate MCCFR baseline remains near parity, reflecting the limitations of simplified information sets and bounded training rather than a definitive weakness of regret minimization. The supplementary material reports the full fixed-agent tournament table and the role-conditioned head-to-head matrix. These results motivate adaptation: fixed policies can be strong on average while retaining localized weaknesses against specific opponent types and player positions.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Agent & Win \% & P0 Win \% & P1 Win \% \\
+\midrule
+PPO generalist & \textbf{93.14} & 90.54 & \textbf{95.73} \\
+Bayesian       & 92.36 & \textbf{95.63} & 89.10 \\
+MCCFR          & 45.42 & 45.12 & 45.71 \\
+\bottomrule
+\end{tabular}
+\caption{Condensed fixed-policy benchmark. PPO is the strongest fixed policy overall, while role-conditioned results show that fixed strategies remain position-sensitive.}
+\label{tab:fixed_benchmark}
+\end{table}
+
+Policy diagnostics explain this pattern. MCCFR exhibits sharp, quantity-driven challenge thresholds and concentrated opening bids, while PPO learns smoother call-liar behavior and more diverse openings. The supplementary material includes the omitted call-liar heatmaps and opening-bid distributions. The Bayesian agent is competitive because the bid-truth likelihood is highly informative in this domain. However, no fixed policy dominates every matchup: PPO is near parity against the Bayesian and Alternator agents, suggesting that population-level strength and targeted exploitability coexist.
+
+\subsection{Adaptive-Agent Performance}
+The adaptive agent achieves a 97.8\% aggregate win rate over 5{,}800 matches, with 97.1\% as the first player and 98.4\% as the second player. This improves over the strongest fixed policy and substantially reduces positional asymmetry. Importantly, this gain does not require perfect online identification. Although the classifier reaches 83.9\% offline validation accuracy, online identification over partial trajectories is 48.81\% under a strict exact-type definition. Low exact type accuracy does not necessarily imply poor response selection, because several reference opponents induce similar strategic responses. Thus, the selected specialist may be behaviorally appropriate even when the nominal opponent label is incorrect. When identification succeeds, it occurs quickly: the mean time to correct identification is $2.76 \pm 0.92$ decision steps, with median 2.
+
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Slice & Win \% & ID Acc. & Steps \\
+\midrule
+All & \textbf{97.8} & 48.81 & $2.76\pm0.92$ \\
+Structured & 99--100 & 69.5--100 & 2.0--3.4 \\
+Stochastic/weak & 90--100 & 0--50 & 2.0--4.0 \\
+Alternator & 53.0 & 26.5 & 2.0 \\
+\bottomrule
+\end{tabular}
+\caption{Adaptive-agent performance. Type-conditioned response selection improves aggregate win rate despite imperfect online identification, but Alternator remains a difficult non-informative stress test.}
+\label{tab:adaptive_summary}
+\end{table}
+
+Table~\ref{tab:adaptive_summary} highlights both the strength and the limitation of the adaptive architecture. The agent reaches perfect or near perfect win rates against most structured heuristic, Bayesian, PPO, and MCCFR opponents. The supplementary material reports per-opponent identification accuracy, identification speed, and role-conditioned win rates for every evaluated opponent. Against stochastic or overlapping strategies, exact type identification becomes less reliable, but the selected response policies often remain competitive because nearby experts provide useful coverage. The main failure case is Alternator, which deterministically alternates between challenges and minimum raises and therefore provides little stable strategic signal to exploit. The adaptive agent wins only 53\% in this matchup, underscoring that the method is not a general solution for arbitrary unseen or intentionally non-informative opponents.
+
+\subsection{Evaluation Against LLM-Based Opponents}
+
+We additionally evaluate the adaptive agent against three LLM-based opponents from OpenAI:
+\texttt{gpt-4o-mini},\linebreak \texttt{gpt-4.1-mini}, and \texttt{gpt-5.4-nano}. This serves as an out-of-distribution stress test, since these opponents were not included in the reference set used for opponent classification or specialist policy training. Each matchup consists of 50 full games, split evenly across player positions.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lccc}
+\hline
+Opponent  & Win \% & P0 Win \% & P1 Win \%  \\
+\hline
+\texttt{gpt-4o-mini}   & 52.0  & 56.0 & 48.0   \\
+\texttt{gpt-4.1-mini}  & 94.0  & 100.0 & 88.0 \\
+\texttt{gpt-5.4-nano}  & 94.0 & 92.0 & 96.0   \\
+\hline
+\end{tabular}
+\caption{
+Adaptive-agent performance against LLM-based opponents. Win rate is reported
+from the adaptive agent's perspective. P0 and P1 denote the adaptive agent's
+player position.
+}
+\label{tab:llm_opponents}
+\end{table}
+
+The adaptive agent is near parity against \texttt{gpt-4o-mini}, but wins
+94.0\% of games against both \texttt{gpt-4.1-mini} and \texttt{gpt-5.4-nano}.
+
+
+
+
+
+\section{Additional Analysis}
+Latency remains low enough for interactive play. Rule-based, Bayesian, and MCCFR agents act in under $0.02$ ms on average, while PPO and adaptive agents require roughly $0.57$ ms and $0.74$ ms per decision, respectively. Multi-agent transfer reveals a representation limitation: the PPO policy was trained with a two player observation encoding and collapses when deployed zero shot to three or four player games, whereas the Bayesian agent naturally scales its binomial model with the number of dice. The supplementary material includes the latency table, behavioral-correlation matrix, and multi-agent transfer table. This supports our broader benchmark insight: learned policies can be highly effective in distribution, but scalable adaptation requires state representations that match the deployment setting.
+
+
+
+\section{Related Work}
+Prior work on imperfect information games often emphasizes equilibrium oriented robustness. Counterfactual Regret Minimization and Monte Carlo variants minimize regret over information sets and have been used in poker-like games and Liar's Dice-style domains \cite{cfr,mccfr}. Deep CFR, NFSP, and ReBeL extend this line with function approximation, self-play, and search \cite{brown2019deep,heinrich2016deep,kawamura2017neural,brown2020combining}. These methods provide strong game-theoretic motivation, but their focus on equilibrium play can leave performance gains unused against systematic non-equilibrium opponents.
+
+Our work instead aligns with opponent modeling, policy reuse, and population-based learning. Opponent-aware agents can infer behavioral regularities from interaction and adapt their responses \cite{he2016opponent,yu2022model,jing2024opponent,yu2024opponent}. PSRO and Bayesian policy reuse similarly motivate maintaining a population or library of policies and selecting responses based on opponent characteristics \cite{lanctot2017unified,rosman2016bayesian}. We contribute a compact empirical study in Liar's Dice that compares fixed probabilistic, regret-minimization, and learned policies against a type conditioned adaptive architecture.
+
+
+\section{Limitations}
+Our evaluation is empirical and population-based. It should not be interpreted as a formal exploitability analysis or as evidence that type conditioned policy reuse generalizes to arbitrary unseen opponents. Training cost is also not normalized across methods: heuristics require no training, MCCFR uses offline regret minimization with simplified information sets, and PPO-based methods require substantial simulation. Finally, the adaptive agent assumes a finite reference set of opponent types; open set recognition and uncertainty aware policy blending remain necessary for deployment against truly novel behaviors.
+
+
+
+\section{Conclusion}
+We presented a dense empirical study of adaptive decision-making in Liar's Dice, centered on a modular opponent-type inference and policy selection architecture. The benchmark shows that a population trained PPO policy and a simple Bayesian agent are strong fixed baselines, but that fixed policies remain locally exploitable. The adaptive agent improves aggregate performance by selecting among frozen opponent specific PPO response policies, achieving 97.8\% win rate across the evaluated population despite imperfect online identification. The central takeaway is not a new general game solver, but a workshop-relevant benchmark insight: in repeated imperfect information interactions, recognizing recurring opponent structure can make policy reuse substantially more effective than committing to a single fixed policy.
+
+\section{Future Work}
+Future work should extend this framework to open set opponent recognition, uncertainty aware mixtures of response policies, and multiagent observation encodings that scale beyond two player play. Another important direction is safe exploitation: adapting to opponent regularities while bounding worst case vulnerability when the inferred type is wrong.
+
+\clearpage
+
+% Loading bibliography database
+\bibliography{bib}
+
+\clearpage
+\section*{Supplementary Material}
+\input{appendix}
+
+\end{document}
