@@ -1,0 +1,26 @@
+<section id="xai-method" data-transition="fade" style="background:#ECE5D9;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Methods · Explainability</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Explanations that speak clinical language</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:48px">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:96px;font-weight:600;line-height:1;color:#A85300">0</p>
+<p style="font-size:34px;line-height:1.35">Sparse transcoders attach through a gradient-decoupled hook. The injected term is zero, so we explain the deployed model.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:96px;font-weight:600;line-height:1;color:#2F5D73">Aa</p>
+<p style="font-size:34px;line-height:1.35">Every feature is a named concept, so every explanation is a clinical statement, not a column index.</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">16</p></div>
+<aside>About 1 minute.
+
+Encoder explanations use sparse transcoders (Dunefsky et al., 2024), trained on the encoder's internal representations. They attach through a gradient-decoupled hook whose injected term is numerically zero, so the forward pass is bit-exact and the logits we explain are the deployed model's own logits, not those of a surrogate.
+
+Attributions are aggregated per token over 300 test patients. Because the vocabulary consists of named concepts, the result reads as "severe hypoalbuminemia pushes death risk up", not "feature 4,217".
+
+Limits to state if asked: these describe the model's local sensitivity, not causal necessity, and they describe the fitted function rather than the patient. Attribution stability across random initializations was not tested (single-seed training).
+
+The decoder needs no attribution machinery for its primary explanation: it emits the abstraction trajectory itself alongside a per-step risk curve.</aside>
+</section>

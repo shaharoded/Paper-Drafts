@@ -1,0 +1,25 @@
+<section id="arch" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Methods · INTERVenE</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">The architecture</h2>
+</div>
+<div style="display:flex;flex-direction:row;justify-content:center">
+<div style="background:#FFFFFF;padding:24px;border-radius:20px">
+<img src="/_blob/9e8f9e4e621bf306584e7b88469ee272" alt="INTERVenE architecture: interval records and TAK repository feed a time-aware embedder with token embedding and Time2Vec, a context embedding feeds AdaLN-Zero blocks around temporal RoPE attention and SwiGLU, with risk, time and language-model heads" style="width:1240px;height:587px;object-fit:contain">
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">13</p></div>
+<aside>About 2 minutes. Walk left to right.
+
+Input: the interval records (from the TAK repository via the Mediator) and a static context vector (age, sex, prior admissions in 6 and 12 months, prior complications, chronic-condition flags, home vs in-hospital medication flags, a modified Charlson index).
+
+EMR embedder: hierarchical token embedding concatenated with Time2Vec absolute time, projected and normalized. Context is projected separately.
+
+Backbone: pre-normalized blocks with multi-head self-attention and SwiGLU feed-forward. Two adaptations for clinical data:
+1. Temporal rotary position embeddings, with the rotation angle driven by elapsed time, not token index. Attention between two tokens depends on the hours between them, not on how many events were recorded in between, which matters because event density varies by patient and ward.
+2. AdaLN-Zero injects the static context as a global modulation of every block instead of occupying sequence positions, shifting the event manifold into a patient-specific subspace. Context dropout prevents over-reliance on it.
+
+This is also how the QA profile enters the model in Study 3: it is a fixed-length vector of scores, concatenated onto the context vector, so no architectural change is needed.
+
+Heads: complication risk, time-to-event, and a language-model head (masked LM for the encoder, next-token for the decoder). Same backbone, two attention masks: causal for the decoder, bidirectional with atomic-interval masking for the encoder.</aside>
+</section>

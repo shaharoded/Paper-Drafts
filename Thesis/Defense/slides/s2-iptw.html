@@ -1,0 +1,47 @@
+<section id="s2-iptw" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 2 · Propensity weighting</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">A real, lopsided trade-off</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:36px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border-radius:20px;border-top:8px solid #2F5D73">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:88px;font-weight:600;line-height:1;color:#2F5D73">−44%</p>
+<p style="font-size:30px;font-weight:600">30-day mortality</p>
+<p style="font-size:26px;color:#6E6359">OR 0.56</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border-radius:20px;border-top:8px solid #2F5D73">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:88px;font-weight:600;line-height:1;color:#2F5D73">−82%</p>
+<p style="font-size:30px;font-weight:600">Hyperglycemia</p>
+<p style="font-size:26px;color:#6E6359">OR 0.18</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border-radius:20px;border-top:8px solid #2F5D73">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:88px;font-weight:600;line-height:1;color:#2F5D73">−52%</p>
+<p style="font-size:30px;font-weight:600">Severe hyperglycemia</p>
+<p style="font-size:26px;color:#6E6359">OR 0.49</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:36px;border-radius:20px;border-top:8px solid #F7941D">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:88px;font-weight:600;line-height:1;color:#A85300">+20%</p>
+<p style="font-size:30px;font-weight:600">Mild hypoglycemia</p>
+<p style="font-size:26px;color:#6E6359">OR 1.20 · severe: n.s.</p>
+</div>
+</div>
+<p style="font-size:30px;color:#4A423B">Odds for above- vs at-or-below-median adherence, after weighting (max SMD &lt; 0.08)</p>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">32</p></div>
+<aside>About 2 minutes.
+
+Inverse probability of treatment weighting on overall adherence. Adherence is dichotomized at the median of each outcome's eligible population (the binary exposure is intrinsic to propensity scores and SMD balance checks). Propensity by bias-reduced logistic regression on baseline covariates, stabilized weights trimmed at the 1st and 99th percentiles. Balance satisfactory: max post-weighting SMD below 0.08.
+
+Above-median adherence vs the rest (BH-adjusted P < .001 for all four):
+- 30-day mortality OR 0.557 (95% CI 0.514–0.603): 44% lower odds
+- Hyperglycemia OR 0.175 (0.154–0.199): 82% lower
+- Severe hyperglycemia OR 0.485 (0.450–0.523): 52% lower
+- Hypoglycemia OR 1.204 (1.090–1.331): 20% higher
+- Severe hypoglycemia OR 1.129 (1.001–1.274), adjusted P = .096: not significant
+Nothing survived correction for hyperosmolarity, ketoacidosis, MI, infection, AKI.
+
+The substantive result is the asymmetry. Following the guideline more closely goes with less hyperglycemia and more hypoglycemia, exactly the trade-off inpatient insulin management is designed around. But the reduction in hyperglycemia is roughly ninefold larger on the log-odds scale than the rise in hypoglycemia, and severe hypoglycemia does not rise significantly.
+
+Component level, balanced and significant (8 pairs): routine basal dosing (OR 0.75), routine glucose monitoring (0.87) and insulin after hyperglycemia (0.91) each with lower mortality; insulin after hyperglycemia (OR 0.22) and routine basal dosing (0.40) with much lower severe hyperglycemia; insulin after hyperglycemia with 28% higher hypoglycemia. Admission glucose monitoring showed higher recorded hyperglycemia, flagged as an ascertainment artifact (more measuring finds more events). Six BMI/creatinine pairs failed balance (near-universal adherence) and are reported as non-estimable.
+
+Observational: weighting balances measured covariates only. Confounding by indication remains the main concern.</aside>
+</section>

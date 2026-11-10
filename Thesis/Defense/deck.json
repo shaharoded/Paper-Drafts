@@ -1,0 +1,24 @@
+{
+  "v": 4,
+  "createdOnFiles": {"v": 1, "at": "2026-11-10T20:30:00Z"},
+  "lists": "css",
+  "title": "Thesis Defense: INTERVenE and Inpatient Diabetes Guideline Adherence",
+  "cover": "cover",
+  "order": ["cover","roadmap","m-burden","m-needs","m-rqs","b-kbta","b-qatp","d-methods","pipeline","kb","recs","tokens","arch","variants","training","xai-method","design","d-s1","s1-bignum","s1-headline","s1-outcomes","s1-ablation","s1-xai","s1-ar","d-s2","s2-cohort","s2-adherence","s2-trend","s2-hospitals","s2-mortality","s2-components","s2-iptw","s2-join","d-s3","s3-setup","s3-ladder","s3-qa","d-contrib","c-cs","c-med","limits","dissemination","thanks"],
+  "sections": {
+    "intro": {"description": "Title and roadmap.", "start": "cover"},
+    "motivation": {"description": "Why inpatient diabetes, and the two needs the thesis answers.", "start": "m-burden"},
+    "background": {"description": "Temporal abstraction and guideline quality-assessment patterns.", "start": "b-kbta"},
+    "methods": {"description": "Knowledge base, Mediator, INTERVenE and the evaluation design.", "start": "d-methods"},
+    "study1": {"description": "Study 1: INTERVenE on MIMIC-IV.", "start": "d-s1"},
+    "study2": {"description": "Study 2: guideline adherence across six Kineret hospitals.", "start": "d-s2"},
+    "study3": {"description": "Study 3: transfer to Kineret and the adherence signal as model input.", "start": "d-s3"},
+    "closing": {"description": "Contributions, limitations, dissemination and thanks.", "start": "d-contrib"}
+  },
+  "faces": {
+    "fraunces": {"family": "Fraunces", "href": "https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&display=swap"},
+    "manrope": {"family": "Manrope", "href": "https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap"},
+    "jetbrains-mono": {"family": "JetBrains Mono", "href": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap"}
+  },
+  "designSystems": []
+}

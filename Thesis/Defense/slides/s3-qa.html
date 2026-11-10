@@ -1,0 +1,28 @@
+<section id="s3-qa" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 3 · Adherence as input</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">The model reads adherence, but already knew</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:56px;align-items:center">
+<div style="background:#FFFFFF;padding:20px;border-radius:20px">
+<img src="/_blob/953bd725067267a5aeae2483d1dfeab1" alt="Per-token risk drivers for the KB plus QA arm, eight outcome panels; compliance PATTERN tokens appear among top drivers, for example routine glucose monitoring for death and kidney complication and reduced basal after hypoglycemia for severe hypoglycemia" style="width:800px;height:550px;object-fit:contain">
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1">+0.007</p><p style="font-size:28px;color:#4A423B">aggregate AUPRC: within noise</p></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#A85300">+1–4 pp</p><p style="font-size:28px;color:#4A423B">on the complications the guideline targets</p></div>
+<div style="display:flex;flex-direction:column;gap:6px"><p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#2F5D73">7 of 8</p><p style="font-size:28px;color:#4A423B">outcomes rank a pattern among top drivers</p></div>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">37</p></div>
+<aside>About 2 minutes. Frame this carefully: a statement about representation, not about whether following the guideline matters.
+
+Does supplying the adherence profile help prediction? Not measurably in aggregate. Every change across the three QA pairs sits at the third decimal place with overlapping intervals. The largest is INTERVenE-Enc's +0.007 AUPRC (0.527 to 0.535), and it is the only arm that receives compliance patterns as temporal tokens rather than as static context. LogReg and ss-STraTS show no measurable QA effect.
+
+Per outcome, the interval-token arm gains about 1 to 4 pp AUPRC on the complications the guideline actually targets (e.g. hyperglycemia 0.578 to 0.595, hypoglycemia 0.149 to 0.163, severe hypoglycemia 0.119 to 0.133, kidney 0.587 to 0.606); death and MI go the other way, and MI rests on 69 events.
+
+The model does use the patterns. Attribution on the QA arm puts *_PATTERN tokens among the top drivers for seven of eight outcomes: routine glucose monitoring for death and kidney complication, basal-dosage and metformin-continuation patterns for the glycemic endpoints, reduced basal after hypoglycemia for severe hypoglycemia.
+
+Why so little lift: compliance scores are derived deterministically from the same abstractions the model already reads. Adherence is largely noted implicitly through the input intervals, and the small residual lift appears only where attention can weight compliance patterns per outcome, which is exactly the pattern the design was set up to detect.
+
+Whether following the guideline matters clinically is a separate question, answered by the propensity-weighted analysis in Study 2.</aside>
+</section>

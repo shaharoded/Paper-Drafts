@@ -1,0 +1,37 @@
+<section id="design" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Methods · Evaluation design</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Three studies, two cohorts</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:20px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F5D73">Study 1 · MIMIC-IV</p>
+<p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1">57,078</p>
+<p style="font-size:28px;color:#4A423B">ICU diabetic admissions</p>
+<p style="font-size:28px;color:#4A423B">6 outcomes, hours 48–336</p>
+<p style="font-size:28px;color:#4A423B">vs GRU-D, STraTS, KarmaLego</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:20px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#A85300">Study 2 · Kineret</p>
+<p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1">48,354</p>
+<p style="font-size:28px;color:#4A423B">admissions, 6 hospitals</p>
+<p style="font-size:28px;color:#4A423B">Before vs after the guideline</p>
+<p style="font-size:28px;color:#4A423B">Firth regression, then IPTW</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#FFFFFF;padding:40px;border-radius:20px">
+<p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#1F1A17">Study 3 · Kineret</p>
+<p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1">7 arms</p>
+<p style="font-size:28px;color:#4A423B">Raw → σ-bins → knowledge base</p>
+<p style="font-size:28px;color:#4A423B">Each with and without adherence</p>
+<p style="font-size:28px;color:#4A423B">No tuning to the new cohort</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">17</p></div>
+<aside>About 2 minutes.
+
+Study 1 (RQ1 to RQ3). 57,078 adult diabetes-related MIMIC-IV admissions, split by patient: 39,954 train, 8,562 validation, 8,562 test. Observe 48 h, predict six binary outcomes over hours 48 to 336 (death, kidney complication, hyperglycemia, severe hyperglycemia, hypoglycemia, severe hypoglycemia) plus length of stay. Outcomes already inside the observation window are excluded from the positive label. Baselines all reimplemented under one protocol (same split, window, context vector, early stopping, single test evaluation): GRU-D, STraTS in two configurations (with forecasting pretraining, and supervised-only "ss-STraTS"), and KarmaLego+TPF. Two comparison axes: KarmaLego vs INTERVenE-Enc read the identical interval stream, so their gap isolates modeling; GRU-D/STraTS read raw data, so their gap to INTERVenE isolates representation within neural models. Significance: non-overlapping 95% patient-level bootstrap CIs, 2,000 resamples.
+
+Study 2 (RQ4, RQ5). 48,354 admissions, 29,577 patients, six Israeli general hospitals, August 2022 to December 2025. Pre-period August 2022 to July 2023, post-period August 2024 to December 2025; the rollout year in between is excluded. Component-level screening with Firth bias-reduced logistic regression at 24, 48 and 72 h cutoffs, a predictor "robust" only if significant with consistent direction at all three; then inverse probability of treatment weighting with adherence split at the median, balance required (max SMD < 0.10). Benjamini–Hochberg within each family.
+
+Study 3 (RQ6). INTERVenE-Enc on Kineret, seven arms, each run once at the MIMIC configuration, no tuning: the question is transferability, and compute in the regulated environment is limited.</aside>
+</section>

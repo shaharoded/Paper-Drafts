@@ -1,0 +1,30 @@
+<section id="s1-bignum" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 1 · Headline</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">INTERVenE-Enc leads the benchmark</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:80px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:240px;font-weight:600;line-height:1;color:#1F1A17">0.672</p>
+<p style="font-size:32px;color:#4A423B">support-weighted AUPRC, 6 outcomes</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #F7941D;padding:4px 0 4px 28px">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;color:#A85300">+0.041</p>
+<p style="font-size:30px;color:#4A423B">over the best neural baseline</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2F5D73;padding:4px 0 4px 28px">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;color:#2F5D73">+0.085</p>
+<p style="font-size:30px;color:#4A423B">over KarmaLego on the same intervals</p>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">19</p></div>
+<aside>About 1 minute. Lead with the number, then the table on the next slide.
+
+INTERVenE-Enc reaches a support-weighted AUPRC of 0.672 across the six outcomes. That is +0.041 over the strongest neural baseline (ss-STraTS, 0.631) and +0.085 over KarmaLego+TPF (0.587), both with non-overlapping 95% bootstrap confidence intervals. It also has the best AUROC, F1 and length-of-stay error.
+
+Why both deltas matter: the KarmaLego gap is the one that isolates modeling from representation, because both consume the identical KBTA interval stream. The ss-STraTS gap is the raw versus abstracted comparison inside the neural family, holding the sequence-model budget in the same family.
+
+AUPRC is the primary metric because outcomes are imbalanced (prevalence from 2.7% to 26.4%).</aside>
+</section>

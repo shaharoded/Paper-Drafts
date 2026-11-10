@@ -1,0 +1,33 @@
+<section id="m-rqs" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Research questions</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Observe the first days, predict the rest</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:row;gap:0px;height:72px">
+<div style="width:520px;background:#F7941D;border-radius:12px 0 0 12px;display:flex;align-items:center;padding:0 28px"><p style="font-size:28px;font-weight:700;color:#1F1A17">Observed: first K days</p></div>
+<div style="flex:1;background:#2F5D73;border-radius:0 12px 12px 0;display:flex;align-items:center;padding:0 28px"><p style="font-size:28px;font-weight:700;color:#F5F0E8">Predict complications in the remaining days</p></div>
+</div>
+<div style="display:flex;flex-direction:row"><p style="width:520px;font-size:24px;color:#6E6359">admission · K ≥ 48 h</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">discharge · N ≤ 14 days</p></div>
+</div>
+<div style="display:flex;flex-direction:row;gap:40px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;border-left:4px solid #2F5D73;padding:8px 0 8px 32px">
+<p style="font-size:28px;font-weight:700;color:#2F5D73">RQ 1 · Computational</p>
+<p style="font-size:32px;line-height:1.35">Can transformers over temporal-abstraction intervals beat the state of the art, and stay explainable?</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;border-left:4px solid #F7941D;padding:8px 0 8px 32px">
+<p style="font-size:28px;font-weight:700;color:#A85300">RQ 2 · Clinical</p>
+<p style="font-size:32px;line-height:1.35">Which guideline components matter for outcomes, and did adherence change after national implementation?</p>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">5</p></div>
+<aside>About 1.5 minutes.
+
+The task: short-horizon outcome prediction for diabetic inpatients. For an admission of N days we observe only the first K days and predict clinically significant outcomes in the remaining N minus K days, with 48 hours ≤ K < N ≤ 14 days. Outcomes include death, kidney complication, hyperglycemia, severe hyperglycemia, hypoglycemia, severe hypoglycemia (and on Kineret also MI, infection, ketoacidosis, hyperosmolality).
+
+RQ1 in full: can transformers operating over interval-based temporal abstractions and guideline-compliance scores match or exceed state-of-the-art models for short-term complication prediction, while inheriting the explainability symbolic abstractions give by construction? Sub-questions: how much do the abstraction and scoring layers contribute beyond raw data, and how do an encoder (single-pass risk) and an autoregressive decoder (generates future abstraction trajectories) differ?
+
+RQ2 in full: which guideline components are most informative for outcomes, how did adherence change following the national implementation effort, and what does that say about which recommendations are critical, redundant, or hard to apply?
+
+In the evaluation chapter these are broken into RQ1 to RQ6. RQ1 to RQ3 are Study 1, RQ4 and RQ5 Study 2, RQ6 Study 3.</aside>
+</section>

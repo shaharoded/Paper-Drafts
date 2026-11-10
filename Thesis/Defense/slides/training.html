@@ -1,0 +1,26 @@
+<section id="training" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Methods · Training</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Three training phases</h2>
+</div>
+<table style="font-family:'Manrope', Arial, sans-serif;font-size:30px;color:#1F1A17">
+<tr><th style="width:18%;text-align:left">Phase</th><th style="width:41%;text-align:left">Encoder</th><th style="width:41%;text-align:left">Decoder</th></tr>
+<tr><td style="text-align:left">1 · Embedder</td><td style="text-align:left">Events in a future window + Δt</td><td style="text-align:left">Same, shared recipe</td></tr>
+<tr style="background:#FFFFFF"><td style="text-align:left">2 · Backbone</td><td style="text-align:left">Masked LM, whole intervals masked</td><td style="text-align:left">Next token, legality mask, soft-kernel targets</td></tr>
+<tr><td style="text-align:left">3 · Task</td><td style="text-align:left">Joint risk and time heads</td><td style="text-align:left">Risk head aligned to free-running rollouts</td></tr>
+</table>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">15</p></div>
+<aside>About 2 minutes. Pick the details the committee is likely to probe.
+
+Phase 1, both variants: train the embedder alone with a temporal next-token objective, a multi-hot BCE over the set of events in a short future window plus an MSE on time to the next event. A set rather than a single next token, because events minutes apart have no meaningful order. The Δt term is held behind a BCE-only warmup, then its weight is calibrated once from the loss ratio and capped. That calibrate-once-and-cap discipline applies to every auxiliary loss.
+
+Phase 2, encoder: masked LM with atomic-interval masking, about 15% of positions, START and END of an interval masked together with dedicated tokens (masking them independently would make the task trivial). Two time-aware auxiliaries: t_pos regresses time since admission, t_local regresses the gap to neighbours at masked positions.
+
+Phase 2, decoder: teacher-forced next-token prediction with two changes. Legality masking: a boolean mask from sequence state forbids continuations the TAK grammar disallows (END before START, conflicting open states, meal order), applied to logits and targets and again at generation. Soft-kernel temporal targets: terminal events are rare and late, so the one-hot target is replaced by exp(−Δt/τ) within a horizon (τ terminal 12 h, outcomes initialised at 48 h and learnable). Plus time-to-terminal regression, a pairwise ranking loss, and curriculum-by-masking so it tolerates its own imperfect context.
+
+Phase 3, encoder: per-outcome attention pool, shared MLP, BCE on risk with prevalence-based positive weights plus λ·MSE on hours to first occurrence (λ = 0.1, the most consequential hyperparameter). Backbone at a small fraction of the head learning rate.
+
+Phase 3, decoder: fine-tune the risk head on natural-distribution batches to close the teacher-forcing versus free-running mismatch, backbone at 0.01 of the head learning rate.
+
+Search: no automated optimizer. Iterative design search on a 10,000-admission subset, then confirmation on the full cohort; every arm that informed a decision is in Appendix A (ablations).</aside>
+</section>

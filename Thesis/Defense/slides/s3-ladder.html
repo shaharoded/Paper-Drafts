@@ -1,0 +1,31 @@
+<section id="s3-ladder" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 3 · Transfer</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">It transfers, and knowledge now matters</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:56px;align-items:center">
+<div style="background:#FFFFFF;padding:20px;border-radius:20px">
+<img src="/_blob/6f7abab423812fd41f214dd9bdcf7baa" alt="Seven arms with 95% intervals: INTERVenE-Enc on the knowledge base leads AUROC 0.805 and AUPRC 0.527; KB plus QA 0.535 AUPRC; sigma-bins 0.454; ss-STraTS 0.472; LogReg 0.452" style="width:700px;height:545px;object-fit:contain">
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #F7941D;padding:4px 0 4px 28px">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:72px;font-weight:600;line-height:1;color:#A85300">0.527</p>
+<p style="font-size:30px;color:#4A423B">AUPRC vs 0.472 for the best raw baseline</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2F5D73;padding:4px 0 4px 28px">
+<p style="font-family:'Fraunces', Georgia, serif;font-size:72px;font-weight:600;line-height:1;color:#2F5D73">−0.073</p>
+<p style="font-size:30px;color:#4A423B">when σ-bins replace the knowledge base</p>
+</div>
+</div>
+</div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">36</p></div>
+<aside>About 1.5 minutes.
+
+The architecture transferred. INTERVenE-Enc on knowledge-based abstractions led every arm on AUROC (0.805), best F1 (0.561) and onset error (30.8 h), with support-weighted AUPRC 0.527 against 0.472 for ss-STraTS, non-overlapping intervals (+0.055). The KB + QA arm edged it on AUPRC alone (0.535), within interval width.
+
+The knowledge base mattered more here than on MIMIC-IV. Replacing it with σ-bins cost 0.073 AUPRC (0.454) and dropped the arm to the logistic-regression floor, whereas the same substitution on MIMIC-IV was within noise. On the data the knowledge base was authored for, clinical knowledge did predictive work, not only interpretive work.
+
+What that does and does not license: the two results bound each other. MIMIC-IV shows the architecture is not dependent on hand-authored definitions; Kineret shows that on its home cohort, knowledge carries real signal. The equivalence on MIMIC-IV bounds what knowledge contributes when ported to a new source, not what it contributes generally.
+
+Per outcome (if asked): the aggregate ordering is carried by the two frequent glycemic outcomes (hyperglycemia 0.578 vs 0.486 for ss-STraTS; severe hyperglycemia 0.513 vs 0.472). Death is the one outcome where KB without QA leads outright (0.645). Below about 200 positives (infection 37, MI 69, severe hypoglycemia 111) arms stop separating. Macro AUPRC lowers every figure (0.332 to 0.403) but keeps the ranking.</aside>
+</section>

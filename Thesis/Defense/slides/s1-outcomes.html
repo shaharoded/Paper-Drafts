@@ -1,0 +1,28 @@
+<section id="s1-outcomes" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 1 · Per outcome</p>
+<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Top AUPRC on five of six outcomes</h2>
+</div>
+<table style="font-family:'Manrope', Arial, sans-serif;font-size:32px;color:#1F1A17">
+<tr><th style="width:34%;text-align:left">Outcome</th><th style="width:18%;text-align:right">Prevalence</th><th style="width:24%;text-align:right">Best baseline</th><th style="width:24%;text-align:right">INTERVenE-Enc</th></tr>
+<tr><td style="text-align:left">Kidney complication</td><td style="text-align:right">9.3%</td><td style="text-align:right">0.729</td><td style="text-align:right;font-weight:700">0.790</td></tr>
+<tr><td style="text-align:left">Hyperglycemia</td><td style="text-align:right">26.4%</td><td style="text-align:right">0.782</td><td style="text-align:right;font-weight:700">0.818</td></tr>
+<tr><td style="text-align:left">Severe hyperglycemia</td><td style="text-align:right">12.6%</td><td style="text-align:right">0.566</td><td style="text-align:right;font-weight:700">0.629</td></tr>
+<tr><td style="text-align:left">Hypoglycemia</td><td style="text-align:right">5.8%</td><td style="text-align:right">0.282</td><td style="text-align:right;font-weight:700">0.308</td></tr>
+<tr><td style="text-align:left">Severe hypoglycemia</td><td style="text-align:right">2.7%</td><td style="text-align:right;font-weight:700">0.150</td><td style="text-align:right">0.144 (tie)</td></tr>
+<tr><td style="text-align:left">Death</td><td style="text-align:right">12.9%</td><td style="text-align:right">0.563</td><td style="text-align:right;font-weight:700">0.605</td></tr>
+</table>
+<p style="font-size:28px;color:#4A423B">Time head: onset error 7–14 h below the median-time baseline</p>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">21</p></div>
+<aside>About 1.5 minutes. "Best baseline" is the best of GRU-D, STraTS (pre+ft), ss-STraTS and KarmaLego for that outcome: GRU-D for kidney, ss-STraTS for hyperglycemia, severe hyperglycemia and death, STraTS (pre+ft) for hypoglycemia and severe hypoglycemia.
+
+Largest gains: kidney complication (0.790 vs 0.729 for GRU-D; vs 0.726 for ss-STraTS) and death (0.605 vs 0.563). On the rarest outcome, severe hypoglycemia at 2.7%, it ties STraTS with overlapping intervals: there, scarcity of positives sets the ceiling rather than modeling.
+
+Prevalence is the AUPRC random baseline, so 0.144 on a 2.7% outcome is still about five times chance.
+
+The time head is a separate capability from ranking: a model can identify who will deteriorate without saying when. Against the median-time baseline, onset MAE drops by roughly 7 to 14 hours across outcomes (e.g. kidney 28.8 to 18.4 h, death 136.9 to 123.0 h).
+
+INTERVenE-Ar's biggest weakness is death: AUPRC 0.368 against the encoder's 0.605, the largest gap between the two variants. Dysglycemia outcomes, which occur earlier and more often, are where the generative readout holds up.
+
+Calibration if asked (Appendix): encoder ECE 0.016 as emitted, 0.013 after temperature scaling; decoder 4 to 12% under its peak readout, scaling fixes the prevalent outcomes (death 0.050 to 0.011).</aside>
+</section>
