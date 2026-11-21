@@ -1,0 +1,27 @@
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+ & & & \multicolumn{2}{c}{Logistic Regression} & \multicolumn{2}{c}{ss-STraTS} & \multicolumn{3}{c}{INTERVenE} \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}\cmidrule(lr){8-10}
+Outcome & $n_+$ & \% & LR & LR+QA & ST & ST+QA & SAX & KB & KB+QA \\
+\midrule
+\multicolumn{10}{l}{\textit{AUPRC (higher is better)}} \\
+Hyperglycemia & 1427 & 31.65 & 0.450 & 0.449 & 0.489 & 0.496 & 0.494 & 0.578 & \textbf{0.597} \\
+Severe hyperglycemia & 1285 & 28.50 & 0.441 & 0.438 & 0.476 & 0.467 & 0.463 & 0.515 & \textbf{0.517} \\
+Kidney complication & 545 & 12.09 & 0.589 & 0.587 & 0.582 & 0.578 & 0.556 & 0.585 & \textbf{0.602} \\
+Mortality & 329 & 7.30 & 0.584 & 0.578 & 0.552 & 0.570 & 0.609 & \textbf{0.640} & 0.604 \\
+Hypoglycemia & 178 & 3.95 & 0.137 & 0.133 & 0.142 & 0.132 & 0.136 & 0.152 & \textbf{0.165} \\
+Severe hypoglycemia & 108 & 2.40 & 0.106 & 0.105 & 0.109 & 0.104 & 0.100 & 0.121 & \textbf{0.134} \\
+Cardiovascular & 66 & 1.46 & 0.573 & 0.567 & \textbf{0.587} & 0.491 & 0.240 & 0.569 & 0.499 \\
+Infection & 33 & 0.73 & 0.073 & 0.069 & 0.027 & 0.041 & 0.034 & 0.062 & \textbf{0.100} \\
+\midrule
+\multicolumn{10}{l}{\textit{Complication-onset MAE in hours (lower is better)}} \\
+Hyperglycemia & 1427 &  & 28.48 & 28.55 & 28.92 & 27.95 & 27.68 & \textbf{25.47} & 25.72 \\
+Severe hyperglycemia & 1285 &  & 28.33 & 28.39 & 29.16 & 28.10 & 28.39 & \textbf{27.16} & 27.41 \\
+Kidney complication & 545 &  & 32.76 & 32.80 & 34.30 & 33.89 & 33.09 & 32.88 & \textbf{32.11} \\
+Mortality & 329 &  & 58.65 & 58.68 & 57.87 & 58.48 & \textbf{56.27} & 56.30 & 57.41 \\
+Hypoglycemia & 178 &  & 41.87 & 42.29 & 38.96 & 41.56 & 37.07 & 36.76 & \textbf{36.13} \\
+Severe hypoglycemia & 108 &  & 45.09 & 46.80 & 46.62 & 48.22 & 40.66 & 40.47 & \textbf{40.37} \\
+Cardiovascular & 66 &  & 40.37 & 39.94 & \textbf{34.95} & 42.42 & 38.76 & 36.40 & 35.89 \\
+Infection & 33 &  & 45.57 & 52.78 & 31.62 & 37.24 & 31.11 & 32.30 & \textbf{29.49} \\
+\bottomrule
+\end{tabular}

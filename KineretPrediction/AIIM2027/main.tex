@@ -1,5 +1,6 @@
 \documentclass[preprint,12pt]{elsarticle}
 
+\usepackage{lmodern}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -10,6 +11,8 @@
 \usepackage{multirow}
 \usepackage{xcolor}
 \usepackage{url}
+\setlength{\emergencystretch}{3em}
+\Urlmuskip=0mu plus 2mu\relax
 
 \graphicspath{{figures/}}
 
@@ -17,7 +20,7 @@
 % DRAFT-ONLY ANNOTATIONS. Flip to \showtasksfalse for submission.
 % --------------------------------------------------------------
 \newif\ifshowtasks
-\showtaskstrue
+\showtasksfalse
 
 \newcommand{\TODO}[1]{\ifshowtasks\textcolor{red}{\textbf{[TODO: #1]}}\fi}
 
@@ -27,9 +30,7 @@
 
 \begin{frontmatter}
 
-\title{Knowledge-Based Temporal Abstractions Transfer Across Hospitals:
-A Seven-Arm Comparison of Complication Prediction on a Six-Hospital
-Inpatient-Diabetes Cohort}
+\title{Knowledge-Based Temporal Abstraction for Predicting Complications in Hospitalized Adults with Diabetes or Hyperglycemia}
 
 \author[aff1]{Shahar Oded\corref{cor1}}
 \ead{shahar.oded@post.bgu.ac.il}
@@ -69,57 +70,18 @@ Hadassah Ein Kerem, Jerusalem, Israel}
 Hadassah Hebrew University Hospital, Jerusalem, Israel}
 
 \begin{abstract}
-\textbf{Background.} Interval-based Transformers over knowledge-based
-temporal abstractions (KBTA) outperform strong neural baselines for
-short-horizon complication prediction on a MIMIC-IV diabetic cohort, and
-concurrent work has shown that adherence to inpatient hyperglycemia guideline
-recommendations can be measured automatically as continuous compliance scores
-over the same abstraction stream. Whether either result transfers to a
-second, independently collected cohort, and whether the two signals combine
-usefully, has not previously been examined.
+\textbf{Objective.} INTERVenE previously predicted complications from clinical intervals in intensive care records. We examined whether the approach extends to general inpatient care and whether assessments of guideline adherence improve prediction beyond the clinical history.
 
-\textbf{Objective.} To evaluate the transferability of INTERVenE-Enc across
-health systems and knowledge bases, to test whether measured
-guideline-adherence signals improve predictive performance beyond the
-clinical record they were derived from, and to quantify the marginal
-contribution of clinical domain knowledge to short-horizon complication
-prediction on inpatient diabetes.
+\textbf{Methods.} We used the first four days of admission at six Israeli general hospitals to predict eight outcomes through day 14, their recorded timing, and total length of stay. The mortality label included linked deaths up to 30 days after discharge, assigned to visit end. We compared logistic regression, supervised STraTS, and INTERVenE-Enc with either clinical intervals or statistically defined intervals (SAX). We also added guideline assessments to each model family. The test set comprised 4,508 admissions from 3,193 people. We estimated paired differences by resampling people.
 
-\textbf{Methods.} We conducted a retrospective comparison on the Kineret
-inpatient hyperglycemia cohort ($48{,}354$ admissions across six Israeli
-hospitals, August 2022--December 2025). A single seven-arm ladder holds
-cohort, labels, patient split and evaluation window constant and varies only
-the input representation: (i) logistic regression on distribution-summarized
-raw measurements, (ii) ss-STraTS on the raw event stream, (iii) INTERVenE-Enc
-on knowledge-free $\sigma$-bin intervals, (iv) INTERVenE-Enc on KBTA
-intervals, and (v) the same with treatment-quality (QA) pattern tokens.
-Every arm predicts three targets per complication: whether it occurs, when,
-and length of stay. Confidence intervals are $2{,}000$-resample
-patient-level bootstraps.
+\textbf{Results.} The clinical interval encoder achieved a support-weighted area under the precision--recall curve of 0.527, compared with 0.475 for STraTS (difference 0.053, 95\% CI 0.036--0.070) and 0.467 for SAX (difference 0.060, 0.046--0.076). Its advantage persisted at daily cutoffs from two to six days, and the clinical encoder retained discrimination at each hospital held out from training. Adding guideline assessments improved discrimination for hyperglycemia and reduced it for mortality. The overall difference was uncertain (0.007, 95\% CI $-0.003$ to 0.018). A decreasing glucose trend contributed toward higher predicted hypoglycemia risk.
 
-\textbf{Results.} On $4{,}686$ held-out test admissions, INTERVenE-Enc on KBTA
-intervals achieves support-weighted AUPRC $0.527$ [$0.511, 0.548$] against
-$0.472$ [$0.456, 0.493$] for the best raw-stream baseline (ss-STraTS), with
-non-overlapping confidence intervals, and leads every arm on AUROC and onset
-error. Replacing KBTA with $\sigma$-bins costs $0.073$ AUPRC and drops the
-arm to the logistic-regression floor---a lift that was within noise on
-MIMIC-IV. The QA block leaves aggregate metrics within third-decimal-place
-noise on every model, though sparse-transcoder attribution shows that the
-compliance-pattern tokens are among the top drivers for seven of eight
-outcomes when INTERVenE receives them as intervals.
-
-\textbf{Conclusion.} The architecture transfers, and the knowledge base does
-predictive work on data it was authored for---not merely interpretive work
-as on MIMIC-IV. Automatically measured guideline adherence carries little
-information the interval stream does not already supply, because both are
-deterministic derivations of the same abstraction layer. The design that
-separates them---a seven-arm ladder with identical cohort, labels and
-split---is what let the two effects be read against one another.
+\textbf{Conclusion.} Clinical intervals improved discrimination over a model of individual observations in both intensive care and general inpatient records, with models fitted in each health system. In Kineret, a knowledge base developed for inpatient diabetes care made it possible to trace contributions to predicted risk back to clinical trends and patterns of care. The predictive value of guideline assessment varied by outcome.
 \end{abstract}
 
 \begin{keyword}
-temporal abstraction \sep clinical prediction \sep interval-based Transformer
-\sep knowledge base \sep guideline adherence \sep transferability
+temporal abstraction \sep medium-term prediction \sep interval-based Transformer
+\sep knowledge base \sep guideline adherence \sep electronic health records
 \sep inpatient diabetes
 \end{keyword}
 
@@ -168,48 +130,28 @@ competing financial interests or personal relationships that could have
 appeared to influence the work reported in this paper.
 
 \section*{Data and Code Availability}
-The Mediator abstraction engine and its knowledge base, the extraction and
-cohort-construction pipeline, the seven-arm benchmark, and the frozen
-outputs used to produce every table and figure in this paper are publicly
-available:
+The study software covers temporal abstraction, cohort construction, and model evaluation.
+% Verify repository release visibility before submission.
 
 \begin{itemize}\setlength{\itemsep}{.1em}
-\item Mediator (abstraction + quality-assessment engine):
-      \url{https://github.com/shaharoded/Mediator}.
-\item Kineret ETL pipeline (OMOP CDM $\to$ analysis-ready tables):
-      \url{https://github.com/shaharoded/Kineret-ETL}.
-\item INTERVenE-Enc reference implementation:
-      \url{https://github.com/shaharoded/INTERVenE-Enc}.
-\item ss-STraTS reference implementation:
-      \url{https://github.com/shaharoded/Medical-Transformers-Benchmark}.
-\item This study's pipeline, frozen configuration, per-arm predictions,
-      per-outcome bootstraps and figures:
-      \url{https://github.com/shaharoded/Kineret-Prediction} (see
-      \texttt{results/full\_bench\_results/}).
+\item Temporal Mediator and its knowledge base for abstraction and guideline assessment. \url{https://github.com/shaharoded/Mediator}
+\item Kineret extraction and cohort construction. \url{https://github.com/shaharoded/Kineret-ETL}
+\item INTERVenE-Enc reference implementation. \url{https://github.com/shaharoded/INTERVenE-Enc}
+\item STraTS reference implementation for the supervised comparator.\newline{\small\url{https://github.com/shaharoded/Medical-Transformers-Benchmark}}
+\item Kineret prediction code, training configurations, and aggregate results. \url{https://github.com/shaharoded/Kineret-Prediction}
 \end{itemize}
 
-All processing was performed inside a closed hospital computing environment.
-The code released is a replica of that pipeline; no source data,
-intermediate datasets, or unaggregated outputs leave that environment.
-Reported results are exported aggregate statistics. The patient-level EHR
-data cannot be shared, as it comprises identifiable clinical records
-governed by the approvals under which it was obtained.
+Patient-level records were processed within the hospital computing environment. The study approvals restrict access to those records. The reported tables and figures are based on aggregate outputs.
 
 \section*{Ethics Approval}
-The study was approved by the institutional Helsinki committee of each
-participating center under a common protocol (NHR-0152-23): Galilee Medical
+The institutional Helsinki committee at each participating center approved the study under a common protocol (NHR-0152-23). Local approvals were granted by Galilee Medical
 Center (NHR-0152-23), Hillel Yaffe Medical Center (HYMC-0074-24), Shamir
 Medical Center (ASF-0117-24), Tzafon Medical Center (POR-0047-24), Barzilai
 University Medical Center (BRZ-0059-24), and Bnai Zion Medical Center
-(BNZ-0067-24). A full waiver of informed consent was granted, since the
-study extracts records from a de-identified repository with no patient
-contact.
+(BNZ-0067-24). The committees waived informed consent for this retrospective analysis of de-identified records without patient contact.
 
 \section*{Acknowledgements}
-This study rests on the Kineret project team, who built and maintain the
-harmonized multicenter data warehouse. The authors also thank the Helsinki
-committee coordinators at the participating centers for their assistance
-throughout the approval process.
+The authors thank the Kineret project team for building and maintaining the multicenter data warehouse and the Helsinki committee coordinators at the participating centers for their assistance.
 
 \bibliographystyle{elsarticle-num}
 \bibliography{references}

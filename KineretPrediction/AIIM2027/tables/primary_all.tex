@@ -1,0 +1,15 @@
+\begin{tabular}{lrrrrr}
+\toprule
+Model & Parameters & Weighted AUPRC & Weighted AUROC & Macro AUPRC & LoS MAE (h) \\
+\midrule
+Logistic Regression & 25,687 & 0.453 [0.434, 0.475] & 0.751 [0.740, 0.763] & 0.369 & 47.56 \\
+Logistic Regression + QA & 26,129 & 0.450 [0.432, 0.472] & 0.751 [0.740, 0.762] & 0.366 & 47.53 \\
+\midrule
+ss-STraTS & 91,441 & 0.475 [0.456, 0.495] & 0.770 [0.760, 0.781] & 0.370 & 46.27 \\
+ss-STraTS + QA & 94,769 & 0.473 [0.456, 0.494] & 0.770 [0.760, 0.781] & 0.360 & 47.48 \\
+\midrule
+INTERVenE SAX & -- & 0.467 [0.450, 0.488] & 0.762 [0.751, 0.773] & 0.329 & 48.37 \\
+INTERVenE KB & $\approx$1.85M & 0.527 [0.510, 0.548] & \textbf{0.803 [0.794, 0.812]} & \textbf{0.402} & \textbf{45.76} \\
+INTERVenE KB + QA & $\approx$1.86M & \textbf{0.535 [0.518, 0.555]} & 0.801 [0.791, 0.811] & \textbf{0.402} & 45.85 \\
+\bottomrule
+\end{tabular}

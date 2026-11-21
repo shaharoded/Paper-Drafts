@@ -1,231 +1,96 @@
 \section{Results}
 \label{sec:results}
+\subsection{Study population and outcome distribution}
+The Kineret clinical study included 48,354 admissions among 29,577 adults with diabetes or inpatient hyperglycemia at six general hospitals \citep{oded2027kineret-jbi}. In this source cohort, 35.3\% of admissions had a documented diabetes diagnosis, 74.7\% met the recurrent-hyperglycemia criterion, and 60.2\% met the extreme-glucose criterion. The criteria overlapped, and patients could qualify on glucose readings alone.
 
-The analytic cohort feeds $179{,}141$ training samples (one per admission
-per training-eligible window), $4{,}600$ validation admissions and
-$4{,}686$ held-out test admissions, split by patient. Every reported
-number in this section is at $K_{\mathrm{eval}} = 4$ days with a label
-horizon of $(96, 336]$ hours. Confidence intervals are $2{,}000$-resample
-patient-level bootstraps.
+For prediction at day four, both the raw and abstracted histories had to extend beyond the cutoff, allowing time for repeated guideline assessments. This subset comprised 20,994 training, 4,427 validation, and 4,508 test admissions. The test admissions came from 3,193 people. The eligibility percentages above describe the full clinical cohort. Among the day-four test admissions, the frequency of subsequent outcomes ranged from 31.65\% for hyperglycemia to 0.73\% for infection (Table~\ref{tab:outcomes}).
 
-\subsection{Target support}
-\label{sec:results-support}
-
+Figure~\ref{fig:support} shows how often the ten candidate complications occurred in the original training set after each observation cutoff from day one to day thirteen. At day four, ketoacidosis and hyperosmolality each fell below the 1\% prevalence threshold. We kept the other eight outcomes throughout the evaluation. Table~\ref{tab:outcomes} gives their frequencies in the date-filtered test set.
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig1_target_support}
-\caption{Target support across candidate context windows on the Kineret
-cohort. Prevalence is per admission on the training split; each candidate
-target's line traces its prevalence as $K$ moves from $1$ to $13$ days.
-The horizontal line at $1\%$ is the prevalence threshold; targets below
-it at $K_{\mathrm{eval}}$ do not receive a prediction head.}
-\label{fig:target-support}
+\centering\includegraphics[width=\textwidth]{updated_support_heatmap}
+\caption{Prevalence of the ten candidate complications in the original training set. Color indicates the proportion of admissions with an event after cutoff $K$ and through day 14, $(K,14]$. Hatching marks prevalence below 1\%. The dotted outline identifies the cutoff used for outcome selection ($K=4$), and \emph{no head} identifies the excluded outcomes.}
+\label{fig:support}
 \end{figure}
 
-Figure~\ref{fig:target-support} shows the eight retained targets at
-$K = 4$: hyperglycemia ($n_+ = 1{,}470$), severe hyperglycemia
-($1{,}317$), kidney complication / AKI ($566$), $30$-day mortality
-($341$), hypoglycemia ($181$), severe hypoglycemia ($111$), MI /
-cardiovascular ($69$), and infection ($37$). Hyperosmolality
-($n_+ \approx 220$, prevalence $\approx 0.44\%$) and ketoacidosis
-($n_+ \approx 330$, $\approx 0.66\%$) fall below the $1\%$ threshold at
-$K = 4$ and do not receive heads. Both would clear the threshold at
-$K = 1$, but were excluded to hold the head layout fixed at the chosen
-evaluation window; a target that flickers in and out of the head list
-across arms would not admit a clean cross-arm comparison. Choosing the
-window from this table before training keeps the results a single
-support-conditioned table rather than a surface over $K$.
-
-\subsection{The ladder}
-\label{sec:results-ladder}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig2_ladder}
-\caption{Support-weighted performance across the seven arms on
-$4{,}686$ held-out test admissions at $K = 4$, with $95\%$ patient-level
-bootstrap intervals ($2{,}000$ resamples). Rungs $5\to 6$ isolate the
-knowledge base; $6 \to 7$ the treatment-quality signal.}
-\label{fig:ladder}
-\end{figure}
+\subsection{Overall predictive performance and baseline comparisons}
+At day four, both comparisons favored clinical intervals (Table~\ref{tab:ladder}). Weighted AUPRC was 0.527 for KB, 0.475 for ss-STraTS, and 0.467 for the SAX interval encoder. The paired gains for KB were 0.053 over ss-STraTS (95\% CI 0.036--0.070) and 0.060 over SAX (0.046--0.076), with $q=0.0012$ for both comparisons. Thus KB improved discrimination even against a model with the same interval encoder. Weighted AUROC also favored KB, and the AUPRC advantage persisted when all outcomes received equal weight.
 
 \begin{table}[htbp]
-\centering
-\small
-\caption{Support-weighted performance across the seven arms at $K = 4$.
-Bold marks the best value in each column; brackets are $95\%$
-patient-level bootstrap intervals.}
+\centering\small
+\caption{Predictive discrimination and length-of-stay error at the four-day observation cutoff.}
 \label{tab:ladder}
-\begin{tabular}{clccccc}
-\toprule
-Rung & Arm & AUROC & AUPRC & Best $F_1$ & Onset MAE (h) & LoS MAE (h) \\
-\midrule
-1 & LogReg                       & $0.754$ [$0.743,0.764$] & $0.452$ [$0.436,0.472$] & $0.527$          & $32.9$ & $47.7$ \\
-2 & LogReg $+$ QA                & $0.754$ [$0.743,0.764$] & $0.450$ [$0.434,0.469$] & $0.530$          & $33.1$ & $47.7$ \\
-3 & ss-STraTS                    & $0.772$ [$0.762,0.781$] & $0.472$ [$0.456,0.493$] & $0.535$          & $33.2$ & $46.4$ \\
-4 & ss-STraTS $+$ QA             & $0.771$ [$0.762,0.781$] & $0.471$ [$0.455,0.491$] & $0.532$          & $32.8$ & $47.7$ \\
-5 & INTERVenE-Enc ($\sigma$-bins)& $0.755$ [$0.744,0.765$] & $0.454$ [$0.438,0.473$] & $0.518$          & $33.3$ & $\mathbf{45.1}$ \\
-6 & \textbf{INTERVenE-Enc (KB)}  & $\mathbf{0.805}$ [$0.795,0.813$] & $0.527$ [$0.511,0.548$] & $\mathbf{0.561}$ & $\mathbf{30.8}$ & $45.9$ \\
-7 & INTERVenE-Enc (KB $+$ QA)    & $0.802$ [$0.793,0.811$] & $\mathbf{0.535}$ [$0.518,0.554$] & $0.557$ & $30.9$ & $46.0$ \\
-\bottomrule
-\end{tabular}
+\resizebox{\textwidth}{!}{\input{tables/primary}}
+\par\smallskip\parbox{\textwidth}{\footnotesize Parameter counts include prediction heads. QA counts are calculated from the input dimensions. KB totals are approximate. The SAX count was unavailable (Supplementary Methods A). All models were evaluated on the same test admissions. Intervals are 95\% bootstrap intervals clustered by person, with 2,000 valid draws for each primary discrimination summary. Weighted metrics use the number of positive admissions per outcome. Macro AUPRC gives outcomes equal weight. Bold marks the highest discrimination or lowest length-of-stay MAE (LoS, in hours), including ties at the precision shown. Bold values are ranked point estimates.}
 \end{table}
 
-The architecture transfers. INTERVenE-Enc on knowledge-based
-abstractions leads every arm on AUROC, best $F_1$ and onset error, at a
-support-weighted AUPRC of $0.527$ against $0.472$ for the best
-raw-stream baseline (ss-STraTS), with non-overlapping bootstrap
-intervals (Table~\ref{tab:ladder}, Figure~\ref{fig:ladder}). The
-KB $+$ QA arm edges KB alone on AUPRC ($0.535$ vs $0.527$), separated
-by less than one interval width; the QA delta is decomposed in
-Section~\ref{sec:results-qa}.
-
-\paragraph{The knowledge base is doing predictive work.}
-Replacing KBTA with $\sigma$-bin discretization (rung $5$) costs $0.073$
-AUPRC and $0.050$ AUROC relative to rung $6$, and drops the arm to the
-logistic-regression floor. The same substitution on MIMIC-IV
-\citep{oded2026intervene} was within noise---the ablation there
-attributed accuracy on that cohort to the Transformer over persistent
-intervals rather than to the semantic content of the intervals. On the
-data the knowledge base was authored for, that no longer holds:
-clinical knowledge is doing predictive work, not only interpretive
-work.
-
-\paragraph{The architecture matters beyond having intervals.}
-The floor is comfortably above chance ($0.754$ AUROC, $0.452$ AUPRC),
-and ss-STraTS lifts AUROC and AUPRC only modestly over it ($+0.018$
-AUROC, $+0.020$ AUPRC, both intervals overlapping the LogReg CI at the
-lower end). The dominant modelling gain in the ladder is $6-3$: the
-Transformer over KBTA intervals over the Transformer over triplets
-($+0.033$ AUROC, $+0.055$ AUPRC, non-overlapping). Rungs $5-3$, which
-compares the same INTERVenE-Enc architecture on $\sigma$-bins against
-ss-STraTS on the raw stream, is within noise---the interval-based
-Transformer is not intrinsically stronger, it becomes so once the
-intervals carry named clinical concepts.
-
-\paragraph{Length of stay.}
-The $\sigma$-bin arm has the lowest length-of-stay error ($45.1$\,h),
-below both KB arms ($45.9$--$46.0$\,h) and the raw-data arms
-($46.4$--$47.7$\,h). Onset and length-of-stay heads share only the
-encoder; the $\sigma$-bin encoder yields a marginally better LoS
-signal despite the weakest risk performance. Onset is where the KB
-arms separate cleanly: $30.8$\,h vs $32.9$--$33.3$\,h for every
-raw-stream and $\sigma$-bin arm, a $\sim 2$\,h tightening that
-survives bootstrap.
-
-\subsection{The quality-assessment signal}
-\label{sec:results-qa}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{fig3_qa_delta}
-\caption{Change in support-weighted metrics from adding the aggregated
-QA compliance block, per model. Positive values favour QA; error bars
-are $95\%$ bootstrap intervals for the delta.}
-\label{fig:qa-delta}
-\end{figure}
-
-Not measurably in aggregate. Every change sits at the third decimal
-place with overlapping intervals (Figure~\ref{fig:qa-delta}). The
-largest single change is INTERVenE-Enc's $+0.007$ AUPRC, and it is the
-only arm that receives the compliance patterns as temporal tokens
-rather than only as context.
-
-The model \emph{does} use them. Sparse-transcoder attribution on the
-QA arm, following the pipeline of \citep{oded2026intervene}, puts
-\texttt{*\_PATTERN} tokens among the top drivers for seven of the
-eight outcomes on this cohort: routine glucose monitoring for death
-and kidney complication, basal-dosage and metformin-continuation
-patterns for the glycemic endpoints, and reduced basal insulin after
-hypoglycemia for severe hypoglycemia (attribution figure reproduced
-from the concurrent methodological analysis; not shown here to
-preserve the AIIM figure budget---see~\TODO{figure decision}). The
-signal is read and assigned weight; it simply does not change the
-aggregate metrics.
-
-The interpretation is straightforward. The QA scores are derived
-deterministically by the same abstraction engine that emits the
-intervals the model is already reading; a model that reads
-\emph{Glucose measured at $t$, insulin administered at $t + \delta$}
-is close to computing \emph{compliance with insulin-following-
-hyperglycemia at $t$} itself. The added signal is available and
-used, but carries little the interval stream does not.
-
-\subsection{Per-outcome results}
-\label{sec:results-per-target}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig4_per_target_auprc}
-\caption{Per-outcome AUPRC across the seven arms, ordered left-to-right
-by positive count on the test set (dashed grey line: outcome
-prevalence, the AUPRC random baseline).}
-\label{fig:per-target-auprc}
-\end{figure}
+Hyperglycemic outcomes accounted for much of the weighted gain, and KB also discriminated well for mortality (Table~\ref{tab:outcomes}). For kidney and cardiovascular complications, the raw-data models were competitive with KB. Only 33 test admissions had an infection, 66 a cardiovascular complication, and 108 severe hypoglycemia, making small differences between models difficult to interpret for these outcomes.
 
 \begin{table}[htbp]
-\centering
-\small
-\caption{Per-outcome AUPRC at $K = 4$, ordered by positive count. LR is
-logistic regression, ST is ss-STraTS, $\sigma$ is INTERVenE-Enc on
-$\sigma$-bins, KB and KB$+$QA the knowledge-based arms. Bold marks the
-best value in each row; AKI is acute kidney injury; MI, myocardial
-infarction.}
-\label{tab:per-outcome}
-\begin{tabular}{lrccccccc}
-\toprule
-Outcome & $n_+$ & LR & LR+QA & ST & ST+QA & $\sigma$ & KB & KB+QA \\
-\midrule
-Hyperglycemia         & 1{,}470 & 0.450 & 0.449 & 0.486 & 0.493 & 0.459 & 0.578 & \textbf{0.595} \\
-Severe hyperglycemia  & 1{,}317 & 0.439 & 0.436 & 0.472 & 0.463 & 0.449 & 0.513 & \textbf{0.516} \\
-AKI / kidney compl.   &   566   & 0.590 & 0.588 & 0.578 & 0.576 & 0.605 & 0.587 & \textbf{0.606} \\
-Death                 &   341   & 0.587 & 0.581 & 0.559 & 0.573 & 0.577 & \textbf{0.645} & 0.609 \\
-Hypoglycemia          &   181   & 0.135 & 0.132 & 0.138 & 0.130 & 0.119 & 0.149 & \textbf{0.163} \\
-Severe hypoglycemia   &   111   & 0.104 & 0.103 & 0.104 & 0.102 & 0.085 & 0.119 & \textbf{0.133} \\
-MI / cardiovascular   &    69   & 0.564 & 0.556 & \textbf{0.583} & 0.508 & 0.295 & 0.568 & 0.500 \\
-Infection             &    37   & 0.067 & 0.064 & 0.076 & 0.077 & 0.067 & 0.058 & \textbf{0.100} \\
-\bottomrule
-\end{tabular}
+\centering\scriptsize
+\caption{Per-outcome discrimination and complication-onset error.}
+\label{tab:outcomes}
+\resizebox{\textwidth}{!}{\input{tables/outcomes}}
+\par\smallskip\parbox{\textwidth}{\footnotesize LR denotes logistic regression and ST denotes ss-STraTS. Prevalence is expressed as a percentage. The upper block gives AUPRC. The lower block gives onset MAE in hours among admissions with the outcome ($n_+$). Bold marks the highest AUPRC or lowest MAE for each outcome at the precision shown. For mortality, onset MAE measures error in the time to the death-coded end of the visit, including when death occurred after discharge. These rankings compare point estimates. Model families are grouped as in Table~\ref{tab:ladder}.}
 \end{table}
+\subsection{Length of stay and complication timing}
+\noindent\textit{Draft note: Training-median baselines for length of stay and time to each complication remain to be evaluated. The model-to-model timing comparisons below are available; performance relative to these simple constant predictors is pending.}
 
-The aggregate ordering is carried by the two frequent glycemic outcomes,
-where the knowledge-based arms gain most: hyperglycemia $0.578$ against
-$0.486$ for ss-STraTS, severe hyperglycemia $0.513$ against $0.472$.
-Death is the only outcome where KB without QA leads outright ($0.645$).
-Hyperglycemia is a lab-threshold event by definition; the KB collapses
-$100$-plus glucose lab codes and $10$-plus insulin drugs into a single
-\emph{glucose-state} and a single \emph{basal-insulin-context} channel,
-and the model reads the abstraction directly. For death, no single
-threshold defines the outcome, and the lift ($+0.086$ over ss-STraTS)
-suggests the model is composing evidence across several
-abstracted states.
+KB had the lowest mean absolute error for length of stay, at 45.76 hours (95\% CI 44.68--46.80). The corresponding errors were 46.27 hours (45.18--47.36) for ss-STraTS, 47.56 for logistic regression, and 48.37 for SAX (Table~\ref{tab:ladder}). The difference between KB and ss-STraTS was small. Their intervals overlapped, and these separate estimates do not provide a paired test of the difference. With QA, the KB error was similar at 45.85 hours.
+The clearest timing differences concerned the glycemic outcomes (Table~\ref{tab:outcomes}, lower block). For hyperglycemia and severe hyperglycemia, onset MAE was 25.47 and 27.16 hours with KB, compared with 28.92 and 29.16 for ss-STraTS. KB+QA had the lowest point estimates for hypoglycemia and severe hypoglycemia (36.13 and 40.37 hours). For the other outcomes, the model with the smallest error varied.
 
-Below roughly $200$ positives, the arms stop separating. Infection ($37$
-positives), MI/cardiovascular ($69$) and severe hypoglycemia ($111$)
-sit near their prevalence floors throughout, and the single largest
-swing in the table---the $\sigma$-bin arm at $0.295$ on MI/cardiovascular
-against $0.564$ for logistic regression---rests on $69$ events and
-should not be read as an ordering. Weighting all eight outcomes equally
-rather than by support lowers every figure (macro AUPRC $0.332$ to
-$0.403$) but leaves the ranking of the arms unchanged.
+\subsection{Incremental predictive value of guideline assessment}
+\label{sec:results-qa}
+KB+QA had the highest weighted AUPRC (0.535), but its paired advantage over KB was small and uncertain (0.007, 95\% CI $-0.003$ to 0.018, $q=0.1942$). Macro AUPRC was essentially the same with and without QA. The overall differences on adding QA to logistic regression or ss-STraTS were also inconclusive.
 
-\subsection{Onset and length of stay}
+Adding QA to KB changed the AUPRC point estimate by +0.020 for hyperglycemia, +0.014 for hypoglycemia, +0.014 for severe hypoglycemia, and +0.017 for kidney complications. Of these increases, only the one for hyperglycemia remained significant after correction for multiple comparisons (95\% CI 0.005--0.035, $q=0.0380$). Mortality discrimination fell by 0.036 (95\% CI $-0.056$ to $-0.015$, $q=0.0240$), and severe hyperglycemia changed little. Supplementary Tables~S1 and~S2 give the outcome-specific and overall paired comparisons, respectively.
 
+The favorable glycemic estimates concern the outcomes targeted by the recommendations. The earlier clinical study examined how adherence related to those outcomes \citep{oded2027kineret-jbi}. Here the comparison measured how much information an assessment added once the model had seen the physiological history. An association with an outcome can therefore coexist with little gain in prediction, and these predictive differences cannot establish whether adherence prevents complications.
+
+\subsection{Recording conditions relative to the prior ICU study}
+In the first 96 hours, heart rate and temperature were recorded more frequently in the raw MIMIC-IV data used for INTERVenE than in Kineret \citep{oded2026intervene}. Median daily counts were 12.5 versus 2 for heart rate and 3.5 versus 1.75 for temperature. Glucose showed the reverse pattern, with 4 readings per day in Kineret versus 2.75 in MIMIC-IV, consistent with Kineret's focus on inpatient hyperglycemia. INTERVenE-Enc outperformed raw-observation models in both studies when fitted to each cohort separately. The comparison documents the different recording conditions under which the architecture performed well. It cannot attribute differences in performance to recording frequency. Supplementary Tables~S4--S6 give measurement frequencies and gaps between readings.
+
+\subsection{Performance across observation cutoffs}
+KB outperformed ss-STraTS and SAX at every daily cutoff from day two to day six. At each cutoff, the paired intervals for the difference in weighted AUPRC excluded zero (Figure~\ref{fig:windows}). Later cutoffs select longer admissions and leave less time for an outcome to occur, so changes across cutoffs cannot establish the benefit of an extra day of observation.
+
+For KB, the overall gain from QA remained uncertain at every cutoff. For ss-STraTS, QA improved discrimination at day two ($\Delta$ AUPRC 0.013, 95\% CI 0.002--0.022, $q=0.0150$), indicating that an early guideline assessment can also help a model of individual observations. We adjusted for multiple comparisons separately at each cutoff.
 \begin{figure}[htbp]
-\centering
-\includegraphics[width=\textwidth]{fig5_onset_and_los}
-\caption{Onset MAE (hours, positives only) and length-of-stay MAE
-(hours) per arm at $K = 4$. Onset is aggregated across outcomes by
-support weighting; length of stay is a single regression head.
-Error bars are $95\%$ bootstrap intervals.}
-\label{fig:onset-los}
+\centering\includegraphics[width=.9\textwidth]{updated_window_sensitivity}
+\caption{Weighted AUPRC for predictions made from day two to day six, with follow-up through day 14. Model weights were fixed across cutoffs. Shading indicates 95\% intervals.}
+\label{fig:windows}
 \end{figure}
 
-Onset error tightens by $\sim 2$\,hours for the KB arms ($30.8$--$30.9$\,h)
-relative to the raw-stream and $\sigma$-bin arms ($32.9$--$33.3$\,h;
-Figure~\ref{fig:onset-los}). Length of stay error is close across the
-ladder ($45.1$--$47.7$\,h), and does not track risk performance: the
-$\sigma$-bin arm has the lowest LoS despite the weakest risk metrics,
-because the two heads share only the encoder. The KB arms $6$ and $7$
-sit essentially on top of one another for both time heads, consistent
-with QA leaving aggregate metrics untouched.
+\subsection{Transfer to held-out hospitals}
+KB retained discrimination at all six hospitals when each was held out from training (Table~\ref{tab:loo}). Weighted AUPRC ranged from 0.431 to 0.539 across hospitals and weighted AUROC from 0.725 to 0.828. The corresponding pooled estimates, 0.527 and 0.803, lay within these ranges, although some hospitals had lower scores. Each hospital contributed a different patient population, so these comparisons cannot quantify the loss attributable to moving a model to a new site.
+
+\begin{table}[htbp]
+\centering\small
+\caption{KB performance when the evaluated hospital is excluded from fitting.}
+\label{tab:loo}
+\resizebox{\textwidth}{!}{\input{tables/loo}}
+\par\smallskip\parbox{\textwidth}{\footnotesize The precision--recall reference is the mean outcome prevalence at each hospital, weighted by positive counts ($\sum_j p_j^2/\sum_j p_j$). Supplementary Table~S3 gives the individual prevalences. At Bnai Zion, only 1,710 of 2,000 bootstrap draws were valid, below the prespecified threshold for reliable intervals. All other aggregate intervals had 2,000 valid draws.}
+\end{table}
+\noindent\textit{Author note: Confirm with coauthors whether hospitals may be identified by name; anonymize consistently if required.}
+
+At every held-out hospital, AUPRC exceeded the reference calculated from that hospital's outcome prevalences. The six KB fits alone took more than a week, which made repeating the analysis for all baseline models impractical. The comparison with other models therefore comes from the pooled test set. Supplementary Table~S7 breaks down pooled-model performance by age, sex, and hospital. Infection occurred in only two test admissions among patients younger than 55 and in none of the 495 test admissions at Bnai Zion, where aggregate discrimination across all eight outcomes was consequently undefined. Supplementary Table~S8 reports calibration.
+
+\subsection{Embedding structure}
+At a fixed timestamp, the closest embeddings were the START and END of the same concept (median cosine distance 0.180). Distances increased from pairs sharing an abstraction (0.226) to those sharing only an underlying variable (0.443) and those with different underlying variables (0.590). Figure~\ref{fig:embedding} shows this organization for the whole vocabulary and in more detail for glucose. The trained embeddings preserved the relationship between a concept's boundaries and its place in the clinical hierarchy. Whether an END token attends to the START of its own interval is a separate question that embedding distances cannot answer.
+\begin{figure}[p]
+\centering
+\includegraphics[width=.65\textwidth,trim=0 45 610 0,clip]{updated_embedding_umap}\\[8pt]
+\includegraphics[width=\textwidth,trim=480 45 0 0,clip]{updated_embedding_umap}
+\caption{Trained input embeddings at a fixed timestamp. The upper panel shows the UMAP projection of the vocabulary. The lower panel enlarges the glucose family in the same projection. Circles denote START tokens and triangles denote END tokens. The encoder incorporates the clinical hierarchy, and the reported cosine distances were calculated in the original embedding space.}
+\label{fig:embedding}
+\end{figure}
+
+\subsection{Named-concept attribution and the previous clinical findings}
+In KB+QA, the clinical token at a given position identifies a state, trend, event, context, or guideline assessment. Summing transcoder contributions at positions with the same name lets us report a contribution from \emph{decreasing glucose}, for example, even when that trend spans several readings. The vocabulary supplies the name, and the transcoder estimates the model's sensitivity at each occurrence. Clinical states accounted for many of the largest contributions. Every outcome had a QA pattern among its top 30 concepts, although the highest-ranked QA pattern ranged from seventh to twenty-fourth across outcomes.
+
+A falling glucose trend contributed toward higher predicted hypoglycemia risk. When the insulin-after-hyperglycemia pattern was scored false, it contributed toward lower predicted risk and ranked seventh for both hypoglycemia outcomes. In the clinical study, greater adherence to this recommendation was associated, after propensity weighting, with higher odds of hypoglycemia (OR 1.283, 95\% CI 1.163--1.416) and lower odds of severe hyperglycemia (OR 0.220, 0.202--0.239) \citep{oded2027kineret-jbi}. The direction of the attribution is consistent with this trade-off. A pattern scored false leaves open how much insulin the patient received and why care differed from the recommendation.
+
+Routine glucose monitoring was the highest-ranked QA concept for mortality and contributed toward lower predicted risk. The clinical study also found lower odds of 30-day mortality with greater adherence to routine monitoring after propensity weighting (OR 0.870, 95\% CI 0.809--0.937) \citep{oded2027kineret-jbi}. That analysis accounted for measured confounders, although residual confounding was possible. The attribution describes a predictive association and cannot establish that monitoring prevented deaths. Despite the direction of this particular contribution, adding all QA inputs reduced the model's ability to distinguish admissions ending in a death marker from those without one during the forecast period.
+
+For all 300 admissions, attaching the transcoders left the original risk predictions unchanged (maximum absolute difference in risk logits, 0). Reconstruction was less complete. Across the four layers, the transcoders explained only part of the variance in held-out layer outputs ($R^2=0.396$--$0.514$). The encoder continued to use its original layer outputs for prediction. The unexplained variance therefore limits the feature-based explanation, even though the predictions themselves were unchanged. Agreement with selected findings from the clinical study lends these exploratory explanations clinical plausibility. Supplementary Table~S9 gives reconstruction and sparsity by layer. Table~S10 lists the highest-ranked QA concepts.
+
+\subsection{Stability of the clinical abstractions}
+For the 500 people in the perturbation analysis, the Mediator assigned the same state label to 97.6\% of covered time and the same trend label to 98.0\% after we added noise of 5\% of local threshold spacing. When we removed 10\% of observations, agreement was 97.4\% for states and 95.3\% for trends. The corresponding losses of baseline coverage were 2.0\% and 3.2\%. These estimates describe the stability of numeric states and trends under modest changes in the measurements. QA patterns and downstream predictions were outside this analysis. Supplementary Table~S11 reports intervals and coverage for each perturbation.

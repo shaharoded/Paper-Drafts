@@ -1,183 +1,35 @@
 \section{Discussion}
 \label{sec:discussion}
+\subsection{Prediction across care settings}
+In six Israeli general hospitals, INTERVenE-Enc distinguished patients who subsequently developed complications more accurately than ss-STraTS. At day four, the difference in weighted AUPRC was 0.053 (95\% CI 0.036--0.070), and the advantage persisted at each daily cutoff from day two to day six. The models differed in size, so this comparison establishes their relative performance in the configurations studied. The advantage over ss-STraTS extends the earlier finding in MIMIC-IV intensive care records to general inpatient care in another health system \citep{oded2026intervene}. Differences in timing accuracy were more modest. They were clearest for the onset of hyperglycemia, while the most accurate model varied across other complications.
 
-\subsection{Principal findings}
+The two settings offered different views of a patient's course. During the first four days, the median number of heart-rate readings per day was two in Kineret and 12.5 in MIMIC-IV. For glucose, it was four in Kineret and 2.75 in MIMIC-IV. A Kineret record could therefore document glycemic changes relatively frequently while leaving hours between observations of vital signs. The encoder performed well under both recording patterns when fitted to local data. Case mix and outcome definitions also differed between the studies, limiting what can be attributed to recording frequency alone.
 
-\paragraph{The architecture transfers.}
-INTERVenE-Enc, tuned and evaluated on MIMIC-IV ICU-level data
-\citep{oded2026intervene}, retains its ordering against strong raw-stream
-baselines on a very different cohort: multicenter, general ward, older,
-longer stays, and shorter observation window in relative terms (K = 4 of
-14 days here versus K = 2 of 14 days on MIMIC). No hyperparameters were
-tuned to this cohort. Support-weighted AUPRC lifts from $0.472$ for
-ss-STraTS to $0.527$ for INTERVenE-Enc on KBTA, with non-overlapping
-bootstrap intervals---a similar relative gap to the MIMIC-IV finding
-($0.631 \to 0.672$).
+Within Kineret, a model fitted at five hospitals retained discrimination at the sixth. KB exceeded the local prevalence reference at every site, although weighted AUPRC ranged from 0.431 to 0.539. Differences in case mix, event frequency, and local recording practices matter when interpreting that range. At one hospital, rare events made the aggregate interval unreliable. Because the hospital holdouts included only KB, the evidence for its advantage over other models comes from the pooled comparison.
 
-\paragraph{The knowledge base does more here than on MIMIC-IV.}
-The single most informative contrast in the paper is the $\sigma$-bin
-arm against the KB arm ($5 \to 6$): identical Transformer, identical
-data, identical labels, replacing only the abstraction layer with a
-seven-band $\sigma$-discretization. On MIMIC-IV that substitution was
-within noise \citep{oded2026intervene}; on Kineret it costs $0.073$
-AUPRC ($0.454 \to 0.527$) and $0.050$ AUROC, and drops the arm to the
-logistic-regression floor. The interpretation is that a knowledge base
-authored for the diabetes-inpatient network it is deployed on carries
-predictive information that a knowledge-free discretization does not
-recover---even when the discretization is fed to the same
-Transformer.
+\subsection{What the clinical knowledge base contributed}
+In the ICU study, statistically defined intervals preserved much of the encoder's performance, while the clinical vocabulary made it possible to identify which states and trends contributed to a prediction \citep{oded2026intervene}. In Kineret, the choice of intervals also mattered for discrimination. Clinical intervals improved weighted AUPRC by 0.060 (95\% CI 0.046--0.076) over SAX in the same encoder architecture. Much of the gain came from glycemic outcomes, for which the knowledge base contains detailed definitions, and the advantage persisted when each outcome received equal weight.
 
-Two related observations follow. First, this is where clinical domain
-knowledge and empirical modelling meet materially: the same authors
-constructed the abstraction rules \citep{hochberg2023inpatient} that
-give this arm its lift and are unavailable to $\sigma$-bins. Second,
-knowledge-base contribution to accuracy is cohort-dependent, and
-studies of the value of clinical knowledge in EHR modelling that
-report a single dataset (MIMIC or otherwise) should be read
-accordingly.
+SAX indicates which statistical band a variable occupied over a given period. A clinical interval can express that glucose remained elevated, that it was falling, or that a sequence of observations met the criteria for a clinical event. The knowledge base was developed for inpatient diabetes care and mapped to the Kineret hospitals' measurement and treatment codes \citep{oded2027kineret-jbi}. This close fit to the clinical question may help explain its advantage. Thresholds, timing rules, vocabulary, and access to derived events all changed together, however. The experiment measures their combined value and leaves open how much each contributed or how well the same approach would work in another specialty.
 
-\paragraph{Measured guideline adherence does not shift aggregate
-metrics.}
-The QA contribution is bounded by $\le 0.008$ on any aggregate metric
-across three architectures (Figure~\ref{fig:qa-delta}). The signal is
-used---sparse-transcoder attribution places compliance-pattern tokens
-among the top drivers for seven of eight outcomes---but is largely
-redundant with the interval stream a KB-consuming model is already
-reading, because both are deterministic derivations of the same
-underlying abstraction engine. The concurrent adherence study
-\citep{oded2027kineret-jbi} identified above-median adherence as
-associated with lower mortality (OR $=0.557$ after propensity
-weighting); those population-level associations do not need to
-translate to per-admission predictive lift for a model already reading
-the underlying abstractions.
+\subsection{What guideline assessment added}
+The clinical study associated adherence to particular recommendations with subsequent outcomes \citep{oded2027kineret-jbi}. In the present study, each guideline score summarized measurements and treatments already represented in the clinical history. Making those relationships explicit improved discrimination for subsequent hyperglycemia and reduced it for mortality. The overall difference was small and uncertain, and macro AUPRC was essentially the same with and without QA. A recommendation can therefore be clinically relevant even when an assessment of adherence adds little to what the model can infer from the record.
 
-This has a design consequence. If a downstream task cares about the
-score \emph{as an operational input}---e.g., a dashboard alerting on
-low compliance---the QA layer stands on its own on its aggregation
-target. If the task is complication prediction from a model that
-already consumes the abstractions, no additional AUPRC accrues from
-supplying the score. Which of the two the deployment cares about
-determines whether the QA layer is a predictor input, a monitoring
-readout, or both.
+The hypoglycemia findings illustrate what the clinical vocabulary makes visible. A raw-observation model can assign a contribution to a glucose reading at a particular time. The interval model can assign one to a fall in glucose or to the timing of insulin after an elevated reading. A falling glucose trend contributed toward higher predicted hypoglycemia risk, and an insulin-after-hyperglycemia pattern scored false contributed toward lower risk. These directions are consistent with the clinical study, in which greater adherence to that recommendation was associated with fewer episodes of severe hyperglycemia and more episodes of hypoglycemia \citep{oded2027kineret-jbi}. They also fit the clinical rationale for coordinating glucose monitoring, insulin, and nutrition in hospital \citep{ada2026hospital}. The pattern score alone cannot resolve the dose, actual intake, or reason for a treatment decision.
 
-\subsection{The design that let both questions be answered}
+For mortality, the direction of an individual contribution and the overall change in discrimination are especially informative together. Routine glucose monitoring contributed toward lower predicted risk, consistent with the association with 30-day mortality in the clinical study. Yet the model with all QA inputs was less accurate at identifying admissions with a death-coded terminal marker in the forecast window. An attribution describes how the fitted model used a pattern. It cannot tell us what would happen if clinicians monitored glucose more often.
 
-Two decisions distinguish this study from an ordinary architecture
-comparison.
+\subsection{Interpreting a contribution to predicted risk}
+A name such as \emph{decreasing glucose} comes from the clinical rule that defined the interval. The embedding analysis showed that the encoder retained relationships within that vocabulary, with the two boundaries of the same concept closer together than concepts from different clinical families. In a separate test, modest noise or removal of measurements left most covered time with the same numeric state or trend label. The stability of QA patterns and downstream risk estimates remains untested.
 
-\paragraph{One canonical event set.}
-Complications appear in two source tables: the raw table
-(\texttt{mediator\_input.csv}, containing the measurements the
-knowledge base reads) and the Mediator output (containing its verdicts).
-These disagree on which occurrences happened and when, both because
-measurement-derived rules were not authored twice and because timestamps
-drift by minutes across derivations. We rebuild the raw side's own
-complication rows in Python by applying the same threshold rules the
-Mediator's XML applies, then intersect the two views at $1$-minute
-tolerance and keep only occurrences the two files date identically. The
-result is one canonical event set that supplies labels, is re-injected
-into every arm's input stream, and is asserted by a unit test to be
-identical across arms. Without this step, on this cohort, the raw file
-carried zero lab-threshold complications and the Mediator carried
-$68{,}525$; cross-file alignment of the pre-computed complications
-found a support drift of $3{,}096$ vs $3{,}098$ / $2{,}849$ vs $2{,}854$
-that would otherwise have made \emph{which events did each arm see} a
-confound rather than a constant.
+Identifying a clinically recognizable input is only part of explaining a prediction. The transcoder estimates sensitivity at occurrences of that input through a sparse approximation to each layer's output. Its reconstruction explained part of the variance on held-out data ($R^2=0.396$--$0.514$). Attaching the transcoders preserved the original predictions across 300 admissions, but the unexplained variation limits how fully the attributions can account for an individual prediction.
 
-\paragraph{Knowledge containment.}
-The Mediator emits \texttt{*\_EVENT} concepts that are not prediction
-targets---\texttt{AKI\_EVENT}, \texttt{ELECTROLYTE\_DERANGEMENT\_EVENT},
-\texttt{MYOCARDIAL\_INJURY\_EVENT}. Each is a knowledge-base verdict
-reached by reading raw measurements. Handing them to LogReg or
-ss-STraTS would give those arms clinical judgements they could not have
-computed themselves, and rungs $5 \to 6$ would then measure a leak
-rather than the abstraction lift. The two streams differ by design:
-non-target \texttt{*\_EVENT} concepts are stripped from the raw stream
-and kept in the KB stream; target events go to everyone as observed
-history. This is the one place a wiring mistake would silently
-invalidate every cross-arm number in the paper, so it is asserted by a
-unit test in both directions.
-
-\subsection{Where the knowledge base helps most}
-
-The KB arm's largest per-outcome lifts are on the two frequent glycemic
-outcomes---hyperglycemia $0.578$ over ss-STraTS $0.486$ ($+0.092$
-AUPRC); severe hyperglycemia $0.513$ over $0.472$ ($+0.041$). These are
-threshold events by definition: hyperglycemia is a glucose level above
-a defined cut, and the knowledge base collapses hundreds of lab codes
-into a single \emph{glucose-state} channel with the threshold applied.
-The model reads the clinical definition of its label directly, which is
-close to what an interpretable clinical scoring rule would do.
-
-Death is more interesting: no single KBTA threshold defines it, and the
-lift ($0.645$ vs $0.559$ for ss-STraTS) suggests the model composes
-evidence across several abstracted states. This is consistent with the
-sparse-transcoder attribution reported on MIMIC-IV, which found
-hypoalbuminemia (a chronic-mortality marker), aminotransferase
-elevation (liver stress), and bicarbonate shifts (acid--base
-decompensation) as the top death drivers. The same clinical logic---
-composition across abstracted trends rather than reading a single
-threshold---applies to LoS ($44.4$\,h vs $\sim 48$\,h on MIMIC-IV,
-$45.9$\,h vs $46.4$\,h here).
-
-Below roughly $200$ positives, the arms stop separating: infection,
-MI/cardiovascular, and severe hypoglycemia sit near their prevalence
-floors regardless of arm, and the single largest swing in the per-
-outcome table---the $\sigma$-bin arm at $0.295$ on MI/cardiovascular
-against $0.564$ for logistic regression---rests on $69$ events and
-should not be read as an ordering. This is a study-power finding rather
-than a modelling one: the cohort under-samples rare complications in
-absolute terms, and running a larger extract would sharpen those rows
-without needing any change to the pipeline.
-
-\subsection{Limitations}
+\subsection{Limitations and clinical implications}
 \label{sec:discussion-limits}
+The day-four results apply to adults with diabetes or early hyperglycemia whose records extended beyond four days. Shorter admissions were outside that evaluation. A recorded onset also depends on when clinicians measured the patient or documented an event. We applied the date restriction to an evaluation of previously fitted models, and the intervals quantify sampling variation across patients for those models. Rare events limit the precision of some hospital and subgroup estimates.
 
-\paragraph{One cohort, single-seed training.}
-Every arm is trained once, at the reference-repository hyperparameters,
-without a per-cohort tune. Multi-seed variance was not affordable
-inside the regulated environment; the reported bootstrap intervals
-capture sampling variability for the fitted model, not the variance of
-the training procedure. This is the same limitation reported by the
-methodological MIMIC-IV study \citep{oded2026intervene}.
+Mortality timing has a further limitation. For a death recorded after discharge, the model predicts the time of the death-coded visit end, so its onset error cannot be interpreted as error in predicting the actual time of death.
 
-\paragraph{External validity is limited.}
-This is the second cohort INTERVenE has been evaluated on, and both are
-diabetic. Whether the architecture-transferred and knowledge-lift-larger
-findings extend to non-diabetic complication prediction, or to
-non-Israeli hospital networks, is not settled here---though the design
-of the ladder is portable and the release of the code
-(Section~\ref{sec:reproducibility}) makes the experiment repeatable
-elsewhere.
+Guideline scores reflect what can be reconstructed from the record. For example, meal-related rules used assumed meal times, and the summaries assigned each assessment to its recorded start. Before using these scores during care, it would be necessary to establish when all the observations needed to calculate them would have been available. Illness severity and the circumstances prompting treatment can also influence both recorded adherence and subsequent risk. The agreement between selected attributions and the clinical study must be read in that context. Both analyses draw on the same records.
 
-\paragraph{The knowledge base itself is not evaluated here.}
-The knowledge base used to produce the KB stream is the diabetes-
-inpatient ontology of \citep{hochberg2023inpatient,oded2027kineret-jbi};
-this paper takes it as given. Its predictive contribution is what rungs
-$5 \to 6$ measure, but the ontology's coverage, calibration and edge
-cases are the subject of the concurrent adherence study, not this one.
-
-\paragraph{Class imbalance at the tail of the target list.}
-Four of the eight targets have fewer than $200$ positives on the test
-set. Their intervals overlap across most arms and their per-outcome
-comparisons should not be over-read. This is not a modelling artefact
-but a data-scale one; a larger extract would resolve it.
-
-\paragraph{Model calibration is not reported.}
-Reliability curves and expected calibration error were computed on the
-MIMIC-IV cohort and reported per outcome in
-\citep{oded2026intervene}. We omit the corresponding analysis here to
-stay inside the AIIM figure budget, but the run-outputs contain the
-per-prediction probabilities needed to reproduce them
-(Section~\ref{sec:reproducibility}); this is~\TODO{a candidate for the
-supplementary material.}
-
-\paragraph{No temporal or per-hospital held-out.}
-The split is patient-level and random. The concurrent adherence study
-demonstrated a small but measurable shift in adherence patterns after
-the 2023 guideline was issued, and a temporal-holdout evaluation
-(train pre-guideline, test post-guideline, or vice versa) would test
-whether prediction quality tracks that shift. Similarly, a per-hospital
-leave-one-out would test whether the model generalizes across sites
-within the network. Both are~\TODO{listed as open reviewer questions in
-Section~\ref{sec:tasks-open} of the draft appendix.}
+For a clinician deciding whether to observe a patient more closely, the timing of a complication matters alongside its likelihood. Comparisons with training-median predictions are still needed to interpret the absolute errors for both onset and length of stay. For predicted probabilities, the clinical interval model showed closer agreement with observed outcomes than ss-STraTS in the pooled test set (mean expected calibration error 0.0122 and 0.1268, respectively). Choosing a threshold for action would require checking calibration at the intended hospital and weighing missed events against false alerts.
