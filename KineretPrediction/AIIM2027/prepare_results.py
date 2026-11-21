@@ -204,10 +204,35 @@ for ax,outcomes,title in [(axes[0],['weighted','macro'],'A  Aggregate QA effect'
 save(fig,'updated_qa_effect')
 
 for src,name in [('embedding_geometry/embedding_umap','updated_embedding_umap'),
-                 ('xai/named_concept_attribution','updated_named_attribution'),
                  ('primary/reliability','updated_reliability')]:
     for ext in ['pdf','png']:
         shutil.copy2(SOURCE/(src+'.'+ext),FIGURES/(name+'.'+ext))
+
+# Display the original top twelve signed contributions per outcome with clinical labels.
+def clinical_label(concept):
+    special = {
+        'ANTIBIOTIC_BITZUA_EVENT_IV': 'IV antibiotic administration',
+        'HYPERTONIC-SALINE_BITZUA_EVENT': 'Hypertonic saline administration',
+        'INSULIN_ON_HYPERGLYCEMIA_PATTERN_False': 'Insulin after hyperglycemia (false)',
+        'ROUTINE_BASAL_DOSAGE_PATTERN_False': 'Routine basal insulin dose (false)',
+        'ROUTINE_GLUCOSE_MEASURE_PATTERN': 'Routine glucose monitoring',
+    }
+    if concept in special:
+        return special[concept]
+    return (concept.replace('_MEASURE_STATE_', ' state: ').replace('_MEASURE_TREND_', ' trend: ')
+            .replace('_CONTEXT_', ' context: ').replace('_BITZUA', ' administration')
+            .replace('_', ' ').lower().capitalize())
+
+attributions = read('xai/named_concept_attribution.csv')
+fig, axes = plt.subplots(4, 2, figsize=(12, 14), layout='constrained')
+for ax, (outcome, group) in zip(axes.flat, attributions.groupby('outcome', sort=False)):
+    ranked = group.loc[group.mean_contribution.abs().nlargest(12).index].sort_values('mean_contribution')
+    ax.barh(ranked.named_concept.map(clinical_label), ranked.mean_contribution,
+            color=np.where(ranked.mean_contribution >= 0, '#b44', '#4682b4'))
+    ax.set_title(OUTCOMES[outcome])
+    ax.tick_params(axis='y', labelsize=8)
+    ax.axvline(0, color='black', linewidth=.5)
+save(fig, 'updated_named_attribution')
 
 # Audit narrative is maintained separately; regeneration must not overwrite author confirmations.
 print('Generated manuscript tables and figures; retained manually maintained audit notes.')
@@ -247,7 +272,7 @@ grid=support_design.pivot(index='target',columns='k',values='prevalence_train')
 # Outcome spellings in historical export use the canonical *_EVENT names.
 grid=grid.loc[order,sorted(grid.columns)]
 heat=grid.to_numpy()*100
-labels=list(OUTCOMES.values())+['Ketoacidosis (no head)','Hyperosmolality (no head)']
+labels=list(OUTCOMES.values())+['Ketoacidosis (excluded)','Hyperosmolality (excluded)']
 fig,ax=plt.subplots(figsize=(10.5,5.8),layout='constrained')
 im=ax.imshow(heat,cmap='Blues',aspect='auto',vmin=0,vmax=48)
 for i in range(heat.shape[0]):

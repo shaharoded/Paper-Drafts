@@ -8,7 +8,7 @@ For prediction at day four, both the raw and abstracted histories had to extend 
 Figure~\ref{fig:support} shows how often the ten candidate complications occurred in the original training set after each observation cutoff from day one to day thirteen. At day four, ketoacidosis and hyperosmolality each fell below the 1\% prevalence threshold. We kept the other eight outcomes throughout the evaluation. Table~\ref{tab:outcomes} gives their frequencies in the date-filtered test set.
 \begin{figure}[htbp]
 \centering\includegraphics[width=\textwidth]{updated_support_heatmap}
-\caption{Prevalence of the ten candidate complications in the original training set. Color indicates the proportion of admissions with an event after cutoff $K$ and through day 14, $(K,14]$. Hatching marks prevalence below 1\%. The dotted outline identifies the cutoff used for outcome selection ($K=4$), and \emph{no head} identifies the excluded outcomes.}
+\caption{Prevalence of the ten candidate complications in the original training set. Color indicates the proportion of admissions with an event after cutoff $K$ and through day 14, $(K,14]$. Hatching marks prevalence below 1\%. The dotted outline identifies the cutoff used for outcome selection ($K=4$), and \emph{excluded} identifies the excluded outcomes.}
 \label{fig:support}
 \end{figure}
 
@@ -20,7 +20,7 @@ At day four, both comparisons favored clinical intervals (Table~\ref{tab:ladder}
 \caption{Predictive discrimination and length-of-stay error at the four-day observation cutoff.}
 \label{tab:ladder}
 \resizebox{\textwidth}{!}{\input{tables/primary}}
-\par\smallskip\parbox{\textwidth}{\footnotesize Parameter counts include prediction heads. QA counts are calculated from the input dimensions. KB totals are approximate. The SAX count was unavailable (Supplementary Methods A). All models were evaluated on the same test admissions. Intervals are 95\% bootstrap intervals clustered by person, with 2,000 valid draws for each primary discrimination summary. Weighted metrics use the number of positive admissions per outcome. Macro AUPRC gives outcomes equal weight. Bold marks the highest discrimination or lowest length-of-stay MAE (LoS, in hours), including ties at the precision shown. Bold values are ranked point estimates.}
+\par\smallskip\parbox{\textwidth}{\footnotesize Parameter counts include prediction heads. QA counts are calculated from the input dimensions. KB totals are approximate. \textit{Author note: insert the full supervised SAX parameter count from the VM checkpoint here and in Supplementary Methods A.} All models were evaluated on the same test admissions. Intervals are 95\% bootstrap intervals clustered by person, with 2,000 valid draws for each primary discrimination summary. Weighted metrics use the number of positive admissions per outcome. Macro AUPRC gives outcomes equal weight. Bold marks the highest discrimination or lowest length-of-stay MAE (LoS, in hours), including ties at the precision shown. Bold values are ranked point estimates.}
 \end{table}
 
 Hyperglycemic outcomes accounted for much of the weighted gain, and KB also discriminated well for mortality (Table~\ref{tab:outcomes}). For kidney and cardiovascular complications, the raw-data models were competitive with KB. Only 33 test admissions had an infection, 66 a cardiovascular complication, and 108 severe hypoglycemia, making small differences between models difficult to interpret for these outcomes.
@@ -78,7 +78,7 @@ At a fixed timestamp, the closest embeddings were the START and END of the same 
 \begin{figure}[p]
 \centering
 \includegraphics[width=.65\textwidth,trim=0 45 610 0,clip]{updated_embedding_umap}\\[8pt]
-\includegraphics[width=\textwidth,trim=480 45 0 0,clip]{updated_embedding_umap}
+\includegraphics[width=\textwidth,trim=445 45 0 0,clip]{updated_embedding_umap}
 \caption{Trained input embeddings at a fixed timestamp. The upper panel shows the UMAP projection of the vocabulary. The lower panel enlarges the glucose family in the same projection. Circles denote START tokens and triangles denote END tokens. The encoder incorporates the clinical hierarchy, and the reported cosine distances were calculated in the original embedding space.}
 \label{fig:embedding}
 \end{figure}
