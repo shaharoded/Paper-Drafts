@@ -70,19 +70,18 @@ Hadassah Ein Kerem, Jerusalem, Israel}
 Hadassah Hebrew University Hospital, Jerusalem, Israel}
 
 \begin{abstract}
-\textbf{Objective.} INTERVenE previously predicted complications from clinical intervals in intensive care records. We examined whether the approach extends to general inpatient care and whether assessments of guideline adherence improve prediction beyond the clinical history.
+\textbf{Objective.} INTERVenE temporal encoder previously predicted complications from clinical intervals in intensive care records. We examined whether the approach extends to general inpatient care and whether measures of adherence to inpatient diabetes-care guidelines add predictive information beyond the clinical history.
 
-\textbf{Methods.} We used the first four days of admission at six Israeli general hospitals to predict eight outcomes through day 14, their recorded timing, and total length of stay. The mortality label included linked deaths up to 30 days after discharge, assigned to visit end. We compared logistic regression, supervised STraTS, and INTERVenE-Enc with either clinical intervals or statistically defined intervals (SAX). We also added guideline assessments to each model family. The test set comprised 4,508 admissions from 3,193 people. We estimated paired differences by resampling people.
+\textbf{Methods.} We used the first four days of admission at six Israeli general hospitals included in the Kineret projectto predict eight outcomes through day 14, their recorded timing, and total length of stay. The mortality label included linked deaths up to 30 days after discharge, assigned to visit end. We compared logistic regression, supervised STraTS, and INTERVenE-Enc with either clinical intervals or statistically defined intervals (SAX). For each model family, we also tested whether adding scores and occurrence indicators for assessments of inpatient diabetes-care guidelines improved prediction. The test set comprised 4,508 admissions from 3,193 people. We estimated paired differences by resampling people.
 
-\textbf{Results.} The clinical interval encoder achieved a support-weighted area under the precision--recall curve of 0.527, compared with 0.475 for STraTS (difference 0.053, 95\% CI 0.036--0.070) and 0.467 for SAX (difference 0.060, 0.046--0.076). Its advantage persisted at daily cutoffs from two to six days, and the clinical encoder retained discrimination at each hospital held out from training. Adding guideline assessments improved discrimination for hyperglycemia and reduced it for mortality. The overall difference was uncertain (0.007, 95\% CI $-0.003$ to 0.018). A decreasing glucose trend contributed toward higher predicted hypoglycemia risk.
+\textbf{Results.} The clinical interval encoder achieved a support-weighted area under the precision--recall curve of 0.527, with paired gains of 0.053 over the raw-observation STraTS model (95\% CI 0.036--0.070) and 0.075 over logistic regression. Within the shared encoder architecture, clinical intervals also outperformed statistically defined intervals (SAX; 0.467; paired difference 0.060, 95\% CI 0.046--0.076). The advantage persisted at daily cutoffs from two to six days, and the encoder retained discrimination at each hospital held out from training. Guideline assessment modestly improved prediction of hyperglycemia, while the overall difference across outcomes was uncertain (0.007, 95\% CI $-0.003$ to 0.018).
 
-\textbf{Conclusion.} Clinical intervals improved discrimination over a model of individual observations in both intensive care and general inpatient records, with models fitted in each health system. In Kineret, a knowledge base developed for inpatient diabetes care made it possible to trace contributions to predicted risk back to clinical trends and patterns of care. The predictive value of guideline assessment varied by outcome.
+\textbf{Conclusion.} Clinical intervals improved discrimination over a model of individual observations in both intensive care and general inpatient records, with models fitted in each health system. In the Kineret dataset, a knowledge base developed for inpatient diabetes care made it possible to trace contributions to predicted risk back to clinical trends and patterns of care. The predictive value of guideline assessment varied by outcome.
 \end{abstract}
 
 \begin{keyword}
-temporal abstraction \sep medium-term prediction \sep interval-based Transformer
-\sep knowledge base \sep guideline adherence \sep electronic health records
-\sep inpatient diabetes
+knowledge based temporal abstractions \sep medium-term prediction \sep Transformers
+\sep medical guideline adherence \sep electronic health records \sep inpatient diabetes
 \end{keyword}
 
 \end{frontmatter}
