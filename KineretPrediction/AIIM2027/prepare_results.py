@@ -73,7 +73,7 @@ def bold(value, yes):
 PARAMETER_COUNTS = {
     'logreg': '25,687', 'logreg_qa': '26,129',
     'strats': '91,441', 'strats_qa': '94,769',
-    'intervene_sax': '--', 'intervene_kb': r'$\approx$1.85M',
+    'intervene_sax': '1,900,938', 'intervene_kb': r'$\approx$1.85M',
     'intervene_kb_qa': r'$\approx$1.86M',
 }
 

@@ -86,6 +86,28 @@ The START and END of the same concept were closest in the original embedding spa
 In a sample of 500 people, we assessed 26 directly defined numeric states and their associated trends. We excluded one derived, multivariate definition. None of the perturbations added covered time in the reported state or trend summaries. The analysis evaluated the clinical intervals themselves and did not test QA patterns or downstream predictions.
 \begin{table}[htbp]\centering\small\caption{Agreement in the labels assigned to covered time and proportion of baseline coverage lost. Noise is expressed relative to local threshold spacing. Intervals use 2,000 valid resamples.}\resizebox{\linewidth}{!}{\input{tables/stability}}\end{table}
 \clearpage
+\section{Timing predictions from training medians}
+\begin{table}[htbp]\centering\small
+\caption{Day-four timing baselines in hours. Each prediction is a median estimated in training, measured from admission. Onset errors use only admissions with the outcome in the forecast window. Mortality timing refers to the death-coded visit end. Confidence intervals use 2,000 bootstrap samples clustered by person.}
+\label{tab:s-medians}
+\begin{tabular}{lrrrr}
+\toprule
+Outcome & Training $n$ & Test $n$ & Prediction (h) & Test MAE (95\% CI, h) \\
+\midrule
+Cardiovascular complication & 341 & 66 & 130.54 & 39.66 [28.56, 52.11] \\
+Mortality & 1,628 & 329 & 182.95 & 57.87 [54.08, 61.97] \\
+Hyperglycemia & 6,556 & 1,427 & 127.30 & 27.65 [26.23, 29.20] \\
+Hypoglycemia & 728 & 178 & 136.13 & 38.52 [33.47, 44.11] \\
+Infection & 208 & 33 & 135.56 & 24.92 [16.52, 35.34] \\
+Kidney complication & 2,324 & 545 & 136.48 & 33.56 [30.50, 36.76] \\
+Severe hyperglycemia & 5,899 & 1,285 & 125.80 & 28.07 [26.55, 29.61] \\
+Severe hypoglycemia & 491 & 108 & 139.37 & 42.89 [36.36, 50.17] \\
+\midrule
+Length of stay & 20,994 & 4,508 & 152.28 & 48.47 [47.33, 49.75] \\
+\bottomrule
+\end{tabular}
+\end{table}
+\clearpage
 \section*{Supplementary Methods A. Regression features and model size}
 One row represented one admission at one observation cutoff. We used eligible raw observations from admission through that cutoff, in time order. Numeric observations retained their values, and true and false were encoded as one and zero. Each remaining categorical concept--value combination became a separate indicator variable with value one at each occurrence. We kept variables observed in at least 2\% of training admission--cutoff pairs and used the training feature columns for validation and testing.
 
@@ -95,7 +117,7 @@ When a variable was absent, its observation indicator, count, span, and rate wer
 
 The 13 pattern means and 13 occurrence indicators added 26 features to the 1,510-feature regression vector, giving 1,536 inputs with QA. The clinical study reported 14 scored components because it assessed routine basal insulin dosage for both administration frequency and dose amount. Both assessments carry the same pattern name. The vector therefore pooled the two aspects under one pattern name, giving 13 named patterns across the 14 components \citep{oded2027kineret-jbi}. The eight risk estimates, eight onset estimates, and length-of-stay estimate each used a linear function of the same vector, with a logistic link for risk. With 17 intercepts, these dimensions give 25,687 coefficients without QA and 26,129 with QA. 
 
-The supervised STraTS comparators used two layers, 16 attention heads per layer, and a hidden dimension of 64 (91,441 parameters without QA). Each of the 26 added inputs connects to 128 units in the context projection, giving 94,769 parameters with QA. The four-layer clinical interval encoder had approximately 1.68 million parameters before the supervised prediction heads were attached. For KB+QA, the rounded encoder count for the score inputs was 1.69 million, and the 13 occurrence indicators add 1,664 weights to its context projection. The supervised attention pool and prediction heads added 166,786 parameters to each encoder. Together these dimensions give approximately 1.85 and 1.86 million parameters for the full KB and KB+QA models. SAX used the same encoder dimensions with a different input vocabulary. Its parameter count was unavailable in the saved results.
+The supervised STraTS comparators used two layers, 16 attention heads per layer, and a hidden dimension of 64 (91,441 parameters without QA). Each of the 26 added inputs connects to 128 units in the context projection, giving 94,769 parameters with QA. The four-layer clinical interval encoder had approximately 1.68 million parameters before the supervised prediction heads were attached. For KB+QA, the rounded encoder count for the score inputs was 1.69 million, and the 13 occurrence indicators add 1,664 weights to its context projection. The supervised attention pool and prediction heads added 166,786 parameters to each encoder. Together these dimensions give approximately 1.85 and 1.86 million parameters for the full KB and KB+QA models. SAX used the same encoder dimensions with a different input vocabulary. Its fitted encoder contained 1,734,152 parameters, giving 1,900,938 with the prediction heads.
 
 We retained the encoder width of 128 and two attention heads per layer used in the earlier ICU study. In that study, an encoder with width 64 and one head per layer (0.46 million parameters) also exceeded ss-STraTS on AUPRC (0.646 versus 0.627) \citep{oded2026intervene}. For ss-STraTS we retained the published architecture with the width, layer count, and attention head count used in our earlier comparison. The Kineret comparison used one configuration per representation. It therefore leaves open how much of the difference between INTERVenE and ss-STraTS is attributable to model size.
 
