@@ -119,7 +119,31 @@ The 13 pattern means and 13 occurrence indicators added 26 features to the 1,510
 
 The supervised STraTS comparators used two layers, 16 attention heads per layer, and a hidden dimension of 64 (91,441 parameters without QA). Each of the 26 added inputs connects to 128 units in the context projection, giving 94,769 parameters with QA. The four-layer clinical interval encoder had approximately 1.68 million parameters before the supervised prediction heads were attached. For KB+QA, the rounded encoder count for the score inputs was 1.69 million, and the 13 occurrence indicators add 1,664 weights to its context projection. The supervised attention pool and prediction heads added 166,786 parameters to each encoder. Together these dimensions give approximately 1.85 and 1.86 million parameters for the full KB and KB+QA models. SAX used the same encoder dimensions with a different input vocabulary. Its fitted encoder contained 1,734,152 parameters, giving 1,900,938 with the prediction heads.
 
-We retained the encoder width of 128 and two attention heads per layer used in the earlier ICU study. In that study, an encoder with width 64 and one head per layer (0.46 million parameters) also exceeded ss-STraTS on AUPRC (0.646 versus 0.627) \citep{oded2026intervene}. For ss-STraTS we retained the published architecture with the width, layer count, and attention head count used in our earlier comparison. The Kineret comparison used one configuration per representation. It therefore leaves open how much of the difference between INTERVenE and ss-STraTS is attributable to model size.
+We retained the encoder width of 128 and two attention heads per layer used in the earlier ICU study. In that study, an encoder with width 64 and one head per layer (0.46 million parameters) also exceeded ss-STraTS on AUPRC (0.646 versus 0.627) \citep{oded2026intervene}. For ss-STraTS we retained the published architecture with the width, layer count, and attention head count used in our earlier comparison. For a sensitivity analysis, we increased the hidden width of ss-STraTS from 64 to 304, bringing its parameter count close to that of KB. Both ss-STraTS runs used the same inputs without QA, two layers, 16 heads, the same training settings and seed, and the same validation rule for selecting the checkpoint. We evaluated all three models on the same 4,508 day-four test admissions. The wider model had lower discrimination than the default model on each summary measure (Table~\ref{tab:s-width}).
+
+\begin{table}[htbp]\centering\small
+\caption{Discrimination at day four in the ss-STraTS width sensitivity analysis. Paired differences use the first model minus the second. The 95\% intervals use 2,000 valid bootstrap samples clustered by person and describe uncertainty in the test population for the fitted models.}
+\label{tab:s-width}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Parameters & Weighted AUPRC & Macro AUPRC & Weighted AUROC \\
+\midrule
+ss-STraTS (64) & 91,441 & 0.4747 & 0.3704 & 0.7701 \\
+ss-STraTS (304) & 1,825,909 & 0.3950 & 0.3079 & 0.6886 \\
+INTERVenE KB & $\approx$1.85M & 0.5274 & 0.4024 & 0.8033 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+\begin{tabular}{lrr}
+\toprule
+Paired difference & Weighted AUPRC (95\% CI) & Weighted AUROC (95\% CI) \\
+\midrule
+KB minus ss-STraTS (304) & $0.1323\ [0.1128, 0.1531]$ & $0.1147\ [0.1011, 0.1284]$ \\
+ss-STraTS (304) minus (64) & $-0.0796\ [-0.0945, -0.0652]$ & $-0.0816\ [-0.0923, -0.0703]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \clearpage
 \section*{Supplementary Methods B. From glucose readings to interval tokens}
