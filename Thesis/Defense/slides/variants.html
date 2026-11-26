@@ -1,6 +1,6 @@
 <section id="variants" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Methods · Two variants</p>
+<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 1 · Two variants</p>
 <h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">A predictor and an inspection tool</h2>
 </div>
 <div style="display:flex;flex-direction:row;gap:40px">
@@ -19,12 +19,8 @@
 <p style="font-size:26px;color:#6E6359">per patient, one pass per token</p>
 </div>
 </div>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">14</p></div>
-<aside>About 1.5 minutes.
-
-INTERVenE-Enc: full bidirectional attention, trading the ability to generate for a single-pass discriminative readout. One pass gives, per admission and outcome, a risk probability (sigmoid) and a time estimate (softplus). RELEASE is reported separately as length of stay. 3.3 ms per patient at batch 16 on one RTX A5000, 302 patients per second, the whole 8,562-patient test set in under 30 seconds.
-
-INTERVenE-Ar: causal mask. Seeded with the observed window, it generates freely forward in time and reads the risk head at every generated step, giving a per-complication probability curve. Generation stops via an inference gate driven by the model's own time-to-terminal estimate; patients reaching the cap get a forced terminal token (DEATH or RELEASE by highest logit); a 2,000-token safety budget. 255 ms per patient, 3.9 patients per second, impractical on CPU. The roughly 77x gap is simply generation: one pass versus one pass per token.
-
-They are complementary rather than redundant: the encoder is the production predictor, the decoder the inspection tool. Only the decoder localizes when, and after which events, risk rises. Each has its own explanation route: sparse-transcoder attribution for the encoder, direct reading of generated tokens for the decoder.</aside>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">18</p></div>
+<aside>- Encoder: one pass, risk + time per outcome, 3.3 ms per patient: the production predictor
+- Decoder: generates the trajectory, risk at every step, 255 ms: the inspection tool
+- Only the decoder shows when and after which events risk rises</aside>
 </section>

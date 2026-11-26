@@ -1,37 +1,32 @@
-<section id="kb" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:64px">
-<div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Methods · Knowledge base</p>
-<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">A diabetes knowledge base, built for this work</h2>
-</div>
-<div style="display:flex;flex-direction:row;gap:40px">
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;border-top:4px solid #F7941D;padding:28px 0 0 0">
-<p style="font-family:'Fraunces', Georgia, serif;font-size:96px;font-weight:600;line-height:1">174</p>
-<p style="font-size:30px;color:#4A423B">TAK units, eight families</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;border-top:4px solid #F7941D;padding:28px 0 0 0">
-<p style="font-family:'Fraunces', Georgia, serif;font-size:96px;font-weight:600;line-height:1">14</p>
-<p style="font-size:30px;color:#4A423B">guideline recommendations as QATPs</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;border-top:4px solid #2F5D73;padding:28px 0 0 0">
-<p style="font-family:'Fraunces', Georgia, serif;font-size:96px;font-weight:600;line-height:1">~70</p>
-<p style="font-size:30px;color:#4A423B">clinical concepts</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;border-top:4px solid #2F5D73;padding:28px 0 0 0">
-<p style="font-family:'Fraunces', Georgia, serif;font-size:96px;font-weight:600;line-height:1">~1,500</p>
-<p style="font-size:30px;color:#4A423B">local codes mapped by hand</p>
-</div>
-</div>
-<p style="font-size:34px;font-weight:600">One schema, one engine, one pass: declarative and quality-assessment knowledge together.</p>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">10</p></div>
-<aside>About 1.5 minutes.
-
-The knowledge base was authored for this thesis. It encodes the clinical semantics of adult inpatient diabetes care (raw concepts, states, trends, events, contexts, patterns) in the TAK schema, and encodes the Israeli national position paper on diabetes treatment in general-hospital admissions (Hochberg et al., September 2023) as quality-assessment patterns on top.
-
-Written by me under Yuval's guidance, with Dr. Irit Hochberg reviewing the formalized recommendations for clinical fidelity against the position paper.
-
-Knowledge acquisition in two passes: a data-driven pass (1-D k-means with 2 to 5 clusters, KDE plots to find dips between peaks) that only proposes candidate thresholds, then an authoritative clinical pass against reference ranges, the guideline's own definitions, literature and expert input. Relevance durations are context-sensitive. Corticosteroids were pre-discretized because there are too many preparation and dose combinations.
-
-Two design goals: transferable (it names clinical concepts, not dataset columns, so a new EHR needs only a concept index) and single-schema (declarative and QA knowledge in one XML representation, validated against a shared schema, executed by one engine in one pass, rather than split between a declarative formalism and a procedural one).
-
-Caveat if asked: 18 knowledge-base concepts have no MIMIC-IV counterpart (home medications, SGLT2, cultures, imaging, dialysis, eGFR), which is part of why QA is confined to Kineret.</aside>
+<section id="kb" data-transition="fade" style="display:flex; flex-direction:column; gap:64px; padding:112px 128px 160px; background:#f5f0e8">
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a85300">Methods · Knowledge base</p>
+    <h2 style="font-family:Fraunces, Georgia, serif; font-size:64px; font-weight:600; line-height:1.1; color:#1f1a17">A diabetes knowledge base, built for this work</h2>
+  </div>
+  <div style="display:flex; flex-direction:row; gap:40px">
+    <div style="display:flex; flex-direction:column; gap:12px; flex:1; padding:28px 0 0; border-top:4px solid #f7941d">
+      <p style="font-family:Fraunces, Georgia, serif; font-size:96px; font-weight:600; line-height:1; color:#1f1a17">174</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:30px; color:#4a423b">TAK units, eight families</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; flex:1; padding:28px 0 0; border-top:4px solid #f7941d">
+      <p style="font-family:Fraunces, Georgia, serif; font-size:96px; font-weight:600; line-height:1; color:#1f1a17">14</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:30px; color:#4a423b">guideline recommendations as QATPs</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; flex:1; padding:28px 0 0; border-top:4px solid #2f5d73">
+      <p style="font-family:Fraunces, Georgia, serif; font-size:96px; font-weight:600; line-height:1; color:#1f1a17">88</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:30px; color:#4a423b">clinical concepts</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px; flex:1; padding:28px 0 0; border-top:4px solid #2f5d73">
+      <p style="font-family:Fraunces, Georgia, serif; font-size:96px; font-weight:600; line-height:1; color:#1f1a17">2</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:30px; color:#4a423b">sources, one concept index</p>
+    </div>
+  </div>
+  <p style="font-family:Manrope, Arial, sans-serif; font-size:34px; font-weight:600; color:#1f1a17">One schema, one engine, one pass: declarative and quality-assessment knowledge together.</p>
+  <div style="position:absolute; right:128px; bottom:56px; left:128px; height:48px; display:flex; flex-direction:row; gap:16px; align-items:center">
+    <img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px; height:37px; object-fit:contain">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">Ben-Gurion University of the Negev · Shahar Oded</p>
+    <div style="flex:1"></div>
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">10</p>
+  </div>
+  <aside>- Authored for this thesis; Irit Hochberg reviewed the formalized recommendations - Thresholds: data-driven proposals, then clinical validation - One schema for declarative and QA knowledge, transferable via a concept index (as long as source EHR codes are mapped to these concepts, KB is transferable) - MIMIC: already in international codes, mapping was easy. Kineret: ~1,500 local codes mapped by hand</aside>
 </section>

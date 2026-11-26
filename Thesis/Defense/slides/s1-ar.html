@@ -1,25 +1,28 @@
-<section id="s1-ar" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:44px">
-<div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 1 · The decoder</p>
-<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">The decoder shows when risk rises</h2>
-</div>
-<div style="display:flex;flex-direction:row;gap:56px;align-items:center">
-<div style="background:#FFFFFF;padding:24px;border-radius:20px">
-<img src="/_blob/fc38c7c27127ddced4afee9ebfd8b130" alt="Generated death risk over hours from admission: for a patient who died, risk climbs from about 0.01 to 0.23 and peaks at the recorded death time; for a survivor it stays near zero" style="width:880px;height:535px;object-fit:contain">
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:32px">
-<div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:26px;font-weight:700;color:#C8323C">Patient who died</p><p style="font-size:30px">Risk climbs and peaks at the death time</p></div>
-<div style="display:flex;flex-direction:column;gap:8px"><p style="font-size:26px;font-weight:700;color:#2F6FB3">Survivor</p><p style="font-size:30px">Risk stays near zero</p></div>
-</div>
-</div>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">24</p></div>
-<aside>About 1 minute.
-
-Two representative test patients from INTERVenE-Ar (Appendix B, autoregressive risk trajectories). The decoder is seeded with the first 48 hours and generates the abstraction trajectory forward, reading death risk at every generated step. For the patient who died, generated risk rises progressively and peaks near the recorded death time (around hour 170). For the survivor it stays near baseline throughout.
-
-The saw-tooth in the red curve is token-level: each generated token updates the readout.
-
-Why keep the decoder despite lower headline numbers: it is the only variant that localizes when, and after which events, risk rises, and its explanation is the generated trajectory itself, with no attribution machinery. The encoder is the production predictor (3.3 ms), the decoder the inspection tool (255 ms).
-
-If asked about calibration: the decoder's probability is the maximum over a generated trajectory, a readout with no reason to be calibrated as emitted (ECE 4 to 12%); per-outcome temperature scaling fixes the prevalent outcomes.</aside>
+<section id="s1-ar" data-transition="fade" style="display:flex; flex-direction:column; gap:44px; padding:112px 128px 160px; background:#f5f0e8">
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a85300">Study 1 · The decoder</p>
+    <h2 style="font-family:Fraunces, Georgia, serif; font-size:64px; font-weight:600; line-height:1.1; color:#1f1a17">The decoder shows when risk rises</h2>
+  </div>
+  <div style="display:flex; flex-direction:row; gap:56px; align-items:center">
+    <div style="display:flex; flex-direction:column; padding:24px; background:#ffffff; border-radius:20px">
+      <img src="/_blob/fc38c7c27127ddced4afee9ebfd8b130" alt="Generated death risk over hours from admission: for a patient who died, risk climbs from about 0.01 to 0.23 and peaks at the recorded death time; for a survivor it stays near zero" style="width:880px; height:535px; object-fit:contain">
+    </div>
+    <div style="display:flex; flex-direction:column; gap:32px; flex:1">
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <p style="font-family:Manrope, Arial, sans-serif; font-size:26px; font-weight:700; color:#c8323c">Patient who died</p>
+        <p style="font-family:Manrope, Arial, sans-serif; font-size:30px; color:#1f1a17">Risk climbs and peaks at the death time</p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <p style="font-family:Manrope, Arial, sans-serif; font-size:26px; font-weight:700; color:#2f6fb3">Survivor</p>
+        <p style="font-family:Manrope, Arial, sans-serif; font-size:30px; color:#1f1a17">Risk stays near zero</p>
+      </div>
+    </div>
+  </div>
+  <div style="position:absolute; right:128px; bottom:56px; left:128px; height:48px; display:flex; flex-direction:row; gap:16px; align-items:center">
+    <img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px; height:37px; object-fit:contain">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">Ben-Gurion University of the Negev · Shahar Oded</p>
+    <div style="flex:1"></div>
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">26</p>
+  </div>
+  <aside>- Seeded with 48 h, decoder generates forward and reads death risk each step - Died: risk climbs and peaks near the recorded death (~170 h); survivor stays flat - Why keep the decoder: it localizes when risk rises, explanation is the trajectory itself</aside>
 </section>

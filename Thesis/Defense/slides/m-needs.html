@@ -1,25 +1,26 @@
-<section id="m-needs" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:56px">
-<div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Motivation</p>
-<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Two needs, one record</h2>
-</div>
-<div style="display:flex;flex-direction:row;gap:40px">
-<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:48px;border-radius:20px">
-<p style="font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#2F5D73">Computational</p>
-<h3 style="font-family:'Fraunces', Georgia, serif;font-size:52px;font-weight:600;line-height:1.1">Predict</h3>
-<p style="font-size:32px;line-height:1.4;color:#4A423B">Anticipate short-term complications from sparse, irregular EHR data, with explanations clinicians can read</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:48px;border-radius:20px">
-<p style="font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Clinical</p>
-<h3 style="font-family:'Fraunces', Georgia, serif;font-size:52px;font-weight:600;line-height:1.1">Measure</h3>
-<p style="font-size:32px;line-height:1.4;color:#4A423B">How well the guideline is followed, whether it changed, and whether it matters for patients</p>
-</div>
-</div>
-<p style="font-size:32px;font-weight:600;color:#1F1A17">Adherence is both a subject of analysis and a feature of the model.</p>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">4</p></div>
-<aside>About 1 minute.
-
-This creates a twofold need. Computationally, we need models that reason over the irregular, sparse, heterogeneous temporal data of an EHR well enough to anticipate short-term deterioration, while staying interpretable enough for clinicians to act on. Clinically, we need to measure how well guidelines are actually followed across hospitals and over time, and whether adherence translates into better outcomes.
-
-The thesis treats them as one problem. Two kinds of medical knowledge are involved. Declarative knowledge (what is "persistent hyperglycemia") turns raw measurements into named concepts. Procedural quality-control knowledge (did the clinician give insulin after a hyperglycemic episode) describes the treatment process. Most predictive EHR work uses the first and ignores the second. We argue the second carries independent signal, and it is the part clinicians can actually change.</aside>
+<section id="m-needs" data-transition="fade" style="display:flex; flex-direction:column; gap:56px; padding:112px 128px 160px; background:#f5f0e8">
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a85300">Motivation</p>
+    <h2 style="font-family:Fraunces, Georgia, serif; font-size:64px; font-weight:600; line-height:1.1; color:#1f1a17">Two needs, one record</h2>
+  </div>
+  <div style="display:flex; flex-direction:row; gap:40px">
+    <div style="display:flex; flex-direction:column; gap:20px; flex:1; padding:48px; background:#ffffff; border-radius:20px">
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:26px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#2f5d73">Computational</p>
+      <h3 style="font-family:Fraunces, Georgia, serif; font-size:52px; font-weight:600; line-height:1.1; color:#1f1a17">Predict</h3>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; line-height:1.4; color:#4a423b">Anticipate short-term complications from sparse, irregular EHR data, with explanations clinicians can read</p>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:20px; flex:1; padding:48px; background:#ffffff; border-radius:20px">
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:26px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a85300">Clinical</p>
+      <h3 style="font-family:Fraunces, Georgia, serif; font-size:52px; font-weight:600; line-height:1.1; color:#1f1a17">Measure</h3>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; line-height:1.4; color:#4a423b">How well the guideline is followed, whether it changed, and whether it matters for patients</p>
+    </div>
+  </div>
+  <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; font-weight:600; color:#1f1a17">Adherence is both a subject of analysis and a feature of the model.</p>
+  <div style="position:absolute; right:128px; bottom:56px; left:128px; height:48px; display:flex; flex-direction:row; gap:16px; align-items:center">
+    <img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px; height:37px; object-fit:contain">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">Ben-Gurion University of the Negev · Shahar Oded</p>
+    <div style="flex:1"></div>
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">4</p>
+  </div>
+  <aside>- Computational need: predict from sparse irregular EHR, with explanations clinicians can read - Clinical need: measure adherence, its change, and whether it matters - Declarative knowledge (what is hyperglycemia) vs procedural knowledge (what action is needed) and adherence knowledge (was the action done properly)</aside>
 </section>

@@ -5,6 +5,6 @@ Export to .pptx / PDF from the page's Share › Export.
 
 - `deck.json`: slide order, sections, fonts
 - `slides/*.html`: one file per slide, speaker notes in each `<aside>`
-- `images/`: figures used in the deck (two cropped from `content/images/`)
+- `images/`: figures used in the deck (two cropped from `content/images/`, `pipeline_novsm.png` is the pipeline figure without "VSMs")
 
-Snapshot of 2026-11-10 (first draft, 43 slides, ~50 min).
+Snapshot of 2026-11-26 (59 slides incl. supplementary, Study 3 added).

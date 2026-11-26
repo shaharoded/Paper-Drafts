@@ -1,36 +1,38 @@
-<section id="tokens" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:56px">
-<div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Methods · Tokenization</p>
-<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Every interval becomes two named tokens</h2>
-</div>
-<div style="display:flex;flex-direction:column;gap:16px">
-<div style="display:flex;flex-direction:row;align-items:center;gap:0px">
-<p style="width:300px;background:#F7941D;color:#1F1A17;padding:20px 24px;border-radius:12px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:28px;text-align:center">START</p>
-<div style="flex:1;height:16px;background:#F7941D"></div>
-<p style="width:300px;background:#F7941D;color:#1F1A17;padding:20px 24px;border-radius:12px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:28px;text-align:center">END</p>
-</div>
-<p style="font-size:30px;color:#4A423B;text-align:center">GLUCOSE_STATE_HIGH · duration is the time between the two tokens</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:20px">
-<p style="font-size:28px;font-weight:700;color:#2F5D73">Four-level concept embedding, general to specific</p>
-<div style="display:flex;flex-direction:row;align-items:center;gap:20px">
-<p style="flex:1;background:#FFFFFF;padding:22px;border-radius:12px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:26px;text-align:center">GLUCOSE</p>
-<x-icon name="Play" style="color:#2F5D73;width:32px;height:32px"></x-icon>
-<p style="flex:1.2;background:#FFFFFF;padding:22px;border-radius:12px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:26px;text-align:center">_STATE</p>
-<x-icon name="Play" style="color:#2F5D73;width:32px;height:32px"></x-icon>
-<p style="flex:1.2;background:#FFFFFF;padding:22px;border-radius:12px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:26px;text-align:center">_HIGH</p>
-<x-icon name="Play" style="color:#2F5D73;width:32px;height:32px"></x-icon>
-<p style="flex:1.2;background:#FFFFFF;padding:22px;border-radius:12px;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:26px;text-align:center">_START</p>
-</div>
-</div>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">12</p></div>
-<aside>About 1.5 minutes. This is the core representational idea.
-
-A transformer consumes tokens, but an abstraction is an interval with a duration that one token cannot express. So each interval is split into a START and an END token at its boundaries. Duration becomes the distance between them, read through the temporal encoding rather than as an explicit feature. The Mediator guarantees well-formed sequences: an interval cannot open twice before closing, so every START has its END.
-
-Each boundary token is embedded through four hierarchical layers: raw concept (GLUCOSE), abstraction type (GLUCOSE_STATE), concept with value (GLUCOSE_STATE_HIGH), positional role (GLUCOSE_STATE_HIGH_START). So GLUCOSE_STATE and GLUCOSE_TREND share the GLUCOSE embedding, and the START and END of one interval share three of four layers: the model starts out knowing they concern the same parameter and bound the same episode.
-
-Time enters by concatenation, not addition: the four concept embeddings and a Time2Vec embedding of time since admission are concatenated (5d wide) and projected back to model dimension. Addition would force identity and position into one subspace; concatenation lets the projection learn how they interact.
-
-The vocabulary is clinical by construction, which is what later makes explanations resolve to named concepts.</aside>
+<section id="tokens" data-transition="fade" style="display:flex; flex-direction:column; gap:56px; padding:112px 128px 160px; background:#f5f0e8">
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a85300">Study 1 · Tokenization</p>
+    <h2 style="font-family:Fraunces, Georgia, serif; font-size:64px; font-weight:600; line-height:1.1; color:#1f1a17">Every interval becomes two named tokens</h2>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:16px">
+    <div style="display:flex; flex-direction:row; align-items:center">
+      <p style="width:300px; padding:20px 24px; font-family:'JetBrains Mono', 'Courier New', monospace; font-size:28px; text-align:center; color:#1f1a17; background:#f7941d; border-radius:12px">START</p>
+      <div style="height:16px; display:flex; flex-direction:column; flex:1; background:#f7941d">
+      </div>
+      <p style="width:300px; padding:20px 24px; font-family:'JetBrains Mono', 'Courier New', monospace; font-size:28px; text-align:center; color:#1f1a17; background:#f7941d; border-radius:12px">END</p>
+    </div>
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:30px; text-align:center; color:#4a423b">GLUCOSE_STATE_HIGH · duration is the time between the two tokens</p>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:20px">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:28px; font-weight:700; color:#2f5d73">Four-level concept embedding, general to specific</p>
+    <div style="display:flex; flex-direction:row; gap:20px; align-items:center">
+      <p style="flex:1; padding:22px; font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; text-align:center; color:#1f1a17; background:#ffffff; border-radius:12px">GLUCOSE</p>
+      <x-icon name="Play" style="width:32px; height:32px; color:#2f5d73"></x-icon>
+      <p style="flex:1.2; padding:22px; font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; text-align:center; color:#1f1a17; background:#ffffff; border-radius:12px">_STATE</p>
+      <x-icon name="Play" style="width:32px; height:32px; color:#2f5d73"></x-icon>
+      <p style="flex:1.2; padding:22px; font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; text-align:center; color:#1f1a17; background:#ffffff; border-radius:12px">_HIGH</p>
+      <x-icon name="Play" style="width:32px; height:32px; color:#2f5d73"></x-icon>
+      <p style="flex:1.2; padding:22px; font-family:'JetBrains Mono', 'Courier New', monospace; font-size:26px; text-align:center; color:#1f1a17; background:#ffffff; border-radius:12px">_START</p>
+    </div>
+  </div>
+  <div style="display:flex; flex-direction:column; gap:6px; padding:4px 0 4px 24px; border-left:6px solid #f7941d">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:28px; font-weight:700; color:#a85300">Hypothesis</p>
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:28px; color:#1f1a17">The hierarchy and its initialization keep same-family tokens close, so the transformer recognizes them as related, and despite the decomposition is able to understand the concept of duration and use it</p>
+  </div>
+  <div style="position:absolute; right:128px; bottom:56px; left:128px; height:48px; display:flex; flex-direction:row; gap:16px; align-items:center">
+    <img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px; height:37px; object-fit:contain">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">Ben-Gurion University of the Negev · Shahar Oded</p>
+    <div style="flex:1"></div>
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">13</p>
+  </div>
+  <aside>- Core representational idea: interval → START and END tokens, duration = distance between them - Four-level embedding: START and END of one interval share three of four layers - Hypothesis to flag now: hierarchy + initialization keep within-family tokens close and recognizable as similar. Vocabulary is clinical, so explanations resolve to named concepts</aside>
 </section>

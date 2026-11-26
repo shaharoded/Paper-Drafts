@@ -20,14 +20,9 @@
 <p style="font-size:28px;color:#4A423B">Adherence measures the record, not the decision</p>
 </div>
 </div>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">41</p></div>
-<aside>About 1 minute. Say these before the committee does.
-
-Representation: the KBTA layer is only as expressive as its knowledge base; a concept with no rule is absent from the input, so a new disease or setting needs an expert-authored knowledge base, more laborious than retraining an end-to-end model. Granularity: glucose 250 and 600 both map to severe hyperglycemia (the σ-bin ablation shows this costs little). Density: transfer from ICU (MIMIC-IV) to medium-density inpatient data (Kineret, about half an order of magnitude sparser) was tested and held; community or ambulatory data with visit summaries was not tested and would need a different, visit-level model. Methodological study on one MIMIC cohort; intervals are patient-level bootstraps, not multi-seed variance (training takes 8 to 12 h for the encoder and over 24 h for the decoder).
-
-Clinical study: observational, weighting balances measured covariates only; unmeasured illness severity and decisions to de-escalate care matter most. Whole-admission mortality analysis is descriptive; the weighted analyses use a fixed early window. Glycemic events depend on glucose being measured (ascertainment). Uncontrolled pre–post, so secular trends cannot be separated. Non-mortality models do not model the competing risk of death. Single national guideline, Israeli general hospitals.
-
-Both: Kineret had no international coding at the time, so about 1,500 local codes were mapped by hand, site-specific work, and the comorbidity score is a modified Charlson. And adherence measures the record, not the bedside reasoning; it is expected to fall as patients approach death, which is why the mortality analyses that carry weight use an early window.
-
-Future work if asked: weighted aggregation up the guideline hierarchy; cross-cohort pretraining; richer adherence encodings (per-day profile, trajectory); mining candidate recommendations with KarmaLego; interval representations beyond healthcare; explainability as the primary object; prospective evaluation.</aside>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">57</p></div>
+<aside>- Representation: new domain needs a new KB; tested ICU → inpatient, not ambulatory
+- Clinical: observational, uncontrolled pre–post, ascertainment for glycemic events
+- Both: hand-mapped local codes; adherence measures the record, not the decision
+- Single seed per model; patient-level bootstrap only</aside>
 </section>

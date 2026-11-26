@@ -10,7 +10,7 @@
 </div>
 <div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:36px;border-radius:20px;border-left:8px solid #2F5D73">
 <h3 style="font-family:'Fraunces', Georgia, serif;font-size:40px;font-weight:600">What intervals contribute</h3>
-<p style="font-size:28px;color:#4A423B">Persistence drives accuracy; naming drives explanation</p>
+<p style="font-size:28px;color:#4A423B">Persistence drives accuracy; clinical naming adds on Kineret</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:36px;border-radius:20px;border-left:8px solid #2F5D73">
 <h3 style="font-family:'Fraunces', Georgia, serif;font-size:40px;font-weight:600">Concept-level attribution</h3>
@@ -21,14 +21,9 @@
 <p style="font-size:28px;color:#4A423B">Mediator, KarmaLego + TPF, INTERVenE; pure Python</p>
 </div>
 </div>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">39</p></div>
-<aside>About 1.5 minutes.
-
-1. A transformer architecture over temporal abstraction intervals. INTERVenE takes symbolic intervals as native input: each interval becomes a START and END token embedded through a four-level concept hierarchy, elapsed time through Time2Vec and temporal rotary embeddings, static context through AdaLN-Zero. Two variants developed and compared. The encoder outperforms the established neural and symbolic alternatives on a shared benchmark and leads every comparator on both cohorts.
-
-2. Evidence about what interval representations contribute. Holding the architecture fixed and varying only the input separates two effects: collapsing intervals to points degrades performance sharply, replacing named intervals with σ-bins does not (on MIMIC-IV). The gain belongs to persistence and concurrency, which bounds what a knowledge base buys a predictor and makes the architecture applicable to interval data outside medicine. The Kineret repetition qualifies it: there the substitution did cost accuracy.
-
-3. Attribution that resolves to named concepts. Sparse transcoders through a gradient-decoupled hook whose injected term is numerically zero: bit-exact forward pass, the deployed model's own logits explained.
-
-4. A released software stack: a reimplementation of the Temporal Mediator doing abstraction and adherence scoring in one pass over a TAK repository; a KarmaLego mining pipeline with TPF; INTERVenE with its attribution pipeline. All pure Python, deployable in ordinary environments, including the regulated hospital platform this work ran inside.</aside>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">55</p></div>
+<aside>- INTERVenE: interval-native transformer, leads both cohorts
+- What intervals contribute: persistence is essential; clinical naming ties on MIMIC, adds +0.060 on Kineret
+- Concept-level attribution on the deployed model, bit-exact
+- Released pure-Python stack: Mediator, KarmaLego+TPF, INTERVenE</aside>
 </section>

@@ -21,13 +21,8 @@
 </div>
 </div>
 <div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">5</p></div>
-<aside>About 1.5 minutes.
-
-The task: short-horizon outcome prediction for diabetic inpatients. For an admission of N days we observe only the first K days and predict clinically significant outcomes in the remaining N minus K days, with 48 hours ≤ K < N ≤ 14 days. Outcomes include death, kidney complication, hyperglycemia, severe hyperglycemia, hypoglycemia, severe hypoglycemia (and on Kineret also MI, infection, ketoacidosis, hyperosmolality).
-
-RQ1 in full: can transformers operating over interval-based temporal abstractions and guideline-compliance scores match or exceed state-of-the-art models for short-term complication prediction, while inheriting the explainability symbolic abstractions give by construction? Sub-questions: how much do the abstraction and scoring layers contribute beyond raw data, and how do an encoder (single-pass risk) and an autoregressive decoder (generates future abstraction trajectories) differ?
-
-RQ2 in full: which guideline components are most informative for outcomes, how did adherence change following the national implementation effort, and what does that say about which recommendations are critical, redundant, or hard to apply?
-
-In the evaluation chapter these are broken into RQ1 to RQ6. RQ1 to RQ3 are Study 1, RQ4 and RQ5 Study 2, RQ6 Study 3.</aside>
+<aside>- Observe the first K days, predict complications to day 14
+- RQ1: interval transformers vs state of the art, and explainable
+- RQ2: which recommendations matter, did adherence change
+- Study 1 = RQ1–3, Study 2 = RQ4–5, Study 3 = RQ6</aside>
 </section>

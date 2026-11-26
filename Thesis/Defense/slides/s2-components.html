@@ -5,18 +5,12 @@
 </div>
 <div style="display:flex;flex-direction:row;justify-content:center">
 <div style="background:#FFFFFF;padding:24px;border-radius:20px">
-<img src="/_blob/30937097903a72c86e4df802f1770032" alt="Heatmap of guideline components by outcome from Firth regressions: insulin on hyperglycemia and admission glucose monitoring recur most; starred cells are robust across all three cutoffs, mostly in the death column" style="width:1500px;height:513px;object-fit:contain">
+<img src="/_blob/aa24235178c62dc82350731d846fe9f3" alt="Heatmap of guideline components by outcome from Firth regressions: insulin on hyperglycemia and admission glucose monitoring recur most; starred cells are robust across all three cutoffs, mostly in the death column" style="width:1500px;height:513px;object-fit:contain">
 </div>
 </div>
 <p style="font-size:30px;color:#4A423B;text-align:center">Firth regression at 24, 48, 72 h · robust (★) only if significant at all three</p>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">31</p></div>
-<aside>About 1.5 minutes.
-
-Method recap: one bias-reduced (Firth) logistic regression per complication per cutoff (24, 48, 72 h). Admissions where the complication occurred before the cutoff are excluded, adherence and covariates are computed only up to the cutoff. Firth was needed because unpenalized maximum likelihood failed to converge under separation for most outcomes. Correlated predictors pruned first, Benjamini–Hochberg within each model, bootstrap sign-agreement check. Routine glucose monitoring is dropped from the glycemic models to avoid mechanical circularity (measuring is how those events are detected).
-
-Results: 9 to 34 predictors retained per outcome, but the number robust across all three windows ranged from none to 32 and tracked event frequency. Mortality: 32 robust (3,130 events at 24 h). Severe hyperglycemia 8, kidney 5, infection 2, all others 0. The robustness criterion discards everything for the rare outcomes, which is the right answer when event counts are in the tens.
-
-Face validity: for mortality the models recovered known predictors unprompted (age, red cell distribution width, BMI, dementia, cardiovascular comorbidity), and several adherence components ranked among the strongest.
-
-In this heatmap: insulin after hyperglycemia and admission glucose monitoring recur most broadly; basal-dose components appear in fewer, more outcome-specific models. Direction is not uniform, the same component can flip sign across endpoints, which is why the recurrent components are re-examined under weighting rather than reading these coefficients as effects.</aside>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">39</p></div>
+<aside>- Heatmap of which components recur across outcome models
+- Insulin after hyperglycemia and admission monitoring recur most; stars = robust at all three cutoffs
+- Signs flip across endpoints, so these are screened then re-examined under weighting</aside>
 </section>

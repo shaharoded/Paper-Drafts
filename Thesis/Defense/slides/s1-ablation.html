@@ -1,36 +1,8 @@
-<section id="s1-ablation" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:56px">
-<div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 1 · What the intervals contribute</p>
-<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Persistence matters, naming doesn’t</h2>
-</div>
-<div style="display:flex;flex-direction:row;gap:40px">
-<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:44px;border-radius:20px;border-top:8px solid #F7941D">
-<p style="font-size:30px;font-weight:700">KBTA intervals</p>
-<p style="font-family:'Fraunces', Georgia, serif;font-size:112px;font-weight:600;line-height:1">0.672</p>
-<p style="font-size:28px;color:#4A423B">deployed model</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:44px;border-radius:20px;border-top:8px solid #2F5D73">
-<p style="font-size:30px;font-weight:700">σ-bin intervals</p>
-<p style="font-family:'Fraunces', Georgia, serif;font-size:112px;font-weight:600;line-height:1">0.676</p>
-<p style="font-size:28px;color:#4A423B">no clinical names: same accuracy</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FFFFFF;padding:44px;border-radius:20px;border-top:8px solid #6E6359">
-<p style="font-size:30px;font-weight:700">Point events</p>
-<p style="font-family:'Fraunces', Georgia, serif;font-size:112px;font-weight:600;line-height:1;color:#A85300">0.593</p>
-<p style="font-size:28px;color:#4A423B">no duration: clear drop</p>
-</div>
-</div>
-<p style="font-size:34px;font-weight:600">Knowledge buys interpretability here, at no cost in accuracy.</p>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">22</p></div>
-<aside>About 2 minutes. This is an important and slightly counter-intuitive result; say it plainly.
-
-Both ablations hold the deployed encoder fixed and vary only the input (AUPRC, support-weighted).
-- Replace the KBTA vocabulary with a standard-deviation (σ-bin) discretization, a close relative of SAX: AUPRC 0.676 vs 0.672, identical AUROC. Only cost: length-of-stay error up 3.2 h.
-- Collapse every interval to a one-second point event: AUPRC falls to 0.593, length-of-stay error up 7.4 h.
-
-So the architecture depends on persistence (a symbol holds over a span, and spans overlap) and not on the symbols being clinically named. On MIMIC-IV, KBTA is an interpretability substrate rather than a predictive prerequisite.
-
-This is negative for one claim and positive for another. It rules out claiming that clinical knowledge buys accuracy on this cohort. It establishes that interpretability comes at essentially no accuracy cost, which is the more useful claim, since interpretability bought with performance is rarely adopted. A σ-bin model predicts as well, but it cannot produce the explanations on the next slide, because its features have no names.
-
-Foreshadow: on Kineret, where the knowledge base was authored, the same substitution does cost accuracy (Study 3). The two results bound each other.</aside>
+<section id="s1-ablation" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px"><p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Study 1 · What the intervals contribute</p><h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">Persistence matters, naming doesn’t</h2></div><table style="width:1664px;font-family:'Manrope', Arial, sans-serif;font-size:30px;line-height:1.15;color:#1F1A17"><tr><th style="width:40%;text-align:left;padding:16px 18px;font-weight:700">Input to the deployed encoder</th><th style="width:20%;text-align:right;padding:16px 18px;font-weight:700">AUPRC</th><th style="width:20%;text-align:right;padding:16px 18px;font-weight:700">AUROC</th><th style="width:20%;text-align:right;padding:16px 18px;font-weight:700">LoS MAE (h)</th></tr><tr style="background:#FBE3C4"><td style="text-align:left;padding:16px 18px">KBTA intervals (deployed)</td><td style="text-align:right;padding:16px 18px">0.672 ± 0.012</td><td style="text-align:right;padding:16px 18px">0.901 ± 0.005</td><td style="text-align:right;padding:16px 18px;color:#A85300">44.4 ± 0.9</td></tr><tr><td style="text-align:left;padding:16px 18px">σ-bin intervals, no clinical names</td><td style="text-align:right;padding:16px 18px">0.676 ± 0.012</td><td style="text-align:right;padding:16px 18px">0.901 ± 0.005</td><td style="text-align:right;padding:16px 18px">47.6 ± 0.9</td></tr><tr><td style="text-align:left;padding:16px 18px">Point events, no duration</td><td style="text-align:right;padding:16px 18px;color:#A85300">0.593 ± 0.015</td><td style="text-align:right;padding:16px 18px;color:#A85300">0.864 ± 0.007</td><td style="text-align:right;padding:16px 18px;color:#A85300">51.8 ± 0.8</td></tr></table><div style="display:flex;flex-direction:row;gap:20px"><div style="flex:1;background:#FFFFFF;border-left:6px solid #F7941D;border-radius:10px;padding:14px 20px"><p style="font-size:26px;line-height:1.3;color:#4A423B"><span style="color:#A85300"><b>Same accuracy</b></span> without clinical names: knowledge buys interpretability here at no cost</p></div><div style="flex:1;background:#FFFFFF;border-left:6px solid #2F5D73;border-radius:10px;padding:14px 20px"><p style="font-size:26px;line-height:1.3;color:#4A423B"><span style="color:#2F5D73"><b>−0.079</b></span> AUPRC when duration is removed</p></div><div style="flex:1;background:#FFFFFF;border-left:6px solid #6E6359;border-radius:10px;padding:14px 20px"><p style="font-size:26px;line-height:1.3;color:#4A423B"><span style="color:#6E6359"><b>On Kineret</b></span> clinical intervals beat SAX by 0.060 (Study 3)</p></div></div>
+<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">24</p></div>
+<aside>- Same encoder, only the input changes
+- σ-bins (SAX-like) match KBTA on discrimination; only cost is +3.2 h LoS (CIs separate)
+- Collapsing intervals to points drops everything: the model needs persistence and overlap
+- So on MIMIC KBTA is an interpretability substrate; Study 3 shows it also predicts on its home cohort</aside>
 </section>

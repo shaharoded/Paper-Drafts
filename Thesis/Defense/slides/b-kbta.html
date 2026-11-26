@@ -1,29 +1,26 @@
-<section id="b-kbta" data-transition="fade" style="background:#F5F0E8;color:#1F1A17;font-family:'Manrope', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:48px">
-<div style="display:flex;flex-direction:column;gap:12px">
-<p style="font-size:24px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#A85300">Background · Temporal abstraction</p>
-<h2 style="font-family:'Fraunces', Georgia, serif;font-size:64px;font-weight:600;line-height:1.1;color:#1F1A17">From time points to named intervals</h2>
-</div>
-<div style="display:flex;flex-direction:row;gap:56px;align-items:center">
-<div style="background:#FFFFFF;padding:24px;border-radius:20px">
-<img src="/_blob/33130e74841820e26a3f4ff0f4e47268" alt="Multivariate point measurements on the left abstracted into state and gradient intervals on the right" style="width:960px;height:556px;object-fit:contain">
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:24px">
-<p style="font-size:32px;font-weight:600">KBTA outputs:</p>
-<p style="font-size:32px;color:#4A423B">States · high, normal, low</p>
-<p style="font-size:32px;color:#4A423B">Trends · rising, falling</p>
-<p style="font-size:32px;color:#4A423B">Events · insulin, AKI</p>
-<p style="font-size:32px;color:#4A423B">Contexts · diabetes, steroids</p>
-<p style="font-size:32px;color:#4A423B">Patterns · anchor → action</p>
-</div>
-</div>
-<div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">6</p></div>
-<aside>About 1.5 minutes. The committee knows KBTA well (Yuval's framework), so stay brief.
-
-Knowledge-based temporal abstraction converts time-stamped clinical data into interval-level, clinically named concepts: a set of (concept, start, end). A run of glucose measurements becomes, for example, GLUCOSE:HIGH holding for eleven hours, then GLUCOSE:DECREASING for four.
-
-Abstraction types: raw concepts; states (knowledge-defined thresholds); trends (what counts as a meaningful change over what span); events (medication, procedure, diagnosed episode); contexts (an interpretation frame such as a diabetes diagnosis, which changes how other abstractions are derived, for example shorter relevance for glucose because it is re-measured sooner); and patterns, composite concepts over other abstractions that open at an anchor and close at an action.
-
-Two knowledge parameters: thresholds (context-sensitive) and relevance durations (persistence), which let two measurements join into one interval or leave a gap where the record is silent.
-
-The key distinction for later: unlike equal-width, equal-frequency or SAX-like σ-bin discretization, KBTA boundaries are clinical and named. The σ-bin arm in the ablations is exactly that knowledge-free alternative.</aside>
+<section id="b-kbta" data-transition="fade" style="display:flex; flex-direction:column; gap:48px; padding:112px 128px 160px; background:#f5f0e8">
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#a85300">Background · Temporal abstraction</p>
+    <h2 style="font-family:Fraunces, Georgia, serif; font-size:64px; font-weight:600; line-height:1.1; color:#1f1a17">From time points to named intervals</h2>
+  </div>
+  <div style="display:flex; flex-direction:row; gap:56px; align-items:center">
+    <div style="display:flex; flex-direction:column; padding:24px; background:#ffffff; border-radius:20px">
+      <img src="/_blob/33130e74841820e26a3f4ff0f4e47268" alt="Multivariate point measurements on the left abstracted into state and gradient intervals on the right" style="width:960px; height:556px; object-fit:contain">
+    </div>
+    <div style="display:flex; flex-direction:column; gap:24px; flex:1">
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; font-weight:600; color:#1f1a17">KBTA outputs:</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; color:#4a423b">States · high, normal, low</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; color:#4a423b">Trends · rising, falling</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; color:#4a423b">Events · insulin, AKI</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; color:#4a423b">Contexts · diabetes, steroids treatment</p>
+      <p style="font-family:Manrope, Arial, sans-serif; font-size:32px; color:#4a423b">Patterns · anchor (a "trigger") → action</p>
+    </div>
+  </div>
+  <div style="position:absolute; right:128px; bottom:56px; left:128px; height:48px; display:flex; flex-direction:row; gap:16px; align-items:center">
+    <img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px; height:37px; object-fit:contain">
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">Ben-Gurion University of the Negev · Shahar Oded</p>
+    <div style="flex:1"></div>
+    <p style="font-family:Manrope, Arial, sans-serif; font-size:24px; color:#6e6359">6</p>
+  </div>
+  <aside>- Committee knows KBTA, stay brief - Points become named intervals: states, trends, events, contexts, patterns - Key contrast for later: KBTA boundaries are clinical and named; σ-bins / SAX are the knowledge-free alternative</aside>
 </section>

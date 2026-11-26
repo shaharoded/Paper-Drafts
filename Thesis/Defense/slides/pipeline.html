@@ -5,19 +5,11 @@
 </div>
 <div style="display:flex;flex-direction:row;justify-content:center">
 <div style="background:#FFFFFF;padding:24px;border-radius:20px">
-<img src="/_blob/a98d83738bcf47461f0ffec3bcd94ab3" alt="Pipeline: knowledge base update, temporal abstraction and QA scores by the Mediator, then temporal mining for TIRP/TPF and for the transformer, prediction and evaluation, QATP and feature-importance analysis feeding back to the protocol" style="width:1180px;height:572px;object-fit:contain">
+<img src="/_blob/fde0268eb06447dbd449df4a51ec082d" alt="Pipeline: knowledge base update, temporal abstraction and QA scores by the Mediator, then temporal mining for TIRP/TPF and for the transformer, prediction and evaluation, QATP and feature-importance analysis feeding back to the protocol" style="width:1180px;height:572px;object-fit:contain">
 </div>
 </div>
 <div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">9</p></div>
-<aside>About 1.5 minutes. Walk the figure left to right.
-
-1. Preprocessing. Both datasets go through ETL into a common event stream, a static context vector, and one concept vocabulary. MIMIC-IV is mapped to standard vocabularies. Kineret had no mapping to an international coding system at the time, so a dataset-specific concept index was built by hand, mapping about 1,500 local codes onto roughly 70 knowledge-base concepts. Once the index exists, the same knowledge base and engine run unchanged on either source.
-
-2. The Mediator (our reimplementation of the Temporal Mediator) executes the knowledge base against each record and returns the interval set, and in the same pass scores the guideline patterns.
-
-3. Two branches over the same intervals: temporal pattern mining (KarmaLego, TIRPs, TPF vectors) for the symbolic baseline, and tokenization for the transformer.
-
-4. Prediction and evaluation, then QATP and feature-importance analysis, which feeds back into the knowledge base (the "adjusting protocol" loop).
-
-Deployment constraint worth mentioning: Kineret lives on a secure Ministry of Health cloud platform, so the Mediator, mining pipeline and models all had to run inside Linux containers in a resource-constrained remote environment.</aside>
+<aside>- Left to right: ETL → Mediator (intervals + QA scores in one pass) → mining / tokenization → prediction → feedback to protocol
+- Concept index: MIMIC already in international codes (easy); Kineret ~1,500 local codes mapped by hand. Then the same KB runs on both
+- Everything ran in containers on the Ministry of Health secure cloud</aside>
 </section>
