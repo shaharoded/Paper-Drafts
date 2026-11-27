@@ -7,7 +7,8 @@
 <div style="display:flex;flex-direction:column;gap:6px;border-left:6px solid #2F5D73;padding:4px 0 4px 24px"><p style="font-family:'Fraunces', Georgia, serif;font-size:56px;font-weight:600;line-height:1;color:#2F5D73">+0.013</p><p style="font-size:28px;color:#4A423B">QA in ss-STraTS at day 2 (0.002–0.022); in KB uncertain at every cutoff</p></div>
 </div></div>
 <div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">50</p></div>
-<aside>- Same fitted weights evaluated at each cutoff
+<aside>- Why one model works at every cutoff: training was cutoff-augmented (a ladder). Each admission gave one example per daily cutoff from day 1 to day 13 while its record continued, e.g. a 120 h stay gave 4 examples (first 24, 48, 72, 96 h). History truncated at the cutoff, terminal markers removed, labels = outcomes between cutoff and day 14; elapsed and remaining time are inputs
+- Same fitted weights evaluated at each cutoff (sequence models only; logistic regression only at day 4)
 - Later cutoffs select longer stays and leave less time for events, so do not read the slope as the value of an extra day
 - Early QA can help a model of raw observations when history is short</aside>
 </section>

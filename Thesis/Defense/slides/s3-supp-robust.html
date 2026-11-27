@@ -7,7 +7,11 @@
 <div style="display:flex;flex-direction:column;gap:10px;background:#FFFFFF;padding:30px 36px;border-radius:20px;border-top:6px solid #2F5D73"><p style="font-size:24px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2F5D73">Recording density vs MIMIC</p><p style="font-family:'Fraunces', Georgia, serif;font-size:56px;font-weight:600;line-height:1">2 vs 12.5 / day</p><p style="font-size:28px;color:#4A423B">heart rate; glucose the reverse, 4 vs 2.75: the encoder led under both regimes</p></div>
 </div>
 <div style="position:absolute;left:128px;right:128px;bottom:56px;height:48px;display:flex;flex-direction:row;align-items:center;gap:16px"><img src="/_blob/2ef263135393a302ed1063c6f3789ff1" alt="Ben-Gurion University logo" style="width:24px;height:37px;object-fit:contain"><p style="font-size:24px;color:#6E6359">Ben-Gurion University of the Negev · Shahar Oded</p><div style="flex:1"></div><p style="font-size:24px;color:#6E6359">53</p></div>
-<aside>- KB is far better calibrated than the raw-observation baselines; temperature scaling takes ECE to 0.010
+<aside>- Calibration asks a different question from AUPRC: not "does the model rank sick patients higher" but "when it says 20% risk, do about 20% of those patients have the event?" That matters if clinicians read the number itself
+- ECE (expected calibration error): bin predictions into 15 probability bins, compare mean predicted risk with the observed event rate in each bin, average the gaps. KB 0.012 vs ss-STraTS 0.127: KB's stated risks are off by about 1 point on average, ss-STraTS by about 13
+- Brier score: mean squared error between predicted probability and the 0/1 outcome; it mixes ranking and calibration, lower is better. KB 0.066 vs ss-STraTS 0.110
+- As emitted = the raw output probabilities, before any temperature scaling. KB comes out calibrated without a fix; scaling on validation only takes its ECE from 0.012 to 0.010. Averaged over the 8 outcomes with equal weight
+- Caveat: descriptive, no paired test, and says nothing about benefit at a specific clinical decision threshold
 - Width sensitivity answers "is it just more parameters?": no
 - Mediator labels are stable under small measurement changes (500 people, 26 numeric states)
 - Density comparison is descriptive; it cannot attribute performance to recording frequency</aside>
